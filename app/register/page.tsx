@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Camera, Lock, X, Check } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -46,23 +48,66 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simple 1-second delay then show success
-    setTimeout(() => {
-      setShowModal(true);
-      setFormData({
-        fullname: '',
-        address: '',
-        phone: '',
-        email: '',
-        contact_pref: 'both',
-        skills: '',
-        note: '',
-        terms_agreed: false
+    try {
+      // 1. Send to Firebase
+      const firestoreData = {
+        name: formData.fullname,
+        address: formData.address,
+        phone: formData.phone,
+        email: formData.email,
+        contactPreference: formData.contact_pref,
+        skills: formData.skills,
+        note: formData.note,
+        timestamp: new Date().toISOString(),
+        source: 'website'
+      };
+
+      await addDoc(collection(db, "grandpas"), firestoreData);
+      console.log("✅ Firebase: Success");
+
+      // 2. Send to Netlify Forms (as backup)
+      const netlifyFormData = new FormData();
+      netlifyFormData.append('form-name', 'grandpa-registration');
+      Object.entries(formData).forEach(([key, value]) => {
+        netlifyFormData.append(key, value.toString());
       });
-      setPhoto(null);
-      setPhotoPreview('');
+      if (photo) {
+        netlifyFormData.append('photo', photo);
+      }
+
+      try {
+        await fetch('/', {
+          method: 'POST',
+          body: netlifyFormData
+        });
+        console.log("✅ Netlify: Success");
+      } catch (error) {
+        console.warn("⚠️ Netlify failed (not critical):", error);
+      }
+
+      // 3. Show success
+      setTimeout(() => {
+        setShowModal(true);
+        setFormData({
+          fullname: '',
+          address: '',
+          phone: '',
+          email: '',
+          contact_pref: 'both',
+          skills: '',
+          note: '',
+          terms_agreed: false
+        });
+        setPhoto(null);
+        setPhotoPreview('');
+        setIsSubmitting(false);
+      }, 1000);
+
+    } catch (error) {
+      console.error("❌ Firebase error:", error);
+      alert("Registration failed. Please try again or contact support.");
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const closeModal = () => {
@@ -88,7 +133,8 @@ export default function RegisterPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30">
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} name="grandpa-registration" method="POST" data-netlify="true" encType="multipart/form-data">
+            <input type="hidden" name="form-name" value="grandpa-registration" />
             {/* Full Name */}
             <div className="mb-8">
               <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
