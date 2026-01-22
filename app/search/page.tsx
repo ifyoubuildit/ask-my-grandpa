@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { User, MapPin, SearchX } from 'lucide-react';
 import { collection, getDocs } from 'firebase/firestore';
@@ -48,7 +48,7 @@ interface Grandpa {
   image?: string;
 }
 
-export default function SearchPage() {
+function SearchResults() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || "All Grandpas";
   const [grandpas, setGrandpas] = useState<Grandpa[]>([]);
@@ -106,7 +106,7 @@ export default function SearchPage() {
   };
 
   return (
-    <main className="flex-1">
+    <>
       {/* Results Header */}
       <header className="pt-12 pb-8 bg-[#f0ede6] border-b border-vintage-gold/20">
         <div className="max-w-6xl mx-auto px-4 text-center">
@@ -189,6 +189,20 @@ export default function SearchPage() {
           )}
         </div>
       </section>
+    </>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <main className="flex-1">
+      <Suspense fallback={
+        <div className="flex-1 flex items-center justify-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent"></div>
+        </div>
+      }>
+        <SearchResults />
+      </Suspense>
     </main>
   );
 }
