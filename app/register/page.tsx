@@ -13,11 +13,14 @@ export default function RegisterPage() {
   
   const [formData, setFormData] = useState({
     fullname: '',
-    address: '',
-    phone: '',
     email: '',
     password: '',
     confirmPassword: '',
+    address: '',
+    city: '',
+    province: '',
+    postalCode: '',
+    phone: '',
     contact_pref: 'both',
     skills: '',
     note: '',
@@ -80,7 +83,7 @@ export default function RegisterPage() {
       // 2. Save grandpa profile to Firestore
       const firestoreData = {
         name: formData.fullname,
-        address: formData.address,
+        address: `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
         phone: formData.phone,
         email: formData.email,
         contactPreference: formData.contact_pref,
@@ -99,6 +102,9 @@ export default function RegisterPage() {
       netlifyFormData.append('form-name', 'grandpa-registration');
       netlifyFormData.append('name', formData.fullname);
       netlifyFormData.append('address', formData.address);
+      netlifyFormData.append('city', formData.city);
+      netlifyFormData.append('province', formData.province);
+      netlifyFormData.append('postal-code', formData.postalCode);
       netlifyFormData.append('phone', formData.phone);
       netlifyFormData.append('email', formData.email);
       netlifyFormData.append('contact-preference', formData.contact_pref);
@@ -127,6 +133,9 @@ export default function RegisterPage() {
               'form-name': 'grandpa-registration',
               'name': formData.fullname,
               'address': formData.address,
+              'city': formData.city,
+              'province': formData.province,
+              'postal-code': formData.postalCode,
               'phone': formData.phone,
               'email': formData.email,
               'contact-preference': formData.contact_pref,
@@ -146,11 +155,14 @@ export default function RegisterPage() {
       setShowModal(true);
       setFormData({
         fullname: '',
-        address: '',
-        phone: '',
         email: '',
         password: '',
         confirmPassword: '',
+        address: '',
+        city: '',
+        province: '',
+        postalCode: '',
+        phone: '',
         contact_pref: 'both',
         skills: '',
         note: '',
@@ -204,6 +216,9 @@ export default function RegisterPage() {
             <div style={{ display: 'none' }}>
               <input name="name" value={formData.fullname} readOnly />
               <input name="address" value={formData.address} readOnly />
+              <input name="city" value={formData.city} readOnly />
+              <input name="province" value={formData.province} readOnly />
+              <input name="postal-code" value={formData.postalCode} readOnly />
               <input name="phone" value={formData.phone} readOnly />
               <input name="email" value={formData.email} readOnly />
               <input name="contact-preference" value={formData.contact_pref} readOnly />
@@ -302,20 +317,65 @@ export default function RegisterPage() {
               </div>
             </div>
             
-            {/* Full Address */}
+            {/* Address Fields */}
             <div className="mb-8">
               <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
-                Full Address
+                Address
               </label>
               <input 
                 type="text" 
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
-                className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
-                placeholder="e.g. 123 Maple Street, Calgary, AB T2P 1J9" 
+                className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0 mb-4" 
+                placeholder="e.g. 123 Maple Street" 
                 required 
               />
+              
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-vintage-dark font-heading font-bold text-lg mb-2">
+                    City
+                  </label>
+                  <input 
+                    type="text" 
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
+                    placeholder="e.g. Calgary" 
+                    required 
+                  />
+                </div>
+                <div>
+                  <label className="block text-vintage-dark font-heading font-bold text-lg mb-2">
+                    Province/State
+                  </label>
+                  <input 
+                    type="text" 
+                    name="province"
+                    value={formData.province}
+                    onChange={handleInputChange}
+                    className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
+                    placeholder="e.g. AB or TX" 
+                    required 
+                  />
+                </div>
+                <div>
+                  <label className="block text-vintage-dark font-heading font-bold text-lg mb-2">
+                    Postal Code/ZIP
+                  </label>
+                  <input 
+                    type="text" 
+                    name="postalCode"
+                    value={formData.postalCode}
+                    onChange={handleInputChange}
+                    className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
+                    placeholder="e.g. T2P 1J9" 
+                    required 
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Phone */}
