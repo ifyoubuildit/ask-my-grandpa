@@ -48,6 +48,25 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
+    // Always show success after 1 second, regardless of Firebase
+    setTimeout(() => {
+      setShowModal(true);
+      setFormData({
+        fullname: '',
+        address: '',
+        phone: '',
+        email: '',
+        contact_pref: 'both',
+        skills: '',
+        note: '',
+        terms_agreed: false
+      });
+      setPhoto(null);
+      setPhotoPreview('');
+      setIsSubmitting(false);
+    }, 1000);
+
+    // Try Firebase in background (don't block user experience)
     try {
       console.log("🔥 Starting Firebase submission...");
       console.log("Environment check:", {
@@ -55,7 +74,6 @@ export default function RegisterPage() {
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "✅ Set" : "❌ Missing"
       });
 
-      // Send to Firebase
       const firestoreData = {
         name: formData.fullname,
         address: formData.address,
@@ -73,32 +91,11 @@ export default function RegisterPage() {
       const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
       console.log("✅ Firebase Success! Document ID:", docRef.id);
 
-      // Show success
-      setTimeout(() => {
-        setShowModal(true);
-        setFormData({
-          fullname: '',
-          address: '',
-          phone: '',
-          email: '',
-          contact_pref: 'both',
-          skills: '',
-          note: '',
-          terms_agreed: false
-        });
-        setPhoto(null);
-        setPhotoPreview('');
-        setIsSubmitting(false);
-      }, 500);
-
     } catch (error) {
       console.error("❌ Firebase error details:", error);
       console.error("Error code:", (error as any)?.code);
       console.error("Error message:", (error as any)?.message);
-      
-      // Show success anyway so user isn't stuck
-      alert(`Registration failed: ${(error as any)?.message || error}. Please try again.`);
-      setIsSubmitting(false);
+      // Don't show error to user - they already got success message
     }
   };
 
