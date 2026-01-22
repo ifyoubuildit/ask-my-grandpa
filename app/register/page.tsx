@@ -68,12 +68,6 @@ export default function RegisterPage() {
 
     // Try Firebase in background (don't block user experience)
     try {
-      console.log("🔥 Starting Firebase submission...");
-      console.log("Environment check:", {
-        apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "✅ Set" : "❌ Missing",
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "✅ Set" : "❌ Missing"
-      });
-
       const firestoreData = {
         name: formData.fullname,
         address: formData.address,
@@ -86,15 +80,11 @@ export default function RegisterPage() {
         source: 'website'
       };
 
-      console.log("📝 Data to save:", firestoreData);
-      
       const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
-      console.log("✅ Firebase Success! Document ID:", docRef.id);
+      console.log("✅ Registration saved to Firebase:", docRef.id);
 
     } catch (error) {
-      console.error("❌ Firebase error details:", error);
-      console.error("Error code:", (error as any)?.code);
-      console.error("Error message:", (error as any)?.message);
+      console.error("❌ Firebase error:", error);
       // Don't show error to user - they already got success message
     }
   };

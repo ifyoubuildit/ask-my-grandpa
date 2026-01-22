@@ -10,13 +10,5 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-console.log("🔥 Firebase Config Check:", {
-  apiKey: firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 10)}...` : "❌ MISSING",
-  projectId: firebaseConfig.projectId || "❌ MISSING",
-  authDomain: firebaseConfig.authDomain || "❌ MISSING"
-});
-
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const db = getFirestore(app);
-
-console.log("🔥 Firebase initialized successfully");
