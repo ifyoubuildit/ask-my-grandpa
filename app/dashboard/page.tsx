@@ -43,18 +43,14 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark mb-2">
-                Welcome back, {profile.displayName}!
+              <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark">
+                Welcome, {profile.displayName}!
               </h1>
-              <p className="text-xl text-vintage-dark/80 font-body capitalize">
-                {profile.role} Dashboard
-              </p>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 bg-vintage-dark text-white px-4 py-2 rounded-lg hover:bg-vintage-accent transition-colors"
+              className="bg-vintage-dark text-white px-6 py-3 rounded-full font-bold hover:bg-vintage-accent transition-colors"
             >
-              <LogOut className="w-4 h-4" />
               Sign Out
             </button>
           </div>
@@ -66,21 +62,8 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto">
           
           {/* Quick Actions */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
             
-            {/* Search for Help */}
-            <Link href="/search" className="bg-white p-6 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20 hover:shadow-[6px_6px_0px_rgba(74,64,54,0.15)] hover:-translate-y-0.5 transition-all group">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-vintage-green/20 rounded-full flex items-center justify-center group-hover:bg-vintage-green/30 transition-colors">
-                  <Search className="w-6 h-6 text-vintage-green" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-bold text-vintage-dark">Find a Grandpa</h3>
-                  <p className="text-sm text-vintage-dark/70">Search for help with your project</p>
-                </div>
-              </div>
-            </Link>
-
             {/* Profile Management */}
             <Link href={profile.role === 'grandpa' ? '/register' : '/profile'} className="bg-white p-6 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20 hover:shadow-[6px_6px_0px_rgba(74,64,54,0.15)] hover:-translate-y-0.5 transition-all group">
               <div className="flex items-center gap-4">
@@ -89,10 +72,10 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="font-heading font-bold text-vintage-dark">
-                    {profile.role === 'grandpa' ? 'Update Profile' : 'My Profile'}
+                    Update Profile
                   </h3>
                   <p className="text-sm text-vintage-dark/70">
-                    {profile.role === 'grandpa' ? 'Update your skills and info' : 'Manage your account'}
+                    Update your skills and info
                   </p>
                 </div>
               </div>
@@ -117,12 +100,12 @@ export default function DashboardPage() {
             
             {/* Tab Navigation */}
             <div className="border-b border-vintage-gold/20">
-              <div className="flex">
+              <div className="grid grid-cols-2">
                 <button
                   onClick={() => setActiveTab('upcoming')}
-                  className={`flex-1 px-6 py-4 font-heading font-bold text-lg transition-colors ${
+                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors border-r border-vintage-gold/20 ${
                     activeTab === 'upcoming'
-                      ? 'bg-vintage-accent text-white border-b-2 border-vintage-accent'
+                      ? 'bg-vintage-accent text-white'
                       : 'text-vintage-dark hover:bg-vintage-cream'
                   }`}
                 >
@@ -133,9 +116,9 @@ export default function DashboardPage() {
                 </button>
                 <button
                   onClick={() => setActiveTab('previous')}
-                  className={`flex-1 px-6 py-4 font-heading font-bold text-lg transition-colors ${
+                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors ${
                     activeTab === 'previous'
-                      ? 'bg-vintage-accent text-white border-b-2 border-vintage-accent'
+                      ? 'bg-vintage-accent text-white'
                       : 'text-vintage-dark hover:bg-vintage-cream'
                   }`}
                 >
