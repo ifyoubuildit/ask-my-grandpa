@@ -3,6 +3,7 @@ import { Playfair_Display, Lora } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
@@ -36,9 +37,11 @@ export default function RootLayout({
           color: '#4a4036'
         }}
       >
-        <Navbar />
-        {children}
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );
