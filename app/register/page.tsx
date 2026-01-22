@@ -60,11 +60,19 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted!', formData);
+    console.log('=== FORM SUBMISSION STARTED ===');
+    console.log('Form data:', formData);
+    
     setIsSubmitting(true);
     setError('');
 
-    // Validation
+    // Basic validation
+    if (!formData.fullname || !formData.email || !formData.password) {
+      setError('Please fill in all required fields');
+      setIsSubmitting(false);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       setIsSubmitting(false);
@@ -77,12 +85,20 @@ export default function RegisterPage() {
       return;
     }
 
-    try {
-      console.log('Creating Firebase Auth account...');
-      // 1. Create Firebase Auth account as grandpa
-      const { user } = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
-      console.log('Firebase Auth account created:', user.uid);
+    if (!formData.terms_agreed) {
+      setError('Please agree to the Terms of Service and Privacy Policy');
+      setIsSubmitting(false);
+      return;
+    }
 
+    try {
+      console.log('=== CREATING FIREBASE AUTH ACCOUNT ===');
+      // 1. Create Firebase Auth account as grandpa
+      const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
+      console.log('Firebase Auth result:', result);
+      const { user } = result;
+
+      console.log('=== SAVING TO FIRESTORE ===');
       // 2. Save grandpa profile to Firestore
       const firestoreData = {
         name: formData.fullname,
@@ -97,12 +113,12 @@ export default function RegisterPage() {
         source: 'website'
       };
 
-      console.log('Saving to Firestore...', firestoreData);
+      console.log('Firestore data:', firestoreData);
       const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
       console.log("✅ Registration saved to Firebase:", docRef.id);
 
+      console.log('=== SENDING TO NETLIFY FORMS ===');
       // 3. Send to Netlify Forms
-      console.log('Sending to Netlify Forms...');
       const netlifyFormData = new FormData();
       netlifyFormData.append('form-name', 'grandpa-registration');
       netlifyFormData.append('name', formData.fullname);
@@ -122,17 +138,19 @@ export default function RegisterPage() {
       }
 
       try {
+        console.log('Trying primary Netlify method...');
         const netlifyResponse = await fetch('/forms/grandpa-registration', {
           method: 'POST',
           body: netlifyFormData
         });
 
+        console.log('Netlify response status:', netlifyResponse.status);
         if (netlifyResponse.ok) {
           console.log("✅ Registration sent to Netlify Forms");
         } else {
           console.log("Trying alternative Netlify method...");
           // Try alternative method
-          await fetch('/', {
+          const altResponse = await fetch('/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
@@ -150,6 +168,7 @@ export default function RegisterPage() {
               'timestamp': new Date().toLocaleString()
             }).toString()
           });
+          console.log('Alternative Netlify response status:', altResponse.status);
           console.log("✅ Registration sent to Netlify Forms (alternative method)");
         }
       } catch (netlifyError) {
@@ -157,9 +176,11 @@ export default function RegisterPage() {
         // Don't fail the whole process for Netlify Forms
       }
 
-      console.log('Showing success modal...');
+      console.log('=== SHOWING SUCCESS MODAL ===');
       // Show success modal
       setShowModal(true);
+      
+      // Reset form
       setFormData({
         fullname: '',
         email: '',
@@ -178,8 +199,13 @@ export default function RegisterPage() {
       setPhoto(null);
       setPhotoPreview('');
 
+      console.log('=== FORM SUBMISSION COMPLETED SUCCESSFULLY ===');
+
     } catch (error: any) {
-      console.error('Registration error:', error);
+      console.error('=== FORM SUBMISSION ERROR ===');
+      console.error('Error details:', error);
+      console.error('Error message:', error.message);
+      console.error('Error code:', error.code);
       setError(error.message || 'Failed to create account. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -532,6 +558,10 @@ export default function RegisterPage() {
                 type="submit" 
                 disabled={isSubmitting}
                 className="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg w-full md:w-auto disabled:opacity-50"
+                onClick={(e) => {
+                  console.log('Button clicked!');
+                  console.log('Form data at click:', formData);
+                }}
               >
                 {isSubmitting ? "Creating Account..." : "Create Account"}
               </button>
