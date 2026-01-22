@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { Camera, Lock, X, Check } from 'lucide-react';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -48,72 +46,23 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    try {
-      // Try to send to Firebase (with timeout)
-      const firestoreData = {
-        name: formData.fullname,
-        address: formData.address,
-        phone: formData.phone,
-        email: formData.email,
-        contactPreference: formData.contact_pref,
-        skills: formData.skills,
-        note: formData.note,
-        timestamp: new Date().toISOString()
-      };
-
-      // Set a 3-second timeout for Firebase
-      const timeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Firebase timeout")), 3000)
-      );
-      
-      const firebasePromise = addDoc(collection(db, "grandpas"), firestoreData);
-      
-      try {
-        await Promise.race([firebasePromise, timeout]);
-        console.log("Firebase: Success");
-      } catch (error) {
-        console.warn("Firebase failed, continuing anyway:", error);
-        // Continue to success - don't block user experience
-      }
-
-      // Show success modal after short delay
-      setTimeout(() => {
-        setShowModal(true);
-        setFormData({
-          fullname: '',
-          address: '',
-          phone: '',
-          email: '',
-          contact_pref: 'both',
-          skills: '',
-          note: '',
-          terms_agreed: false
-        });
-        setPhoto(null);
-        setPhotoPreview('');
-        setIsSubmitting(false);
-      }, 1000);
-
-    } catch (error) {
-      console.error("Registration error:", error);
-      // Still show success to user - don't break the experience
-      setTimeout(() => {
-        setShowModal(true);
-        setFormData({
-          fullname: '',
-          address: '',
-          phone: '',
-          email: '',
-          contact_pref: 'both',
-          skills: '',
-          note: '',
-          terms_agreed: false
-        });
-        setPhoto(null);
-        setPhotoPreview('');
-        setIsSubmitting(false);
-      }, 1000);
-    }
+    // Simple 1-second delay then show success
+    setTimeout(() => {
+      setShowModal(true);
+      setFormData({
+        fullname: '',
+        address: '',
+        phone: '',
+        email: '',
+        contact_pref: 'both',
+        skills: '',
+        note: '',
+        terms_agreed: false
+      });
+      setPhoto(null);
+      setPhotoPreview('');
+      setIsSubmitting(false);
+    }, 1000);
   };
 
   const closeModal = () => {
@@ -331,7 +280,7 @@ export default function RegisterPage() {
                 </span>
               </label>
             </div>
-            
+
             {/* Submit Button */}
             <div className="text-center">
               <button 
