@@ -55,16 +55,14 @@ export default function Navbar() {
             >
               Our Mission
             </Link>
-            {!user && (
-              <Link 
-                href="/register" 
-                className={`font-bold text-sm uppercase tracking-widest transition-colors ${
-                  isActive('/register') ? 'text-vintage-accent' : 'text-vintage-dark hover:text-vintage-accent'
-                }`}
-              >
-                Grandpa Registration
-              </Link>
-            )}
+            <Link 
+              href="/register" 
+              className={`font-bold text-sm uppercase tracking-widest transition-colors ${
+                isActive('/register') ? 'text-vintage-accent' : 'text-vintage-dark hover:text-vintage-accent'
+              }`}
+            >
+              Grandpa Registration
+            </Link>
           </div>
 
           {/* Desktop Auth Section */}
@@ -135,16 +133,14 @@ export default function Navbar() {
             >
               Our Mission
             </Link>
-            {!user && (
-              <Link 
-                href="/register" 
-                className={`block px-3 py-2 font-bold text-lg ${
-                  isActive('/register') ? 'text-vintage-accent' : 'text-vintage-dark'
-                }`}
-              >
-                Grandpa Registration
-              </Link>
-            )}
+            <Link 
+              href="/register" 
+              className={`block px-3 py-2 font-bold text-lg ${
+                isActive('/register') ? 'text-vintage-accent' : 'text-vintage-dark'
+              }`}
+            >
+              Grandpa Registration
+            </Link>
             
             {/* Mobile Auth Links */}
             <div className="border-t border-vintage-gold/30 pt-2 mt-2">
