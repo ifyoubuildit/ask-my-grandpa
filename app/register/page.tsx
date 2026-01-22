@@ -60,6 +60,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted!', formData);
     setIsSubmitting(true);
     setError('');
 
@@ -77,8 +78,10 @@ export default function RegisterPage() {
     }
 
     try {
+      console.log('Creating Firebase Auth account...');
       // 1. Create Firebase Auth account as grandpa
       const { user } = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
+      console.log('Firebase Auth account created:', user.uid);
 
       // 2. Save grandpa profile to Firestore
       const firestoreData = {
@@ -94,10 +97,12 @@ export default function RegisterPage() {
         source: 'website'
       };
 
+      console.log('Saving to Firestore...', firestoreData);
       const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
       console.log("✅ Registration saved to Firebase:", docRef.id);
 
       // 3. Send to Netlify Forms
+      console.log('Sending to Netlify Forms...');
       const netlifyFormData = new FormData();
       netlifyFormData.append('form-name', 'grandpa-registration');
       netlifyFormData.append('name', formData.fullname);
@@ -125,6 +130,7 @@ export default function RegisterPage() {
         if (netlifyResponse.ok) {
           console.log("✅ Registration sent to Netlify Forms");
         } else {
+          console.log("Trying alternative Netlify method...");
           // Try alternative method
           await fetch('/', {
             method: 'POST',
@@ -151,6 +157,7 @@ export default function RegisterPage() {
         // Don't fail the whole process for Netlify Forms
       }
 
+      console.log('Showing success modal...');
       // Show success modal
       setShowModal(true);
       setFormData({
@@ -519,12 +526,27 @@ export default function RegisterPage() {
               </label>
             </div>
 
+            {/* Test Button - Remove after debugging */}
+            <div className="text-center mb-4">
+              <button 
+                type="button"
+                onClick={() => {
+                  console.log('Test button clicked');
+                  setShowModal(true);
+                }}
+                className="bg-red-500 text-white px-6 py-2 rounded font-bold text-sm"
+              >
+                Test Success Modal
+              </button>
+            </div>
+
             {/* Submit Button */}
             <div className="text-center mb-6">
               <button 
                 type="submit" 
                 disabled={isSubmitting}
                 className="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg w-full md:w-auto disabled:opacity-50"
+                onClick={() => console.log('Button clicked!', formData)}
               >
                 {isSubmitting ? "Creating Account..." : "Create Account"}
               </button>
