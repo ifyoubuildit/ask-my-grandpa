@@ -48,7 +48,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Always show success after 1 second, regardless of Firebase
+    // Always show success after 1 second
     setTimeout(() => {
       setShowModal(true);
       setFormData({
@@ -66,7 +66,6 @@ export default function RegisterPage() {
       setIsSubmitting(false);
     }, 1000);
 
-    // Send to both Firebase AND Netlify Forms
     try {
       // 1. Send to Firebase
       const firestoreData = {
@@ -84,7 +83,7 @@ export default function RegisterPage() {
       const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
       console.log("✅ Registration saved to Firebase:", docRef.id);
 
-      // 2. Send to Netlify Forms (for notifications)
+      // 2. Send to Netlify Forms using the correct endpoint
       const netlifyFormData = new FormData();
       netlifyFormData.append('form-name', 'grandpa-registration');
       netlifyFormData.append('name', formData.fullname);
@@ -100,11 +99,33 @@ export default function RegisterPage() {
         netlifyFormData.append('photo', photo);
       }
 
-      await fetch('/', {
+      // Use the correct Netlify Forms endpoint
+      const netlifyResponse = await fetch('/forms/grandpa-registration', {
         method: 'POST',
         body: netlifyFormData
       });
-      console.log("✅ Registration sent to Netlify Forms");
+
+      if (netlifyResponse.ok) {
+        console.log("✅ Registration sent to Netlify Forms");
+      } else {
+        // Try alternative method
+        await fetch('/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            'form-name': 'grandpa-registration',
+            'name': formData.fullname,
+            'address': formData.address,
+            'phone': formData.phone,
+            'email': formData.email,
+            'contact-preference': formData.contact_pref,
+            'skills': formData.skills,
+            'note': formData.note,
+            'timestamp': new Date().toLocaleString()
+          }).toString()
+        });
+        console.log("✅ Registration sent to Netlify Forms (alternative method)");
+      }
 
     } catch (error) {
       console.error("❌ Error:", error);
@@ -137,6 +158,18 @@ export default function RegisterPage() {
           
           <form onSubmit={handleSubmit} name="grandpa-registration" method="POST" data-netlify="true" encType="multipart/form-data">
             <input type="hidden" name="form-name" value="grandpa-registration" />
+            
+            {/* Hidden fields for Netlify Forms detection */}
+            <div style={{ display: 'none' }}>
+              <input name="name" value={formData.fullname} readOnly />
+              <input name="address" value={formData.address} readOnly />
+              <input name="phone" value={formData.phone} readOnly />
+              <input name="email" value={formData.email} readOnly />
+              <input name="contact-preference" value={formData.contact_pref} readOnly />
+              <textarea name="skills" value={formData.skills} readOnly />
+              <textarea name="note" value={formData.note} readOnly />
+              <input name="timestamp" value={new Date().toLocaleString()} readOnly />
+            </div>
             
             {/* Full Name */}
             <div className="mb-8">
