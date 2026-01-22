@@ -1,26 +1,33 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Custom vintage colors */
+.text-vintage-dark { color: #4a4036; }
+.text-vintage-accent { color: #c05621; }
+.bg-vintage-cream { background-color: #f3f0e6; }
+.bg-vintage-green { background-color: #6b8c85; }
+.border-vintage-gold { border-color: #d4a373; }
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Card shadow effects */
+.card-shadow {
+  box-shadow: 4px 4px 0px rgba(74, 64, 54, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.card-shadow:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px rgba(74, 64, 54, 0.15);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Highlight skill matches in search results */
+.highlight-skill { 
+  font-weight: 800; 
+  color: #c05621; 
+  background-color: rgba(192, 86, 33, 0.1); 
+  padding: 0 2px; 
+  border-radius: 2px; 
 }

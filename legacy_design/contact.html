@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - AskMyGrandpa</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vintage: {
+                            dark: '#4a4036',
+                            accent: '#c05621',
+                            cream: '#f3f0e6',
+                            green: '#6b8c85',
+                            gold: '#d4a373',
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['Playfair Display', 'serif'],
+                        body: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #fdfbf7;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23d6ccc2' fill-opacity='0.15' fill-rule='evenodd'/%3E%3C/svg%3E");
+            color: #4a4036;
+        }
+        .card-shadow {
+            box-shadow: 4px 4px 0px rgba(74, 64, 54, 0.1);
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #c05621;
+            box-shadow: 0 0 0 3px rgba(192, 86, 33, 0.1);
+        }
+    </style>
+</head>
+<body class="font-body antialiased flex flex-col min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-[#fdfbf7]/95 backdrop-blur-sm border-b border-vintage-gold/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center h-24">
+                <!-- Logo -->
+                <a href="index.html" class="flex-shrink-0 flex items-center gap-3 cursor-pointer mr-12">
+                    <div class="relative w-12 h-12 flex items-center justify-center bg-vintage-green rounded-full text-white shadow-md">
+                        <i data-lucide="glasses" class="w-8 h-8"></i>
+                    </div>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8 items-center ml-auto md:ml-0">
+                    <a href="index.html" class="text-vintage-dark hover:text-vintage-accent font-bold text-sm uppercase tracking-widest transition-colors">Home</a>
+                    <a href="mission.html" class="text-vintage-dark hover:text-vintage-accent font-bold text-sm uppercase tracking-widest transition-colors">Our Mission</a>
+                    <a href="register.html" class="text-vintage-dark hover:text-vintage-accent font-bold text-sm uppercase tracking-widest transition-colors">Grandpa Registration</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center ml-auto">
+                    <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="text-vintage-dark p-2">
+                        <i data-lucide="menu" class="w-7 h-7"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-vintage-cream border-b border-vintage-gold/30">
+            <div class="px-4 pt-2 pb-4 space-y-1">
+                <a href="index.html" class="block px-3 py-2 text-vintage-dark font-bold text-lg">Home</a>
+                <a href="mission.html" class="block px-3 py-2 text-vintage-dark font-bold text-lg">Our Mission</a>
+                <a href="register.html" class="block px-3 py-2 text-vintage-dark font-bold text-lg">Grandpa Registration</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <header class="pt-16 pb-12 bg-[#f0ede6] border-b border-vintage-gold/20">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-heading font-bold text-vintage-dark mb-6 leading-tight">
+                Contact Us
+            </h1>
+            <p class="text-xl text-vintage-dark/80 font-body max-w-2xl mx-auto">
+                We'd love to hear from you.
+            </p>
+        </div>
+    </header>
+
+    <!-- Contact Form -->
+    <main class="py-20 px-4 sm:px-6 lg:px-8 relative">
+        <div class="max-w-2xl mx-auto bg-white p-8 md:p-12 rounded-2xl card-shadow border border-vintage-gold/30">
+            
+            <form id="contactForm" name="contact" method="POST" data-netlify="true">
+                <!-- Hidden Input for Netlify -->
+                <input type="hidden" name="form-name" value="contact">
+
+                <!-- Name Section -->
+                <div class="mb-8">
+                    <label for="name" class="block text-vintage-dark font-heading font-bold text-xl mb-3">Name</label>
+                    <input type="text" id="name" name="name" class="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark" placeholder="Enter your name" required>
+                </div>
+
+                <!-- Email Section -->
+                <div class="mb-8">
+                    <label for="email" class="block text-vintage-dark font-heading font-bold text-xl mb-3">Email Address</label>
+                    <input type="email" id="email" name="email" class="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark" placeholder="you@example.com" required>
+                </div>
+
+                <!-- Message Section -->
+                <div class="mb-8">
+                    <label for="message" class="block text-vintage-dark font-heading font-bold text-xl mb-3">How can we help?</label>
+                    <textarea id="message" name="message" rows="5" 
+                        class="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark placeholder:text-vintage-dark/30" 
+                        placeholder="Type your question or message here..." required></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="submit" class="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg w-full md:w-auto">
+                        Send Message
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- SUCCESS MODAL (Hidden by default) -->
+    <div id="successModal" onclick="if(event.target === this) closeModal()" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl border-4 border-vintage-gold relative transform transition-all scale-95 opacity-0" id="modalContent">
+            
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-vintage-dark/40 hover:text-vintage-dark transition-colors p-1 rounded-full hover:bg-gray-100">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
+            <div class="w-20 h-20 bg-vintage-green/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="mail-check" class="w-10 h-10 text-vintage-green"></i>
+            </div>
+            <h3 class="text-3xl font-heading font-bold text-vintage-dark mb-4">Message Sent!</h3>
+            <p class="text-lg text-vintage-dark/80 mb-8 font-body">
+                Thank you for reaching out. We've received your message and will get back to you shortly.
+            </p>
+            <button onclick="closeModal()" class="bg-vintage-dark text-white px-8 py-3 rounded-full font-bold hover:bg-vintage-accent transition-colors w-full">
+                Return Home
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-[#e6e2d6] pt-12 pb-8 border-t border-vintage-dark/10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="col-span-1 md:col-span-1">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="glasses" class="w-6 h-6 text-vintage-dark"></i>
+                        <span class="font-heading font-bold text-xl text-vintage-dark">AskMyGrandpa</span>
+                    </div>
+                    <p class="text-sm text-vintage-dark/60">
+                        Making the world a little wiser, one question at a time.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-vintage-dark mb-4">Explore</h4>
+                    <ul class="space-y-2 text-sm text-vintage-dark/70">
+                        <li><a href="index.html" class="hover:text-vintage-accent">Home</a></li>
+                        <li><a href="mission.html" class="hover:text-vintage-accent">Our Mission</a></li>
+                        <li><a href="register.html" class="hover:text-vintage-accent">Grandpa Registration</a></li>
+                        <li><a href="contact.html" class="hover:text-vintage-accent">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-vintage-dark mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-vintage-dark/70">
+                        <li><a href="privacy.html" class="hover:text-vintage-accent">Privacy Policy</a></li>
+                        <li><a href="terms.html" class="hover:text-vintage-accent">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-vintage-dark mb-4">Stay in touch</h4>
+                    <div class="flex gap-4">
+                        <a href="#" class="bg-vintage-dark/5 p-2 rounded-full hover:bg-vintage-dark hover:text-white transition-colors"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                        <a href="#" class="bg-vintage-dark/5 p-2 rounded-full hover:bg-vintage-dark hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music-2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg></a>
+                        <a href="#" class="bg-vintage-dark/5 p-2 rounded-full hover:bg-vintage-dark hover:text-white transition-colors"><i data-lucide="youtube" class="w-5 h-5"></i></a>
+                        <a href="mailto:info@askmygrandpa.com" class="bg-vintage-dark/5 p-2 rounded-full hover:bg-vintage-dark hover:text-white transition-colors"><i data-lucide="mail" class="w-5 h-5"></i></a>
+                    </div>
+                    <!-- New Clickable Email Address -->
+                    <div class="mt-4">
+                        <a href="mailto:info@askmygrandpa.com" class="text-vintage-dark hover:text-vintage-accent font-bold transition-colors">
+                            info@askmygrandpa.com
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-vintage-dark/10 pt-8 flex justify-center text-sm text-vintage-dark/50">
+                <p>&copy; 2024 AskMyGrandpa.com. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Handle Form Submission
+        const form = document.getElementById('contactForm');
+        const modal = document.getElementById('successModal');
+        const modalContent = document.getElementById('modalContent');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault(); 
+
+            const formData = new FormData(form);
+
+            fetch('/', {
+                method: 'POST',
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(formData).toString()
+            })
+            .then(() => {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+                form.reset(); 
+            })
+            .catch((error) => {
+                alert('Oops! Something went wrong. Please try again.');
+                console.error(error);
+            });
+        });
+
+        function closeModal() {
+            window.location.href = "index.html"; 
+        }
+    </script>
+</body>
+</html>

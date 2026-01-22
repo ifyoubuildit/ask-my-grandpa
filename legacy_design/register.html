@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grandpa Registration - AskMyGrandpa</title>
+    
+    <!-- CSP: Allow connections to Google APIs for the REST call -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://firestore.googleapis.com;">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vintage: {
+                            dark: '#4a4036',
+                            accent: '#c05621',
+                            cream: '#f3f0e6',
+                            green: '#6b8c85',
+                            gold: '#d4a373',
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['Playfair Display', 'serif'],
+                        body: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #fdfbf7; }
+        .card-shadow { box-shadow: 4px 4px 0px rgba(74, 64, 54, 0.1); }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #c05621; box-shadow: 0 0 0 3px rgba(192, 86, 33, 0.1); }
+        
+        /* CSS-ONLY RADIO BUTTONS */
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            user-select: none;
+        }
+        .radio-option:hover { background-color: rgba(0,0,0,0.05); }
+        
+        .radio-option input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #4a4036;
+            border-radius: 50%;
+            display: grid;
+            place-content: center;
+            margin: 0;
+            background-color: white;
+            flex-shrink: 0;
+        }
+
+        .radio-option input[type="radio"]::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transform: scale(0);
+            transition: 0.15s transform ease-in-out;
+            background-color: #2563eb;
+        }
+
+        .radio-option input[type="radio"]:checked {
+            border-color: #2563eb;
+        }
+        
+        .radio-option input[type="radio"]:checked::before {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="font-body antialiased flex flex-col min-h-screen">
+
+    <nav class="sticky top-0 z-50 bg-[#fdfbf7]/95 backdrop-blur-sm border-b border-vintage-gold/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center h-24">
+                <a href="index.html" class="flex-shrink-0 flex items-center gap-3 cursor-pointer mr-12">
+                    <div class="relative w-12 h-12 flex items-center justify-center bg-vintage-green rounded-full text-white shadow-md">
+                        <i data-lucide="glasses" class="w-8 h-8"></i>
+                    </div>
+                </a>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="index.html" class="text-vintage-dark hover:text-vintage-accent font-bold text-sm uppercase tracking-widest transition-colors">Home</a>
+                    <a href="mission.html" class="text-vintage-dark hover:text-vintage-accent font-bold text-sm uppercase tracking-widest transition-colors">Our Mission</a>
+                    <a href="register.html" class="text-vintage-accent font-bold text-sm uppercase tracking-widest transition-colors">Grandpa Registration</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="pt-16 pb-12 bg-[#f0ede6] border-b border-vintage-gold/20">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-heading font-bold text-vintage-dark mb-6 leading-tight">Grandpa Registration</h1>
+            <p class="text-xl text-vintage-dark/80 font-body max-w-2xl mx-auto">Share your skills and connect with your community.</p>
+        </div>
+    </header>
+
+    <main class="py-20 px-4 sm:px-6 lg:px-8 relative">
+        <div class="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl card-shadow border border-vintage-gold/30">
+            
+            <form id="grandpaForm" name="grandpa-registration" method="POST" data-netlify="true" enctype="multipart/form-data">
+                <input type="hidden" name="form-name" value="grandpa-registration">
+
+                <div class="mb-8">
+                    <label class="block text-vintage-dark font-heading font-bold text-xl mb-3">Full Name</label>
+                    <input type="text" id="fullname" name="fullname" class="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark" placeholder="e.g. Frank Miller" required>
+                </div>
+                
+                <div class="mb-8">
+                    <label class="block text-vintage-dark font-heading font-bold text-xl mb-1">Address</label>
+                    <p class="text-sm text-vintage-dark/60 mb-3 italic flex items-center gap-1"><i data-lucide="lock" class="w-3 h-3"></i> Don't worry, only your name will show up on the site.</p>
+                    <input type="text" id="address" name="address" class="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark" placeholder="e.g. 123 Maple Street, Calgary" required>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <label class="block text-vintage-dark font-heading font-bold text-xl mb-3">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" class="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark" placeholder="(555) 123-4567" required>
+                    </div>
+                    <div>
+                        <label class="block text-vintage-dark font-heading font-bold text-xl mb-3">Email Address</label>
+                        <input type="email" id="email" name="email" class="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark" placeholder="frank@example.com" required>
+                    </div>
+                </div>
+
+                <div class="mb-10 bg-vintage-cream/50 p-6 rounded-xl border border-vintage-gold/20">
+                    <label class="block text-vintage-dark font-heading font-bold text-xl mb-4">How should we contact you?</label>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <label class="radio-option">
+                            <input type="radio" name="contact_pref" value="email">
+                            <span class="text-lg text-vintage-dark">Email me</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="contact_pref" value="phone">
+                            <span class="text-lg text-vintage-dark">Call me</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="contact_pref" value="both" checked>
+                            <span class="text-lg text-vintage-dark">Either is fine</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-10">
+                    <label class="block text-vintage-dark font-heading font-bold text-xl mb-3">Upload a Photo <span class="text-base font-body font-normal text-vintage-dark/60 ml-2">(Optional)</span></label>
+                    <div class="border-2 border-dashed border-vintage-gold/50 rounded-lg text-center bg-vintage-cream cursor-pointer hover:bg-vintage-gold/10 transition-colors relative overflow-hidden h-48 flex items-center justify-center" id="upload-container">
+                        <input type="file" name="photo" id="photo-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="flex flex-col items-center justify-center w-full h-full" id="upload-placeholder">
+                            <i data-lucide="camera" class="w-10 h-10 text-vintage-dark/40 mb-2"></i>
+                            <p class="text-vintage-dark/60 font-body">Click here to upload a picture of yourself</p>
+                        </div>
+                        <img id="photo-preview" class="absolute inset-0 w-full h-full object-cover hidden z-0" alt="Photo Preview">
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-vintage-dark font-heading font-bold text-xl mb-3">Your Skills</label>
+                    <textarea id="skills" name="skills" rows="4" class="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark placeholder:text-vintage-dark/30" placeholder="e.g. Woodworking, basic plumbing..." required></textarea>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-vintage-dark font-heading font-bold text-xl mb-3">One Interesting Note</label>
+                    <textarea id="note" name="note" rows="3" class="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark placeholder:text-vintage-dark/30" placeholder="e.g. I climbed Mount Kilimanjaro..." required></textarea>
+                </div>
+
+                <div class="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <label class="flex items-start gap-3 cursor-pointer select-none">
+                        <input type="checkbox" id="terms_agree" name="terms_agreed" class="mt-1.5 w-5 h-5 accent-vintage-accent cursor-pointer" required>
+                        <span class="text-sm text-vintage-dark/80 leading-relaxed">I certify that I am at least 18 years of age and I have read and agree to the <a href="terms.html" target="_blank" class="text-vintage-accent font-bold hover:underline">Terms of Service</a> and <a href="privacy.html" target="_blank" class="text-vintage-accent font-bold hover:underline">Privacy Policy</a>.</span>
+                    </label>
+                </div>
+                
+                <!-- VISIBLE STATUS LOG FOR DEBUGGING -->
+                <div id="status-log" class="mb-6 p-4 bg-gray-100 rounded border border-gray-300 hidden">
+                    <p class="font-bold text-xs text-gray-500 uppercase tracking-widest mb-2">Transaction Log</p>
+                    <div id="log-entries" class="text-xs font-mono space-y-1"></div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" id="submitBtn" class="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg w-full md:w-auto disabled:opacity-50">Complete Registration</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="successModal" onclick="if(event.target === this) closeModal()" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl relative transform transition-all scale-95 opacity-0" id="modalContent">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-vintage-dark/40 hover:text-vintage-dark"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <div class="w-20 h-20 bg-vintage-green/20 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="check" class="w-10 h-10 text-vintage-green"></i></div>
+            <h3 class="text-3xl font-heading font-bold text-vintage-dark mb-4">Welcome to the Club!</h3>
+            <p class="text-lg text-vintage-dark/80 mb-8 font-body">We've successfully received your registration.</p>
+            <button onclick="closeModal()" class="bg-vintage-dark text-white px-8 py-3 rounded-full font-bold hover:bg-vintage-accent transition-colors w-full">Return Home</button>
+        </div>
+    </div>
+
+    <footer class="bg-[#e6e2d6] pt-12 pb-8 border-t border-vintage-dark/10">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="text-sm text-vintage-dark/60 mb-8">&copy; 2024 AskMyGrandpa.com. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // CONFIG
+        const PROJECT_ID = "askmygrandpa-f459f";
+        const API_KEY = "AIzaSyB8ESaF5fb8muY1wdD3rVrChnh2nUc97vA";
+
+        // HELPER: Log to screen
+        function log(msg, type='info') {
+            const box = document.getElementById('status-log');
+            const entries = document.getElementById('log-entries');
+            box.classList.remove('hidden');
+            const color = type === 'error' ? 'text-red-600' : (type === 'success' ? 'text-green-600' : 'text-gray-700');
+            entries.innerHTML += `<div class="${color}">${msg}</div>`;
+        }
+
+        const form = document.getElementById('grandpaForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Close Modal
+        window.closeModal = function() { window.location.href = "index.html"; }
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Processing...";
+            
+            // Gather Data
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // 1. SEND TO NETLIFY (Files work best with standard fetch)
+            log("Sending to Netlify...");
+            try {
+                await fetch('/', { method: 'POST', body: formData });
+                log("Netlify: Sent successfully.", 'success');
+            } catch(err) {
+                log("Netlify Error: " + err.message, 'error');
+            }
+
+            // 2. SEND TO FIREBASE (REST API - "The Nuclear Option")
+            // This bypasses the JS SDK entirely. It's a standard HTTP request.
+            log("Sending to Google Database...");
+            
+            // Prepare JSON payload for Firestore REST API
+            const firestoreData = {
+                fields: {
+                    name: { stringValue: data.fullname },
+                    address: { stringValue: data.address },
+                    phone: { stringValue: data.phone },
+                    email: { stringValue: data.email },
+                    skills: { stringValue: data.skills },
+                    note: { stringValue: data.note },
+                    distance: { stringValue: "Unknown" },
+                    timestamp: { timestampValue: new Date().toISOString() }
+                }
+            };
+
+            const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/grandpas?key=${API_KEY}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(firestoreData)
+                });
+
+                if (response.ok) {
+                    log("Google Database: Saved successfully!", 'success');
+                } else {
+                    const errData = await response.json();
+                    log("Google Database Error: " + (errData.error?.message || response.statusText), 'error');
+                }
+            } catch (err) {
+                log("Network Error: " + err.message, 'error');
+            }
+
+            // 3. SHOW SUCCESS (Guaranteed)
+            setTimeout(() => {
+                // Re-enable modal for user
+                const modal = document.getElementById('successModal');
+                const modalContent = document.getElementById('modalContent');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 50);
+
+                form.reset();
+                const preview = document.getElementById('photo-preview');
+                const placeholder = document.getElementById('upload-placeholder');
+                if(preview) { preview.src = ''; preview.classList.add('hidden'); }
+                if(placeholder) placeholder.classList.remove('hidden');
+                
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Complete Registration";
+            }, 1500);
+        });
+
+        lucide.createIcons();
+        
+        // Photo Preview
+        const photoInput = document.getElementById('photo-input');
+        if(photoInput) {
+            photoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('photo-preview');
+                        const placeholder = document.getElementById('upload-placeholder');
+                        if(preview) { preview.src = e.target.result; preview.classList.remove('hidden'); }
+                        if(placeholder) placeholder.classList.add('hidden');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
