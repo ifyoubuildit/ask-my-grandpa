@@ -49,6 +49,12 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     
     try {
+      console.log("🔥 Starting Firebase submission...");
+      console.log("Environment check:", {
+        apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "✅ Set" : "❌ Missing",
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "✅ Set" : "❌ Missing"
+      });
+
       // Send to Firebase
       const firestoreData = {
         name: formData.fullname,
@@ -62,8 +68,10 @@ export default function RegisterPage() {
         source: 'website'
       };
 
-      await addDoc(collection(db, "grandpas"), firestoreData);
-      console.log("✅ Firebase: Success");
+      console.log("📝 Data to save:", firestoreData);
+      
+      const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
+      console.log("✅ Firebase Success! Document ID:", docRef.id);
 
       // Show success
       setTimeout(() => {
@@ -81,11 +89,15 @@ export default function RegisterPage() {
         setPhoto(null);
         setPhotoPreview('');
         setIsSubmitting(false);
-      }, 1000);
+      }, 500);
 
     } catch (error) {
-      console.error("❌ Firebase error:", error);
-      alert("Registration failed. Please try again or contact support.");
+      console.error("❌ Firebase error details:", error);
+      console.error("Error code:", (error as any)?.code);
+      console.error("Error message:", (error as any)?.message);
+      
+      // Show success anyway so user isn't stuck
+      alert(`Registration failed: ${(error as any)?.message || error}. Please try again.`);
       setIsSubmitting(false);
     }
   };
