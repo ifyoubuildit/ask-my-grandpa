@@ -526,27 +526,12 @@ export default function RegisterPage() {
               </label>
             </div>
 
-            {/* Test Button - Remove after debugging */}
-            <div className="text-center mb-4">
-              <button 
-                type="button"
-                onClick={() => {
-                  console.log('Test button clicked');
-                  setShowModal(true);
-                }}
-                className="bg-red-500 text-white px-6 py-2 rounded font-bold text-sm"
-              >
-                Test Success Modal
-              </button>
-            </div>
-
             {/* Submit Button */}
             <div className="text-center mb-6">
               <button 
                 type="submit" 
                 disabled={isSubmitting}
                 className="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg w-full md:w-auto disabled:opacity-50"
-                onClick={() => console.log('Button clicked!', formData)}
               >
                 {isSubmitting ? "Creating Account..." : "Create Account"}
               </button>

@@ -1,14 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { logOut } from '@/lib/auth';
-import { User, Settings, Search, MessageCircle, LogOut } from 'lucide-react';
+import { User, Settings, Search, MessageCircle, LogOut, Calendar, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'previous' | 'upcoming'>('upcoming');
 
   // Show loading state
   if (loading) {
@@ -38,7 +40,7 @@ export default function DashboardPage() {
     <main className="flex-1">
       {/* Header */}
       <header className="pt-16 pb-12 bg-[#f0ede6] border-b border-vintage-gold/20">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark mb-2">
@@ -110,12 +112,89 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Role-specific content */}
-          {profile.role === 'grandpa' ? (
-            <div className="bg-vintage-cream p-8 rounded-2xl border border-vintage-gold/30">
-              <h2 className="text-2xl font-heading font-bold text-vintage-dark mb-4">
-                Grandpa Resources
-              </h2>
+          {/* Mentorship Section */}
+          <div className="bg-white rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30 overflow-hidden">
+            
+            {/* Tab Navigation */}
+            <div className="border-b border-vintage-gold/20">
+              <div className="flex">
+                <button
+                  onClick={() => setActiveTab('upcoming')}
+                  className={`flex-1 px-6 py-4 font-heading font-bold text-lg transition-colors ${
+                    activeTab === 'upcoming'
+                      ? 'bg-vintage-accent text-white border-b-2 border-vintage-accent'
+                      : 'text-vintage-dark hover:bg-vintage-cream'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Upcoming Mentorship
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab('previous')}
+                  className={`flex-1 px-6 py-4 font-heading font-bold text-lg transition-colors ${
+                    activeTab === 'previous'
+                      ? 'bg-vintage-accent text-white border-b-2 border-vintage-accent'
+                      : 'text-vintage-dark hover:bg-vintage-cream'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    Previous Mentorship
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="p-8">
+              {activeTab === 'upcoming' ? (
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
+                  <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-2">
+                    No Upcoming Mentorships
+                  </h3>
+                  <p className="text-vintage-dark/70 mb-6 max-w-md mx-auto">
+                    {profile.role === 'grandpa' 
+                      ? "When someone reaches out for your help, their sessions will appear here."
+                      : "Your scheduled mentorship sessions will appear here once you connect with a Grandpa."
+                    }
+                  </p>
+                  {profile.role === 'seeker' && (
+                    <Link 
+                      href="/search"
+                      className="inline-flex items-center gap-2 bg-vintage-green text-white px-6 py-3 rounded-full font-bold hover:bg-vintage-dark transition-colors"
+                    >
+                      <Search className="w-4 h-4" />
+                      Find a Grandpa
+                    </Link>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Clock className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
+                  <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-2">
+                    No Previous Mentorships
+                  </h3>
+                  <p className="text-vintage-dark/70 max-w-md mx-auto">
+                    {profile.role === 'grandpa' 
+                      ? "Your completed mentorship sessions will be listed here for your reference."
+                      : "Your completed learning sessions with Grandpas will appear here."
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Role-specific Tips */}
+          <div className="mt-12 bg-vintage-cream p-8 rounded-2xl border border-vintage-gold/30">
+            <h2 className="text-2xl font-heading font-bold text-vintage-dark mb-4">
+              {profile.role === 'grandpa' ? 'Grandpa Resources' : 'How to Get Help'}
+            </h2>
+            
+            {profile.role === 'grandpa' ? (
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-vintage-dark mb-2">Getting Started</h3>
@@ -134,12 +213,7 @@ export default function DashboardPage() {
                   </ul>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="bg-vintage-cream p-8 rounded-2xl border border-vintage-gold/30">
-              <h2 className="text-2xl font-heading font-bold text-vintage-dark mb-4">
-                How to Get Help
-              </h2>
+            ) : (
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="w-16 h-16 bg-vintage-green rounded-full flex items-center justify-center mx-auto mb-3">
@@ -163,8 +237,8 @@ export default function DashboardPage() {
                   <p className="text-sm text-vintage-dark/70">Work together and gain new skills</p>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
     </main>
