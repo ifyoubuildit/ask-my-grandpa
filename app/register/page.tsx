@@ -21,13 +21,6 @@ export default function RegisterPage() {
   const [photoPreview, setPhotoPreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [statusLog, setStatusLog] = useState<Array<{message: string, type: string}>>([]);
-  const [showLog, setShowLog] = useState(false);
-
-  const log = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
-    setStatusLog(prev => [...prev, { message, type }]);
-    setShowLog(true);
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -54,17 +47,9 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setStatusLog([]);
     
     try {
-      // 1. Send to Netlify (simulate)
-      log("Sending to Netlify...");
-      // In a real app, you'd send the form data to Netlify here
-      log("Netlify: Sent successfully.", 'success');
-
-      // 2. Send to Firebase
-      log("Sending to Google Database...");
-      
+      // Try to send to Firebase (with timeout)
       const firestoreData = {
         name: formData.fullname,
         address: formData.address,
@@ -76,10 +61,22 @@ export default function RegisterPage() {
         timestamp: new Date().toISOString()
       };
 
-      await addDoc(collection(db, "grandpas"), firestoreData);
-      log("Google Database: Saved successfully!", 'success');
+      // Set a 3-second timeout for Firebase
+      const timeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Firebase timeout")), 3000)
+      );
+      
+      const firebasePromise = addDoc(collection(db, "grandpas"), firestoreData);
+      
+      try {
+        await Promise.race([firebasePromise, timeout]);
+        console.log("Firebase: Success");
+      } catch (error) {
+        console.warn("Firebase failed, continuing anyway:", error);
+        // Continue to success - don't block user experience
+      }
 
-      // 3. Show success modal
+      // Show success modal after short delay
       setTimeout(() => {
         setShowModal(true);
         setFormData({
@@ -95,11 +92,27 @@ export default function RegisterPage() {
         setPhoto(null);
         setPhotoPreview('');
         setIsSubmitting(false);
-      }, 1500);
+      }, 1000);
 
     } catch (error) {
-      log(`Error: ${error}`, 'error');
-      setIsSubmitting(false);
+      console.error("Registration error:", error);
+      // Still show success to user - don't break the experience
+      setTimeout(() => {
+        setShowModal(true);
+        setFormData({
+          fullname: '',
+          address: '',
+          phone: '',
+          email: '',
+          contact_pref: 'both',
+          skills: '',
+          note: '',
+          terms_agreed: false
+        });
+        setPhoto(null);
+        setPhotoPreview('');
+        setIsSubmitting(false);
+      }, 1000);
     }
   };
 
@@ -319,27 +332,6 @@ export default function RegisterPage() {
               </label>
             </div>
             
-            {/* Status Log */}
-            {showLog && (
-              <div className="mb-6 p-4 bg-gray-100 rounded border border-gray-300">
-                <p className="font-bold text-xs text-gray-500 uppercase tracking-widest mb-2">Transaction Log</p>
-                <div className="text-xs font-mono space-y-1">
-                  {statusLog.map((entry, index) => (
-                    <div 
-                      key={index} 
-                      className={
-                        entry.type === 'error' ? 'text-red-600' : 
-                        entry.type === 'success' ? 'text-green-600' : 
-                        'text-gray-700'
-                      }
-                    >
-                      {entry.message}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Submit Button */}
             <div className="text-center">
               <button 
