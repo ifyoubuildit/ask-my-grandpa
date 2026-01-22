@@ -15,45 +15,9 @@ export default function ContactPage() {
         </div>
       </header>
 
-      {/* Contact Information */}
+      {/* Contact Form */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {/* Email */}
-            <div className="text-center bg-white p-8 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20">
-              <div className="w-16 h-16 bg-vintage-green rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-heading font-bold text-vintage-dark mb-2">Email Us</h3>
-              <a href="mailto:info@askmygrandpa.com" className="text-vintage-accent hover:underline font-body">
-                info@askmygrandpa.com
-              </a>
-            </div>
-
-            {/* Phone */}
-            <div className="text-center bg-white p-8 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20">
-              <div className="w-16 h-16 bg-vintage-accent rounded-full flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-heading font-bold text-vintage-dark mb-2">Call Us</h3>
-              <a href="tel:+1-555-GRANDPA" className="text-vintage-accent hover:underline font-body">
-                1-555-GRANDPA
-              </a>
-            </div>
-
-            {/* Address */}
-            <div className="text-center bg-white p-8 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20">
-              <div className="w-16 h-16 bg-vintage-dark rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-heading font-bold text-vintage-dark mb-2">Visit Us</h3>
-              <p className="text-vintage-dark/70 font-body">
-                123 Community Lane<br />
-                Calgary, AB T2P 1J9
-              </p>
-            </div>
-          </div>
-
           {/* Contact Form */}
           <div className="bg-white p-8 md:p-12 rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30">
             <h2 className="text-3xl font-heading font-bold text-vintage-dark mb-8 text-center">Send us a Message</h2>
@@ -83,7 +47,6 @@ export default function ContactPage() {
                 <input 
                   type="text" 
                   className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-vintage-dark focus:border-vintage-accent focus:outline-none" 
-                  placeholder="What's this about?" 
                 />
               </div>
               
@@ -92,7 +55,7 @@ export default function ContactPage() {
                 <textarea 
                   rows={6} 
                   className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-vintage-dark focus:border-vintage-accent focus:outline-none" 
-                  placeholder="Tell us what's on your mind..."
+                  placeholder="How can we help..."
                 />
               </div>
               
