@@ -87,7 +87,7 @@ export default function RegisterPage() {
       const netlifyFormData = new FormData();
       netlifyFormData.append('form-name', 'grandpa-registration');
       netlifyFormData.append('name', formData.fullname);
-      netlifyFormData.append('address', formData.address);
+      netlifyFormData.append('city-state', formData.address);
       netlifyFormData.append('phone', formData.phone);
       netlifyFormData.append('email', formData.email);
       netlifyFormData.append('contact-preference', formData.contact_pref);
@@ -115,7 +115,7 @@ export default function RegisterPage() {
           body: new URLSearchParams({
             'form-name': 'grandpa-registration',
             'name': formData.fullname,
-            'address': formData.address,
+            'city-state': formData.address,
             'phone': formData.phone,
             'email': formData.email,
             'contact-preference': formData.contact_pref,
@@ -162,7 +162,7 @@ export default function RegisterPage() {
             {/* Hidden fields for Netlify Forms detection */}
             <div style={{ display: 'none' }}>
               <input name="name" value={formData.fullname} readOnly />
-              <input name="address" value={formData.address} readOnly />
+              <input name="city-state" value={formData.address} readOnly />
               <input name="phone" value={formData.phone} readOnly />
               <input name="email" value={formData.email} readOnly />
               <input name="contact-preference" value={formData.contact_pref} readOnly />
@@ -187,10 +187,10 @@ export default function RegisterPage() {
               />
             </div>
             
-            {/* Address */}
+            {/* City, Province/State */}
             <div className="mb-8">
               <label className="block text-vintage-dark font-heading font-bold text-xl mb-1">
-                Address
+                City, Province/State
               </label>
               <p className="text-sm text-vintage-dark/60 mb-3 italic flex items-center gap-1">
                 <Lock className="w-3 h-3" /> Don't worry, only your name will show up on the site.
@@ -201,7 +201,7 @@ export default function RegisterPage() {
                 value={formData.address}
                 onChange={handleInputChange}
                 className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
-                placeholder="e.g. 123 Maple Street, Calgary" 
+                placeholder="e.g. Calgary, AB or Austin, TX" 
                 required 
               />
             </div>

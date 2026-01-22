@@ -1,15 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Menu, Glasses } from 'lucide-react';
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const isActive = (path: string) => pathname === path;
 
   return (
     <nav className="sticky top-0 z-50 bg-[#fdfbf7]/95 backdrop-blur-sm border-b border-vintage-gold/30">
@@ -24,13 +28,28 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-8 items-center">
-            <Link href="/" className="text-vintage-dark hover:text-vintage-accent font-bold text-sm uppercase tracking-widest transition-colors">
+            <Link 
+              href="/" 
+              className={`font-bold text-sm uppercase tracking-widest transition-colors ${
+                isActive('/') ? 'text-vintage-accent' : 'text-vintage-dark hover:text-vintage-accent'
+              }`}
+            >
               Home
             </Link>
-            <Link href="/mission" className="text-vintage-dark hover:text-vintage-accent font-bold text-sm uppercase tracking-widest transition-colors">
+            <Link 
+              href="/mission" 
+              className={`font-bold text-sm uppercase tracking-widest transition-colors ${
+                isActive('/mission') ? 'text-vintage-accent' : 'text-vintage-dark hover:text-vintage-accent'
+              }`}
+            >
               Our Mission
             </Link>
-            <Link href="/register" className="text-vintage-dark hover:text-vintage-accent font-bold text-sm uppercase tracking-widest transition-colors">
+            <Link 
+              href="/register" 
+              className={`font-bold text-sm uppercase tracking-widest transition-colors ${
+                isActive('/register') ? 'text-vintage-accent' : 'text-vintage-dark hover:text-vintage-accent'
+              }`}
+            >
               Grandpa Registration
             </Link>
           </div>
@@ -55,13 +74,28 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-[#f3f0e6] border-b border-vintage-gold/30">
           <div className="px-4 pt-2 pb-4 space-y-1">
-            <Link href="/" className="block px-3 py-2 text-vintage-dark font-bold text-lg">
+            <Link 
+              href="/" 
+              className={`block px-3 py-2 font-bold text-lg ${
+                isActive('/') ? 'text-vintage-accent' : 'text-vintage-dark'
+              }`}
+            >
               Home
             </Link>
-            <Link href="/mission" className="block px-3 py-2 text-vintage-dark font-bold text-lg">
+            <Link 
+              href="/mission" 
+              className={`block px-3 py-2 font-bold text-lg ${
+                isActive('/mission') ? 'text-vintage-accent' : 'text-vintage-dark'
+              }`}
+            >
               Our Mission
             </Link>
-            <Link href="/register" className="block px-3 py-2 text-vintage-dark font-bold text-lg">
+            <Link 
+              href="/register" 
+              className={`block px-3 py-2 font-bold text-lg ${
+                isActive('/register') ? 'text-vintage-accent' : 'text-vintage-dark'
+              }`}
+            >
               Grandpa Registration
             </Link>
           </div>

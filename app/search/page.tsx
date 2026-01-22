@@ -144,7 +144,7 @@ function SearchResults() {
               {filteredGrandpas.map((grandpa, index) => (
                 <div key={index} className="bg-white rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20 overflow-hidden flex flex-col md:flex-row">
                   <div className="w-full md:w-1/3 bg-vintage-cream/50 relative h-64 md:h-auto flex items-center justify-center">
-                    {grandpa.hasPhoto && grandpa.image ? (
+                    {grandpa.image ? (
                       <img 
                         src={grandpa.image} 
                         alt={grandpa.name} 
