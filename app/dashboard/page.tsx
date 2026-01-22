@@ -41,12 +41,10 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="pt-16 pb-12 bg-[#f0ede6] border-b border-vintage-gold/20">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark">
-                Welcome, {profile.displayName}!
-              </h1>
-            </div>
+          <div className="flex items-center justify-end gap-4">
+            <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark">
+              Welcome, {profile.displayName}!
+            </h1>
             <button
               onClick={handleLogout}
               className="bg-vintage-dark text-white px-6 py-3 rounded-full font-bold hover:bg-vintage-accent transition-colors"
@@ -102,21 +100,8 @@ export default function DashboardPage() {
             <div className="border-b border-vintage-gold/20">
               <div className="grid grid-cols-2">
                 <button
-                  onClick={() => setActiveTab('upcoming')}
-                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors border-r border-vintage-gold/20 ${
-                    activeTab === 'upcoming'
-                      ? 'bg-vintage-accent text-white'
-                      : 'text-vintage-dark hover:bg-vintage-cream'
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Upcoming Mentorship
-                  </div>
-                </button>
-                <button
                   onClick={() => setActiveTab('previous')}
-                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors ${
+                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors border-r border-vintage-gold/20 ${
                     activeTab === 'previous'
                       ? 'bg-vintage-accent text-white'
                       : 'text-vintage-dark hover:bg-vintage-cream'
@@ -127,12 +112,38 @@ export default function DashboardPage() {
                     Previous Mentorship
                   </div>
                 </button>
+                <button
+                  onClick={() => setActiveTab('upcoming')}
+                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors ${
+                    activeTab === 'upcoming'
+                      ? 'bg-vintage-accent text-white'
+                      : 'text-vintage-dark hover:bg-vintage-cream'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Upcoming Mentorship
+                  </div>
+                </button>
               </div>
             </div>
 
             {/* Tab Content */}
             <div className="p-8">
-              {activeTab === 'upcoming' ? (
+              {activeTab === 'previous' ? (
+                <div className="text-center py-12">
+                  <Clock className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
+                  <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-2">
+                    No Previous Mentorships
+                  </h3>
+                  <p className="text-vintage-dark/70 max-w-md mx-auto">
+                    {profile.role === 'grandpa' 
+                      ? "Your completed mentorship sessions will be listed here for your reference."
+                      : "Your completed learning sessions with Grandpas will appear here."
+                    }
+                  </p>
+                </div>
+              ) : (
                 <div className="text-center py-12">
                   <Calendar className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
                   <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-2">
@@ -153,19 +164,6 @@ export default function DashboardPage() {
                       Find a Grandpa
                     </Link>
                   )}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Clock className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
-                  <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-2">
-                    No Previous Mentorships
-                  </h3>
-                  <p className="text-vintage-dark/70 max-w-md mx-auto">
-                    {profile.role === 'grandpa' 
-                      ? "Your completed mentorship sessions will be listed here for your reference."
-                      : "Your completed learning sessions with Grandpas will appear here."
-                    }
-                  </p>
                 </div>
               )}
             </div>
