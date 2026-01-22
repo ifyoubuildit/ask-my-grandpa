@@ -49,7 +49,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     
     try {
-      // 1. Send to Firebase
+      // Send to Firebase
       const firestoreData = {
         name: formData.fullname,
         address: formData.address,
@@ -65,27 +65,7 @@ export default function RegisterPage() {
       await addDoc(collection(db, "grandpas"), firestoreData);
       console.log("✅ Firebase: Success");
 
-      // 2. Send to Netlify Forms (as backup)
-      const netlifyFormData = new FormData();
-      netlifyFormData.append('form-name', 'grandpa-registration');
-      Object.entries(formData).forEach(([key, value]) => {
-        netlifyFormData.append(key, value.toString());
-      });
-      if (photo) {
-        netlifyFormData.append('photo', photo);
-      }
-
-      try {
-        await fetch('/', {
-          method: 'POST',
-          body: netlifyFormData
-        });
-        console.log("✅ Netlify: Success");
-      } catch (error) {
-        console.warn("⚠️ Netlify failed (not critical):", error);
-      }
-
-      // 3. Show success
+      // Show success
       setTimeout(() => {
         setShowModal(true);
         setFormData({
@@ -133,8 +113,7 @@ export default function RegisterPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30">
           
-          <form onSubmit={handleSubmit} name="grandpa-registration" method="POST" data-netlify="true" encType="multipart/form-data">
-            <input type="hidden" name="form-name" value="grandpa-registration" />
+          <form onSubmit={handleSubmit}>
             {/* Full Name */}
             <div className="mb-8">
               <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
