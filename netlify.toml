@@ -7,3 +7,38 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Form notifications
+[forms]
+  # Global form settings
+  [forms.settings]
+    # Enable spam filtering
+    spam_filter = true
+    
+  # Specific form notifications
+  [[forms.notifications]]
+    # Form name must match the name attribute
+    form = "grandpa-registration"
+    # Your email for notifications
+    to = "info@askmygrandpa.com"
+    # Email subject
+    subject = "🎉 New Grandpa Registration!"
+    # Custom email template
+    template = """
+    Great news! A new Grandpa has registered on AskMyGrandpa.com
+
+    📝 Registration Details:
+    Name: {{ name }}
+    Email: {{ email }}
+    Phone: {{ phone }}
+    Address: {{ address }}
+    Contact Preference: {{ contact-preference }}
+    
+    🛠️ Skills: {{ skills }}
+    
+    📖 Interesting Note: {{ note }}
+    
+    ⏰ Submitted: {{ timestamp }}
+    
+    You can view all submissions in your Netlify dashboard.
+    """

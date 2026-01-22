@@ -66,8 +66,9 @@ export default function RegisterPage() {
       setIsSubmitting(false);
     }, 1000);
 
-    // Try Firebase in background (don't block user experience)
+    // Send to both Firebase AND Netlify Forms
     try {
+      // 1. Send to Firebase
       const firestoreData = {
         name: formData.fullname,
         address: formData.address,
@@ -83,8 +84,30 @@ export default function RegisterPage() {
       const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
       console.log("✅ Registration saved to Firebase:", docRef.id);
 
+      // 2. Send to Netlify Forms (for notifications)
+      const netlifyFormData = new FormData();
+      netlifyFormData.append('form-name', 'grandpa-registration');
+      netlifyFormData.append('name', formData.fullname);
+      netlifyFormData.append('address', formData.address);
+      netlifyFormData.append('phone', formData.phone);
+      netlifyFormData.append('email', formData.email);
+      netlifyFormData.append('contact-preference', formData.contact_pref);
+      netlifyFormData.append('skills', formData.skills);
+      netlifyFormData.append('note', formData.note);
+      netlifyFormData.append('timestamp', new Date().toLocaleString());
+      
+      if (photo) {
+        netlifyFormData.append('photo', photo);
+      }
+
+      await fetch('/', {
+        method: 'POST',
+        body: netlifyFormData
+      });
+      console.log("✅ Registration sent to Netlify Forms");
+
     } catch (error) {
-      console.error("❌ Firebase error:", error);
+      console.error("❌ Error:", error);
       // Don't show error to user - they already got success message
     }
   };
@@ -112,7 +135,9 @@ export default function RegisterPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30">
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} name="grandpa-registration" method="POST" data-netlify="true" encType="multipart/form-data">
+            <input type="hidden" name="form-name" value="grandpa-registration" />
+            
             {/* Full Name */}
             <div className="mb-8">
               <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
