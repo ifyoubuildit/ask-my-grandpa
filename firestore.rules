@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - users can only read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Grandpas collection - public read, authenticated write with validation
+    match /grandpas/{grandpaId} {
+      // Anyone can read grandpa profiles (for search)
+      allow read: if true;
+      
+      // Only authenticated users can create grandpa profiles
+      allow create: if request.auth != null 
+        && isValidGrandpaData(request.resource.data)
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Only the owner can update their profile
+      allow update: if request.auth != null 
+        && resource.data.userId == request.auth.uid
+        && isValidGrandpaData(request.resource.data);
+      
+      // Only the owner can delete their profile
+      allow delete: if request.auth != null 
+        && resource.data.userId == request.auth.uid;
+    }
+    
+    // Messages collection - for future messaging feature
+    match /messages/{messageId} {
+      // Users can only read messages they're involved in
+      allow read: if request.auth != null 
+        && (request.auth.uid == resource.data.senderId 
+            || request.auth.uid == resource.data.receiverId);
+      
+      // Users can create messages if they're the sender
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.senderId
+        && isValidMessageData(request.resource.data);
+    }
+    
+    // Admin-only collections
+    match /admin/{document=**} {
+      allow read, write: if request.auth != null 
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Test collection (remove in production)
+    match /test/{document} {
+      allow read, write: if request.auth != null;
+    }
+  }
+  
+  // Validation functions
+  function isValidGrandpaData(data) {
+    return data.keys().hasAll(['name', 'address', 'phone', 'email', 'skills', 'note', 'timestamp', 'userId'])
+      && data.name is string && data.name.size() > 0
+      && data.address is string && data.address.size() > 0
+      && data.phone is string && data.phone.size() > 0
+      && data.email is string && data.email.matches('.*@.*')
+      && data.skills is string && data.skills.size() > 0
+      && data.note is string && data.note.size() > 0
+      && data.timestamp is string
+      && data.userId is string;
+  }
+  
+  function isValidMessageData(data) {
+    return data.keys().hasAll(['senderId', 'receiverId', 'message', 'timestamp'])
+      && data.senderId is string
+      && data.receiverId is string
+      && data.message is string && data.message.size() > 0
+      && data.timestamp is string;
+  }
+}

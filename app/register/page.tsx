@@ -4,13 +4,18 @@ import { useState } from 'react';
 import { Camera, Lock, X, Check } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
+  const { user, profile } = useAuth();
+  const router = useRouter();
+  
   const [formData, setFormData] = useState({
-    fullname: '',
+    fullname: user?.displayName || '',
     address: '',
     phone: '',
-    email: '',
+    email: user?.email || '',
     contact_pref: 'both',
     skills: '',
     note: '',
@@ -21,6 +26,17 @@ export default function RegisterPage() {
   const [photoPreview, setPhotoPreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  // Redirect if not authenticated or not a grandpa
+  if (!user) {
+    router.push('/signup');
+    return null;
+  }
+
+  if (profile && profile.role !== 'grandpa') {
+    router.push('/dashboard');
+    return null;
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -67,7 +83,7 @@ export default function RegisterPage() {
     }, 1000);
 
     try {
-      // 1. Send to Firebase
+      // 1. Send to Firebase with user authentication
       const firestoreData = {
         name: formData.fullname,
         address: formData.address,
@@ -77,6 +93,7 @@ export default function RegisterPage() {
         skills: formData.skills,
         note: formData.note,
         timestamp: new Date().toISOString(),
+        userId: user.uid, // Associate with authenticated user
         source: 'website'
       };
 
