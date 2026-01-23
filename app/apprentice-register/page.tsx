@@ -698,14 +698,12 @@ function ApprenticeRegisterForm() {
               <Check className="w-10 h-10 text-vintage-green" />
             </div>
             <h3 className="text-3xl font-heading font-bold text-vintage-dark mb-4">
-              {isUpdate ? 'Profile Updated!' : 'Welcome to the Community!'}
+              {isUpdate ? 'Profile Updated!' : 'Welcome to the Club!'}
             </h3>
             <p className="text-lg text-vintage-dark/80 mb-8 font-body">
               {isUpdate 
                 ? 'Your profile has been updated successfully.' 
-                : grandpaName
-                  ? `Your interest in connecting with ${grandpaName} has been recorded. You'll be contacted soon!`
-                  : 'Your apprentice account has been created successfully.'
+                : 'Your account has been created successfully.'
               }
             </p>
             <button 

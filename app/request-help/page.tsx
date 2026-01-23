@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Send, Clock, Calendar, User } from 'lucide-react';
+import { Send, User } from 'lucide-react';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +18,7 @@ function RequestHelpForm() {
   const [formData, setFormData] = useState({
     subject: skill ? `${skill} Help` : '',
     availability: '',
-    message: skill ? `Hi! My name is ${user?.displayName || '[Your Name]'} and I am looking for help with ${skill.toLowerCase()}.` : ''
+    message: ''
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,10 +51,10 @@ function RequestHelpForm() {
 
   // Update message when user info is available
   useEffect(() => {
-    if (user && skill && !formData.message.includes(user.displayName || '')) {
+    if (user && skill) {
       setFormData(prev => ({
         ...prev,
-        message: `Hi! My name is ${user.displayName || 'Joe Smith'} and I am looking for help with ${skill.toLowerCase()}.`
+        message: `Hi! My name is ${user.displayName || 'Chris Wallace'} and I am looking for ${skill.toLowerCase()} help. Specifically...`
       }));
     }
   }, [user, skill]);
@@ -89,7 +89,7 @@ function RequestHelpForm() {
         apprenticeId: user.uid,
         apprenticeName: user.displayName || user.email,
         apprenticeEmail: user.email,
-        grandpaId: grandpaData?.id || grandpaId,
+        grandpaId: grandpaData?.userId || grandpaId, // Use userId instead of document id
         grandpaName: grandpaName,
         grandpaEmail: grandpaData?.email || '',
         subject: formData.subject,
@@ -295,7 +295,7 @@ function RequestHelpForm() {
                 onChange={handleInputChange}
                 rows={6} 
                 className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark placeholder:text-vintage-dark/40 focus:border-vintage-accent focus:outline-none focus:ring-0" 
-                placeholder="Hi! My name is Joe Smith and I am looking for help fixing a leaky faucet."
+                placeholder={`Hi! My name is ${user?.displayName || 'Chris Wallace'} and I am looking for ${skill || 'help'} help. Specifically...`}
                 required 
               />
             </div>

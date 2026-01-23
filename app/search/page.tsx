@@ -175,9 +175,9 @@ function SearchResults() {
                             console.log('🔗 Connect button clicked for:', grandpa.name);
                             window.location.href = `/apprentice-register?grandpa=${encodeURIComponent(grandpa.name)}&grandpaId=${index}&skill=${encodeURIComponent(query)}`;
                           }}
-                          className="w-full bg-vintage-accent text-white font-bold py-3 px-4 rounded-lg hover:bg-vintage-dark transition-colors shadow-md text-center"
+                          className="w-full bg-vintage-green text-white px-6 py-3 rounded-full font-bold hover:bg-vintage-dark transition-colors shadow-lg"
                         >
-                          Connect with {grandpa.name.split(' ')[0]}
+                          Connect
                         </button>
                       </div>
                     </div>
