@@ -96,6 +96,8 @@ function RequestHelpForm() {
     }
 
     try {
+      console.log('🚀 Starting request submission...');
+      
       // Save request to Firestore
       const requestData = {
         apprenticeId: user.uid,
@@ -112,7 +114,9 @@ function RequestHelpForm() {
         skill: skill
       };
 
+      console.log('💾 Saving request to Firestore...', requestData);
       await addDoc(collection(db, "requests"), requestData);
+      console.log('✅ Request saved to Firestore successfully');
 
       // Send email notification to grandpa
       try {
@@ -159,24 +163,30 @@ function RequestHelpForm() {
         
         // Clean up after a delay
         setTimeout(() => {
-          document.body.removeChild(form);
-          document.body.removeChild(iframe);
+          if (document.body.contains(form)) document.body.removeChild(form);
+          if (document.body.contains(iframe)) document.body.removeChild(iframe);
         }, 2000);
         
         console.log('✅ Request form submitted directly to Netlify Forms');
         console.log('📧 Email should be sent to: ' + (grandpaData?.email || 'grandpa email'));
         
       } catch (emailError) {
-        console.warn('Email notification failed:', emailError);
+        console.warn('⚠️ Email notification failed (continuing anyway):', emailError);
       }
 
-      // Success - redirect to dashboard
-      router.push('/dashboard?message=request-sent');
+      console.log('🎯 Redirecting to dashboard...');
+      // Success - redirect to dashboard after a brief delay to ensure everything completes
+      setIsSubmitting(false); // Reset submitting state before redirect
+      
+      // Small delay to ensure Firestore and Netlify operations complete
+      setTimeout(() => {
+        router.push('/dashboard?message=request-sent');
+        console.log('✅ Redirect initiated');
+      }, 500);
 
     } catch (error) {
-      console.error('Request failed:', error);
+      console.error('❌ Request submission failed:', error);
       setError('Failed to send request. Please try again.');
-    } finally {
       setIsSubmitting(false);
     }
   };
