@@ -132,9 +132,20 @@ function DashboardContent() {
   }
 
   // Redirect if not authenticated
-  if (!user || !profile) {
+  if (!loading && (!user || !profile)) {
+    console.log('🔒 Dashboard auth check failed:', { user: !!user, profile: !!profile, loading });
     router.push('/login');
     return null;
+  }
+
+  // Show loading while auth is being checked
+  if (loading) {
+    console.log('🔄 Dashboard loading auth state...');
+    return (
+      <main className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent"></div>
+      </main>
+    );
   }
 
   const handleLogout = async () => {

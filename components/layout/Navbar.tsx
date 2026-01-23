@@ -72,6 +72,7 @@ export default function Navbar() {
                 <Link 
                   href="/dashboard" 
                   className="flex items-center gap-2 text-vintage-dark hover:text-vintage-accent transition-colors"
+                  onClick={() => console.log('🔗 Dashboard link clicked, user:', user?.uid)}
                 >
                   <User className="w-4 h-4" />
                   <span className="font-bold text-sm">
