@@ -67,21 +67,41 @@ function RegisterForm() {
         const fullAddress = grandpaData.address || '';
         const addressParts = fullAddress.split(', ');
         
+        // Handle different address formats
+        let streetAddress = '';
+        let city = '';
+        let province = '';
+        let postalCode = '';
+        
+        if (addressParts.length >= 3) {
+          streetAddress = addressParts[0] || '';
+          city = addressParts[1] || '';
+          const lastPart = addressParts[2] || '';
+          const lastPartSplit = lastPart.split(' ');
+          province = lastPartSplit[0] || '';
+          postalCode = lastPartSplit.slice(1).join(' ') || '';
+        }
+        
         setFormData({
           fullname: grandpaData.name || user.displayName || '',
           email: grandpaData.email || user.email || '',
           password: '', // Don't pre-fill password
           confirmPassword: '',
-          address: addressParts[0] || '',
-          city: addressParts[1] || '',
-          province: addressParts[2]?.split(' ')[0] || '',
-          postalCode: addressParts[2]?.split(' ').slice(1).join(' ') || '',
+          address: streetAddress,
+          city: city,
+          province: province,
+          postalCode: postalCode,
           phone: grandpaData.phone || '',
           contact_pref: grandpaData.contactPreference || 'both',
           skills: grandpaData.skills || '',
           note: grandpaData.note || '',
           terms_agreed: true // Already agreed when they first registered
         });
+        
+        // Set existing photo if available
+        if (grandpaData.photoURL) {
+          setPhotoPreview(grandpaData.photoURL);
+        }
       } else {
         // No existing profile, pre-fill with user data
         setFormData(prev => ({
@@ -279,7 +299,7 @@ function RegisterForm() {
       // Show success modal
       setShowModal(true);
       
-      // Reset form only for new registrations
+      // Don't reset form for updates - keep the data so they can make more changes
       if (!isUpdate) {
         setFormData({
           fullname: '',
@@ -315,7 +335,11 @@ function RegisterForm() {
 
   const closeModal = () => {
     setShowModal(false);
-    router.push('/dashboard'); // Always redirect to dashboard
+    // For updates, stay on the same page so they can make more changes
+    // For new registrations, go to dashboard
+    if (!isUpdate) {
+      router.push('/dashboard');
+    }
   };
 
   // Show loading state while fetching existing data
@@ -677,7 +701,10 @@ function RegisterForm() {
                   console.log('Form data at click:', formData);
                 }}
               >
-                                {isUpdate ? "Update Profile" : (isSubmitting ? "Creating Account..." : "Create Account")}
+                                {isUpdate 
+                  ? (isSubmitting ? "Updating Profile..." : "Update Profile")
+                  : (isSubmitting ? "Creating Account..." : "Create Account")
+                }
               </button>
             </div>
 
@@ -725,7 +752,7 @@ function RegisterForm() {
               onClick={closeModal}
               className="bg-vintage-dark text-white px-8 py-3 rounded-full font-bold hover:bg-vintage-accent transition-colors w-full"
             >
-              Go to Dashboard
+              {isUpdate ? 'Continue Editing' : 'Go to Dashboard'}
             </button>
           </div>
         </div>
