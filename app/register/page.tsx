@@ -238,58 +238,56 @@ function RegisterForm() {
           'skills': formData.skills
         });
         
-        // Use URLSearchParams method (Test 2 method that worked!)
-        const netlifyData = new URLSearchParams();
-        netlifyData.append('form-name', 'grandpa-registration');
-        netlifyData.append('name', formData.fullname);
-        netlifyData.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
-        netlifyData.append('city', formData.city);
-        netlifyData.append('province', formData.province);
-        netlifyData.append('postal-code', formData.postalCode);
-        netlifyData.append('phone', formData.phone);
-        netlifyData.append('email', formData.email);
-        netlifyData.append('contact-preference', formData.contact_pref);
-        netlifyData.append('skills', formData.skills);
-        netlifyData.append('note', formData.note);
-        netlifyData.append('timestamp', new Date().toLocaleString());
+        // Create a hidden form and submit it directly (like the working HTML form)
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/';
+        form.style.display = 'none';
         
-        console.log('📧 URLSearchParams data:', netlifyData.toString());
-        console.log('📧 EXACT DATA BEING SENT TO NETLIFY:');
-        console.log('📧 Method: POST');
-        console.log('📧 URL: /');
-        console.log('📧 Content-Type: application/x-www-form-urlencoded');
-        console.log('📧 Body:', netlifyData.toString());
+        // Add form fields
+        const fields = {
+          'form-name': 'grandpa-registration',
+          'name': formData.fullname,
+          'address': `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
+          'city': formData.city,
+          'province': formData.province,
+          'postal-code': formData.postalCode,
+          'phone': formData.phone,
+          'email': formData.email,
+          'contact-preference': formData.contact_pref,
+          'skills': formData.skills,
+          'note': formData.note,
+          'timestamp': new Date().toLocaleString()
+        };
         
-        const netlifyResponse = await fetch('/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: netlifyData.toString()
+        Object.entries(fields).forEach(([name, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = name;
+          input.value = value;
+          form.appendChild(input);
         });
         
-        console.log('📧 Netlify response status:', netlifyResponse.status);
-        console.log('📧 Netlify response ok:', netlifyResponse.ok);
-        console.log('📧 Netlify response headers:', Object.fromEntries(netlifyResponse.headers.entries()));
+        // Submit the form in a hidden iframe to avoid page redirect
+        const iframe = document.createElement('iframe');
+        iframe.name = 'netlify-form-submission';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
         
-        const responseText = await netlifyResponse.text();
-        console.log('📧 Netlify response body length:', responseText.length);
-        console.log('📧 Netlify response body preview:', responseText.substring(0, 200));
+        form.target = 'netlify-form-submission';
+        document.body.appendChild(form);
         
-        // Check if this looks like a successful Netlify form submission
-        // Netlify returns status 200 and the full HTML page after successful submission
-        const isNetlifySuccess = netlifyResponse.status === 200;
+        console.log('📧 Submitting form directly to Netlify (bypassing Next.js fetch)');
+        form.submit();
         
-        if (isNetlifySuccess) {
-          console.log('✅ Successfully sent to Netlify Forms (Status 200)');
-          console.log('📧 Form submission should appear in Netlify dashboard');
-          console.log('📧 Email notification should be sent to info@askmygrandpa.com');
-          console.log('📧 CHECK: Go to Netlify Dashboard > Forms > grandpa-registration');
-          console.log('📧 LOOK FOR: Submission with name "' + formData.fullname + '"');
-        } else {
-          console.warn('⚠️ Netlify Forms response not OK:', netlifyResponse.status, netlifyResponse.statusText);
-          console.warn('⚠️ This might indicate the form submission failed');
-        }
+        // Clean up after a delay
+        setTimeout(() => {
+          document.body.removeChild(form);
+          document.body.removeChild(iframe);
+        }, 2000);
+        
+        console.log('✅ Form submitted directly to Netlify Forms');
+        console.log('📧 Check Netlify dashboard for submission with name: ' + formData.fullname);
         
       } catch (netlifyError) {
         console.error('❌ Netlify Forms submission failed:', netlifyError);

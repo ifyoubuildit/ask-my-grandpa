@@ -106,36 +106,53 @@ function RequestHelpForm() {
       try {
         console.log('📧 Starting Netlify Forms submission...');
         
-        // Use URLSearchParams method (the method that works!)
-        const netlifyData = new URLSearchParams();
-        netlifyData.append('form-name', 'grandpa-request');
-        netlifyData.append('grandpa-name', grandpaName);
-        netlifyData.append('grandpa-email', grandpaData?.email || '');
-        netlifyData.append('apprentice-name', user.displayName || user.email || '');
-        netlifyData.append('apprentice-email', user.email || '');
-        netlifyData.append('subject', formData.subject);
-        netlifyData.append('availability', formData.availability);
-        netlifyData.append('message', formData.message);
-        netlifyData.append('timestamp', new Date().toLocaleString());
+        // Create a hidden form and submit it directly (like the working HTML form)
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/';
+        form.style.display = 'none';
         
-        const netlifyResponse = await fetch('/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: netlifyData.toString()
+        // Add form fields
+        const fields = {
+          'form-name': 'grandpa-request',
+          'grandpa-name': grandpaName,
+          'grandpa-email': grandpaData?.email || '',
+          'apprentice-name': user.displayName || user.email || '',
+          'apprentice-email': user.email || '',
+          'subject': formData.subject,
+          'availability': formData.availability,
+          'message': formData.message,
+          'timestamp': new Date().toLocaleString()
+        };
+        
+        Object.entries(fields).forEach(([name, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = name;
+          input.value = value;
+          form.appendChild(input);
         });
         
-        console.log('📧 Netlify response status:', netlifyResponse.status);
+        // Submit the form in a hidden iframe to avoid page redirect
+        const iframe = document.createElement('iframe');
+        iframe.name = 'netlify-form-submission';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
         
-        if (netlifyResponse.status === 200) {
-          console.log('✅ Successfully sent to Netlify Forms (Status 200)');
-          console.log('📧 Email notification should be sent to grandpa');
-        } else {
-          const responseText = await netlifyResponse.text();
-          console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
-          console.warn('⚠️ Response body:', responseText);
-        }
+        form.target = 'netlify-form-submission';
+        document.body.appendChild(form);
+        
+        console.log('📧 Submitting request form directly to Netlify');
+        form.submit();
+        
+        // Clean up after a delay
+        setTimeout(() => {
+          document.body.removeChild(form);
+          document.body.removeChild(iframe);
+        }, 2000);
+        
+        console.log('✅ Request form submitted directly to Netlify Forms');
+        console.log('📧 Email should be sent to: ' + (grandpaData?.email || 'grandpa email'));
         
       } catch (emailError) {
         console.warn('Email notification failed:', emailError);
