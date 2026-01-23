@@ -41,16 +41,21 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="pt-16 pb-12 bg-[#f0ede6] border-b border-vintage-gold/20">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-end gap-4">
+          <div className="flex items-center justify-between">
             <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark">
               Welcome, {profile.displayName}!
             </h1>
-            <button
-              onClick={handleLogout}
-              className="bg-vintage-dark text-white px-6 py-3 rounded-full font-bold hover:bg-vintage-accent transition-colors"
-            >
-              Sign Out
-            </button>
+            <div className="flex items-center gap-4">
+              <span className="text-lg font-bold text-vintage-dark">
+                {profile.displayName}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-vintage-dark font-bold hover:text-vintage-accent transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -96,7 +101,7 @@ export default function DashboardPage() {
           {/* Mentorship Section */}
           <div className="bg-white rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30 overflow-hidden">
             
-            {/* Tab Navigation */}
+            {/* Tab Navigation - Both Always Visible */}
             <div className="border-b border-vintage-gold/20">
               <div className="grid grid-cols-2">
                 <button
@@ -128,7 +133,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Tab Content */}
+            {/* Tab Content - Changes Based on Active Tab */}
             <div className="p-8">
               {activeTab === 'previous' ? (
                 <div className="text-center py-12">
