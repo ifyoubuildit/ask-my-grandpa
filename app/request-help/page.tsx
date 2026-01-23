@@ -104,24 +104,59 @@ function RequestHelpForm() {
 
       // Send email notification to grandpa
       try {
-        const emailData = new URLSearchParams();
-        emailData.append('form-name', 'grandpa-request');
-        emailData.append('grandpa-name', grandpaName);
-        emailData.append('grandpa-email', grandpaData?.email || '');
-        emailData.append('apprentice-name', user.displayName || user.email || '');
-        emailData.append('apprentice-email', user.email || '');
-        emailData.append('subject', formData.subject);
-        emailData.append('availability', formData.availability);
-        emailData.append('message', formData.message);
-        emailData.append('timestamp', new Date().toLocaleString());
+        console.log('📧 Attempting to send to Netlify Forms...');
         
-        await fetch('/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: emailData.toString()
+        // Create a hidden form and submit it to Netlify
+        const form = document.createElement('form');
+        form.setAttribute('name', 'grandpa-request');
+        form.setAttribute('method', 'POST');
+        form.setAttribute('data-netlify', 'true');
+        form.style.display = 'none';
+        
+        // Add all form fields
+        const fields = {
+          'form-name': 'grandpa-request',
+          'grandpa-name': grandpaName,
+          'grandpa-email': grandpaData?.email || '',
+          'apprentice-name': user.displayName || user.email || '',
+          'apprentice-email': user.email || '',
+          'subject': formData.subject,
+          'availability': formData.availability,
+          'message': formData.message,
+          'timestamp': new Date().toLocaleString()
+        };
+        
+        Object.entries(fields).forEach(([name, value]) => {
+          const input = document.createElement('input');
+          input.setAttribute('type', 'hidden');
+          input.setAttribute('name', name);
+          input.setAttribute('value', value);
+          form.appendChild(input);
         });
+        
+        document.body.appendChild(form);
+        
+        // Submit the form
+        const formData2 = new FormData(form);
+        
+        const netlifyResponse = await fetch('/', {
+          method: 'POST',
+          body: formData2
+        });
+        
+        console.log('📧 Netlify response status:', netlifyResponse.status);
+        
+        if (netlifyResponse.ok) {
+          console.log('✅ Successfully sent to Netlify Forms');
+        } else {
+          const responseText = await netlifyResponse.text();
+          console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
+          console.warn('⚠️ Response body:', responseText);
+        }
+        
+        // Clean up
+        document.body.removeChild(form);
+        
       } catch (emailError) {
         console.warn('Email notification failed:', emailError);
       }
@@ -197,8 +232,9 @@ function RequestHelpForm() {
       <section className="pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30">
           
-          <form onSubmit={handleSubmit} name="grandpa-request" method="POST" data-netlify="true">
+          <form onSubmit={handleSubmit} name="grandpa-request" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
             <input type="hidden" name="form-name" value="grandpa-request" />
+            <input type="hidden" name="bot-field" />
             
             {/* Error Message */}
             {error && (

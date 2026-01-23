@@ -4,7 +4,9 @@
     <title>Grandpa Request Form</title>
 </head>
 <body>
-    <form name="grandpa-request" netlify netlify-honeypot="bot-field" hidden>
+    <form name="grandpa-request" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" style="display: none;">
+        <input type="hidden" name="form-name" value="grandpa-request" />
+        <input type="hidden" name="bot-field" />
         <input type="text" name="grandpa-name" />
         <input type="email" name="grandpa-email" />
         <input type="text" name="apprentice-name" />

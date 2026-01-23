@@ -4,7 +4,9 @@
     <title>Apprentice Registration Form</title>
 </head>
 <body>
-    <form name="apprentice-registration" netlify netlify-honeypot="bot-field" hidden>
+    <form name="apprentice-registration" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" enctype="multipart/form-data" style="display: none;">
+        <input type="hidden" name="form-name" value="apprentice-registration" />
+        <input type="hidden" name="bot-field" />
         <input type="text" name="name" />
         <input type="text" name="address" />
         <input type="text" name="city" />

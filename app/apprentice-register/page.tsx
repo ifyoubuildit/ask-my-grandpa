@@ -218,33 +218,61 @@ function ApprenticeRegisterForm() {
 
       // Step 4: Send to Netlify Forms
       try {
-        // Create form data for Netlify
-        const netlifyData = new URLSearchParams();
-        netlifyData.append('form-name', 'apprentice-registration');
-        netlifyData.append('name', formData.fullname);
-        netlifyData.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
-        netlifyData.append('city', formData.city);
-        netlifyData.append('province', formData.province);
-        netlifyData.append('postal-code', formData.postalCode);
-        netlifyData.append('phone', formData.phone);
-        netlifyData.append('email', formData.email);
-        netlifyData.append('contact-preference', formData.contact_pref);
-        netlifyData.append('interested-grandpa', grandpaName);
-        netlifyData.append('timestamp', new Date().toLocaleString());
+        console.log('📧 Attempting to send to Netlify Forms...');
+        
+        // Create a hidden form and submit it to Netlify
+        const form = document.createElement('form');
+        form.setAttribute('name', 'apprentice-registration');
+        form.setAttribute('method', 'POST');
+        form.setAttribute('data-netlify', 'true');
+        form.style.display = 'none';
+        
+        // Add all form fields
+        const fields = {
+          'form-name': 'apprentice-registration',
+          'name': formData.fullname,
+          'address': `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
+          'city': formData.city,
+          'province': formData.province,
+          'postal-code': formData.postalCode,
+          'phone': formData.phone,
+          'email': formData.email,
+          'contact-preference': formData.contact_pref,
+          'interested-grandpa': grandpaName,
+          'timestamp': new Date().toLocaleString()
+        };
+        
+        Object.entries(fields).forEach(([name, value]) => {
+          const input = document.createElement('input');
+          input.setAttribute('type', 'hidden');
+          input.setAttribute('name', name);
+          input.setAttribute('value', value);
+          form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        
+        // Submit the form
+        const formData2 = new FormData(form);
         
         const netlifyResponse = await fetch('/', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: netlifyData.toString()
+          body: formData2
         });
+        
+        console.log('📧 Netlify response status:', netlifyResponse.status);
         
         if (netlifyResponse.ok) {
           console.log('✅ Successfully sent to Netlify Forms');
         } else {
+          const responseText = await netlifyResponse.text();
           console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
+          console.warn('⚠️ Response body:', responseText);
         }
+        
+        // Clean up
+        document.body.removeChild(form);
+        
       } catch (netlifyError) {
         console.error('❌ Netlify Forms submission failed:', netlifyError);
         // Don't throw error - continue with success since Firebase worked
@@ -338,8 +366,9 @@ function ApprenticeRegisterForm() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30">
           
-          <form onSubmit={handleSubmit} name="apprentice-registration" method="POST" data-netlify="true" encType="multipart/form-data">
+          <form onSubmit={handleSubmit} name="apprentice-registration" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" encType="multipart/form-data">
             <input type="hidden" name="form-name" value="apprentice-registration" />
+            <input type="hidden" name="bot-field" />
             
             {/* Error Message */}
             {error && (
