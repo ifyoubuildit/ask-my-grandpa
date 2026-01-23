@@ -1,15 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Camera, Lock, X, Check, Eye, EyeOff } from 'lucide-react';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { signUp } from '@/lib/auth';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function RegisterPage() {
+  const { user, profile } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isUpdate = searchParams.get('update') === 'true';
   
   const [formData, setFormData] = useState({
     fullname: '',
@@ -34,6 +38,63 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState('');
+  const [existingGrandpaId, setExistingGrandpaId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Load existing data if this is an update
+  useEffect(() => {
+    if (isUpdate && user) {
+      loadExistingData();
+    }
+  }, [isUpdate, user]);
+
+  const loadExistingData = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // Query for existing grandpa profile
+      const q = query(collection(db, "grandpas"), where("userId", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const grandpaDoc = querySnapshot.docs[0];
+        const grandpaData = grandpaDoc.data();
+        setExistingGrandpaId(grandpaDoc.id);
+        
+        // Parse address back into components
+        const fullAddress = grandpaData.address || '';
+        const addressParts = fullAddress.split(', ');
+        
+        setFormData({
+          fullname: grandpaData.name || user.displayName || '',
+          email: grandpaData.email || user.email || '',
+          password: '', // Don't pre-fill password
+          confirmPassword: '',
+          address: addressParts[0] || '',
+          city: addressParts[1] || '',
+          province: addressParts[2]?.split(' ')[0] || '',
+          postalCode: addressParts[2]?.split(' ').slice(1).join(' ') || '',
+          phone: grandpaData.phone || '',
+          contact_pref: grandpaData.contactPreference || 'both',
+          skills: grandpaData.skills || '',
+          note: grandpaData.note || '',
+          terms_agreed: true // Already agreed when they first registered
+        });
+      } else {
+        // No existing profile, pre-fill with user data
+        setFormData(prev => ({
+          ...prev,
+          fullname: user.displayName || '',
+          email: user.email || ''
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading existing data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -62,44 +123,57 @@ export default function RegisterPage() {
     e.preventDefault();
     console.log('=== FORM SUBMISSION STARTED ===');
     console.log('Form data:', formData);
+    console.log('Is update:', isUpdate);
     
     setIsSubmitting(true);
     setError('');
 
     // Basic validation
-    if (!formData.fullname || !formData.email || !formData.password) {
+    if (!formData.fullname || !formData.email) {
       setError('Please fill in all required fields');
       setIsSubmitting(false);
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setIsSubmitting(false);
-      return;
-    }
+    // Password validation only for new registrations
+    if (!isUpdate) {
+      if (!formData.password) {
+        setError('Password is required');
+        setIsSubmitting(false);
+        return;
+      }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setIsSubmitting(false);
-      return;
-    }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        setIsSubmitting(false);
+        return;
+      }
 
-    if (!formData.terms_agreed) {
-      setError('Please agree to the Terms of Service and Privacy Policy');
-      setIsSubmitting(false);
-      return;
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!formData.terms_agreed) {
+        setError('Please agree to the Terms of Service and Privacy Policy');
+        setIsSubmitting(false);
+        return;
+      }
     }
 
     try {
-      console.log('=== CREATING FIREBASE AUTH ACCOUNT ===');
-      // 1. Create Firebase Auth account as grandpa
-      const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
-      console.log('Firebase Auth result:', result);
-      const { user } = result;
+      let userId = user?.uid;
 
-      console.log('=== SAVING TO FIRESTORE ===');
-      // 2. Save grandpa profile to Firestore
+      // Create Firebase Auth account only for new registrations
+      if (!isUpdate && !user) {
+        console.log('=== CREATING FIREBASE AUTH ACCOUNT ===');
+        const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
+        console.log('Firebase Auth result:', result);
+        userId = result.user.uid;
+      }
+
+      // Prepare data for Firestore
       const firestoreData = {
         name: formData.fullname,
         address: `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
@@ -109,16 +183,23 @@ export default function RegisterPage() {
         skills: formData.skills,
         note: formData.note,
         timestamp: new Date().toISOString(),
-        userId: user.uid,
+        userId: userId,
         source: 'website'
       };
 
-      console.log('Firestore data:', firestoreData);
-      const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
-      console.log("✅ Registration saved to Firebase:", docRef.id);
+      if (isUpdate && existingGrandpaId) {
+        console.log('=== UPDATING EXISTING FIRESTORE DOCUMENT ===');
+        const docRef = doc(db, "grandpas", existingGrandpaId);
+        await updateDoc(docRef, firestoreData);
+        console.log("✅ Profile updated in Firebase:", existingGrandpaId);
+      } else {
+        console.log('=== SAVING NEW FIRESTORE DOCUMENT ===');
+        const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
+        console.log("✅ Registration saved to Firebase:", docRef.id);
+      }
 
       console.log('=== SENDING TO NETLIFY FORMS ===');
-      // 3. Send to Netlify Forms
+      // Send to Netlify Forms
       const netlifyFormData = new FormData();
       netlifyFormData.append('form-name', 'grandpa-registration');
       netlifyFormData.append('name', formData.fullname);
@@ -132,6 +213,7 @@ export default function RegisterPage() {
       netlifyFormData.append('skills', formData.skills);
       netlifyFormData.append('note', formData.note);
       netlifyFormData.append('timestamp', new Date().toLocaleString());
+      netlifyFormData.append('action', isUpdate ? 'update' : 'create');
       
       if (photo) {
         netlifyFormData.append('photo', photo);
@@ -149,7 +231,6 @@ export default function RegisterPage() {
           console.log("✅ Registration sent to Netlify Forms");
         } else {
           console.log("Trying alternative Netlify method...");
-          // Try alternative method
           const altResponse = await fetch('/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -165,7 +246,8 @@ export default function RegisterPage() {
               'contact-preference': formData.contact_pref,
               'skills': formData.skills,
               'note': formData.note,
-              'timestamp': new Date().toLocaleString()
+              'timestamp': new Date().toLocaleString(),
+              'action': isUpdate ? 'update' : 'create'
             }).toString()
           });
           console.log('Alternative Netlify response status:', altResponse.status);
@@ -180,24 +262,26 @@ export default function RegisterPage() {
       // Show success modal
       setShowModal(true);
       
-      // Reset form
-      setFormData({
-        fullname: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        address: '',
-        city: '',
-        province: '',
-        postalCode: '',
-        phone: '',
-        contact_pref: 'both',
-        skills: '',
-        note: '',
-        terms_agreed: false
-      });
-      setPhoto(null);
-      setPhotoPreview('');
+      // Reset form only for new registrations
+      if (!isUpdate) {
+        setFormData({
+          fullname: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+          address: '',
+          city: '',
+          province: '',
+          postalCode: '',
+          phone: '',
+          contact_pref: 'both',
+          skills: '',
+          note: '',
+          terms_agreed: false
+        });
+        setPhoto(null);
+        setPhotoPreview('');
+      }
 
       console.log('=== FORM SUBMISSION COMPLETED SUCCESSFULLY ===');
 
@@ -206,7 +290,7 @@ export default function RegisterPage() {
       console.error('Error details:', error);
       console.error('Error message:', error.message);
       console.error('Error code:', error.code);
-      setError(error.message || 'Failed to create account. Please try again.');
+      setError(error.message || `Failed to ${isUpdate ? 'update' : 'create'} account. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -214,8 +298,17 @@ export default function RegisterPage() {
 
   const closeModal = () => {
     setShowModal(false);
-    router.push('/dashboard'); // Redirect to dashboard after successful registration
+    router.push('/dashboard'); // Always redirect to dashboard
   };
+
+  // Show loading state while fetching existing data
+  if (loading) {
+    return (
+      <main className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent"></div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1">
@@ -223,10 +316,10 @@ export default function RegisterPage() {
       <header className="pt-16 pb-12 bg-[#f0ede6] border-b border-vintage-gold/20">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark mb-6 leading-tight">
-            Grandpa Registration
+            {isUpdate ? 'Update Profile' : 'Grandpa Registration'}
           </h1>
           <p className="text-xl text-vintage-dark/80 font-body max-w-2xl mx-auto">
-            Share your skills and connect with your community.
+            {isUpdate ? 'Update your skills and information.' : 'Share your skills and connect with your community.'}
           </p>
         </div>
       </header>
@@ -292,63 +385,65 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Password Fields */}
-            <div className="grid md:grid-cols-2 gap-8 mb-8">
-              <div>
-                <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
-                  Password
-                </label>
-                <div className="relative">
-                  <input 
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 pr-12 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
-                    placeholder="Create a password" 
-                    required 
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-vintage-dark/40" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-vintage-dark/40" />
-                    )}
-                  </button>
+            {/* Password Fields - Only show for new registrations */}
+            {!isUpdate && (
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div>
+                  <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 pr-12 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
+                      placeholder="Create a password" 
+                      required 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-vintage-dark/40" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-vintage-dark/40" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 pr-12 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
+                      placeholder="Confirm your password" 
+                      required 
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-5 w-5 text-vintage-dark/40" />
+                      ) : (
+                        <Eye className="h-5 h-5 text-vintage-dark/40" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <input 
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 pr-12 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
-                    placeholder="Confirm your password" 
-                    required 
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5 text-vintage-dark/40" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-vintage-dark/40" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
+            )}
             
             {/* Address Fields */}
             <div className="mb-8">
@@ -528,29 +623,31 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Terms */}
-            <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <label className="flex items-start gap-3 cursor-pointer select-none">
-                <input 
-                  type="checkbox" 
-                  name="terms_agreed"
-                  checked={formData.terms_agreed}
-                  onChange={handleInputChange}
-                  className="mt-1.5 w-5 h-5 accent-vintage-accent cursor-pointer" 
-                  required 
-                />
-                <span className="text-sm text-vintage-dark/80 leading-relaxed">
-                  I certify that I am at least 18 years of age and I have read and agree to the{' '}
-                  <a href="/terms" target="_blank" className="text-vintage-accent font-bold hover:underline">
-                    Terms of Service
-                  </a>{' '}
-                  and{' '}
-                  <a href="/privacy" target="_blank" className="text-vintage-accent font-bold hover:underline">
-                    Privacy Policy
-                  </a>.
-                </span>
-              </label>
-            </div>
+            {/* Terms - Only show for new registrations */}
+            {!isUpdate && (
+              <div className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input 
+                    type="checkbox" 
+                    name="terms_agreed"
+                    checked={formData.terms_agreed}
+                    onChange={handleInputChange}
+                    className="mt-1.5 w-5 h-5 accent-vintage-accent cursor-pointer" 
+                    required 
+                  />
+                  <span className="text-sm text-vintage-dark/80 leading-relaxed">
+                    I certify that I am at least 18 years of age and I have read and agree to the{' '}
+                    <a href="/terms" target="_blank" className="text-vintage-accent font-bold hover:underline">
+                      Terms of Service
+                    </a>{' '}
+                    and{' '}
+                    <a href="/privacy" target="_blank" className="text-vintage-accent font-bold hover:underline">
+                      Privacy Policy
+                    </a>.
+                  </span>
+                </label>
+              </div>
+            )}
 
             {/* Submit Button */}
             <div className="text-center mb-6">
@@ -563,19 +660,21 @@ export default function RegisterPage() {
                   console.log('Form data at click:', formData);
                 }}
               >
-                {isSubmitting ? "Creating Account..." : "Create Account"}
+                                {isUpdate ? "Update Profile" : (isSubmitting ? "Creating Account..." : "Create Account")}
               </button>
             </div>
 
-            {/* Already have an account */}
-            <div className="text-center">
-              <p className="text-sm text-vintage-dark/70">
-                Already have an account?{' '}
-                <Link href="/login" className="text-vintage-accent font-bold hover:underline">
-                  Sign in here
-                </Link>
-              </p>
-            </div>
+            {/* Already have an account - Only show for new registrations */}
+            {!isUpdate && (
+              <div className="text-center">
+                <p className="text-sm text-vintage-dark/70">
+                  Already have an account?{' '}
+                  <Link href="/login" className="text-vintage-accent font-bold hover:underline">
+                    Sign in here
+                  </Link>
+                </p>
+              </div>
+            )}
           </form>
         </div>
       </section>
@@ -596,8 +695,15 @@ export default function RegisterPage() {
             <div className="w-20 h-20 bg-vintage-green/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <Check className="w-10 h-10 text-vintage-green" />
             </div>
-            <h3 className="text-3xl font-heading font-bold text-vintage-dark mb-4">Welcome to the Club!</h3>
-            <p className="text-lg text-vintage-dark/80 mb-8 font-body">Your grandpa account has been created successfully.</p>
+            <h3 className="text-3xl font-heading font-bold text-vintage-dark mb-4">
+              {isUpdate ? 'Profile Updated!' : 'Welcome to the Club!'}
+            </h3>
+            <p className="text-lg text-vintage-dark/80 mb-8 font-body">
+              {isUpdate 
+                ? 'Your profile has been updated successfully.' 
+                : 'Your grandpa account has been created successfully.'
+              }
+            </p>
             <button 
               onClick={closeModal}
               className="bg-vintage-dark text-white px-8 py-3 rounded-full font-bold hover:bg-vintage-accent transition-colors w-full"

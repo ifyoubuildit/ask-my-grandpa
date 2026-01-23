@@ -63,7 +63,7 @@ export default function DashboardPage() {
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             
             {/* Profile Management */}
-            <Link href={profile.role === 'grandpa' ? '/register' : '/profile'} className="bg-white p-6 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20 hover:shadow-[6px_6px_0px_rgba(74,64,54,0.15)] hover:-translate-y-0.5 transition-all group">
+            <Link href="/register?update=true" className="bg-white p-6 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20 hover:shadow-[6px_6px_0px_rgba(74,64,54,0.15)] hover:-translate-y-0.5 transition-all group">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-vintage-accent/20 rounded-full flex items-center justify-center group-hover:bg-vintage-accent/30 transition-colors">
                   <User className="w-6 h-6 text-vintage-accent" />
