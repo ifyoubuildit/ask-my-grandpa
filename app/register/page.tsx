@@ -207,6 +207,8 @@ function RegisterForm() {
       const grandpaData: any = {
         name: formData.fullname,
         address: `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
+        city: formData.city,
+        province: formData.province,
         phone: formData.phone,
         email: formData.email,
         contactPreference: formData.contact_pref,
@@ -223,59 +225,13 @@ function RegisterForm() {
 
       if (isUpdate && existingGrandpaId) {
         await updateDoc(doc(db, "grandpas", existingGrandpaId), grandpaData);
+        console.log('✅ Grandpa profile updated successfully');
       } else {
         await addDoc(collection(db, "grandpas"), grandpaData);
+        console.log('✅ New grandpa registered successfully');
       }
 
-      // Step 4: Send to Netlify Forms using direct Netlify endpoint
-      try {
-        console.log('📧 Starting Netlify Forms submission (direct endpoint method)...');
-        
-        // Use Netlify's direct form processing endpoint
-        const netlifyEndpoint = 'https://askmygrandpa.com/';
-        
-        const formData_netlify = new FormData();
-        formData_netlify.append('form-name', 'grandpa-registration');
-        formData_netlify.append('name', formData.fullname);
-        formData_netlify.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
-        formData_netlify.append('city', formData.city);
-        formData_netlify.append('province', formData.province);
-        formData_netlify.append('postal-code', formData.postalCode);
-        formData_netlify.append('phone', formData.phone);
-        formData_netlify.append('email', formData.email);
-        formData_netlify.append('contact-preference', formData.contact_pref);
-        formData_netlify.append('skills', formData.skills);
-        formData_netlify.append('note', formData.note);
-        formData_netlify.append('timestamp', new Date().toLocaleString());
-        
-        console.log('📧 Submitting to Netlify direct endpoint...');
-        
-        const netlifyResponse = await fetch(netlifyEndpoint, {
-          method: 'POST',
-          body: formData_netlify,
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-        
-        console.log('📧 Netlify direct response status:', netlifyResponse.status);
-        console.log('📧 Netlify direct response headers:', Object.fromEntries(netlifyResponse.headers.entries()));
-        
-        if (netlifyResponse.ok) {
-          console.log('✅ Netlify Forms direct submission successful');
-          console.log('📧 Check Netlify Dashboard > Forms > grandpa-registration');
-        } else {
-          console.warn('⚠️ Netlify direct submission failed:', netlifyResponse.status);
-          const responseText = await netlifyResponse.text();
-          console.warn('⚠️ Response:', responseText);
-        }
-        
-      } catch (netlifyError) {
-        console.error('❌ Netlify Forms direct submission failed:', netlifyError);
-        // Don't throw error - Firebase still works
-      }
-
-      // Success!
+      // Success! Firebase Functions will automatically send email notifications
       setShowModal(true);
       
       // Reset form for new registrations only
@@ -733,7 +689,7 @@ function RegisterForm() {
             <p className="text-lg text-vintage-dark/80 mb-8 font-body">
               {isUpdate 
                 ? 'Your profile has been updated successfully.' 
-                : 'Your account has been created successfully.'
+                : 'Your account has been created successfully! You\'ll receive email notifications when apprentices reach out for help.'
               }
             </p>
             <button 

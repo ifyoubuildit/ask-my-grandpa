@@ -127,69 +127,8 @@ function RequestHelpForm() {
       await addDoc(collection(db, "requests"), requestData);
       console.log('✅ Request saved to Firestore successfully');
 
-      // Send email notification to grandpa
-      try {
-        console.log('📧 Starting Netlify Forms submission...');
-        console.log('📧 Grandpa email:', grandpaData?.email);
-        console.log('📧 Grandpa data:', grandpaData);
-        
-        if (!grandpaData?.email) {
-          console.warn('⚠️ No grandpa email found - email notification will not be sent');
-        }
-        
-        // Create a hidden form and submit it directly (like the working HTML form)
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/';
-        form.style.display = 'none';
-        
-        // Add form fields
-        const fields = {
-          'form-name': 'grandpa-request',
-          'grandpa-name': grandpaName,
-          'grandpa-email': grandpaData?.email || '',
-          'apprentice-name': user.displayName || user.email || '',
-          'apprentice-email': user.email || '',
-          'subject': formData.subject,
-          'availability': formData.availability,
-          'message': formData.message,
-          'timestamp': new Date().toLocaleString()
-        };
-        
-        console.log('📧 Form fields being sent:', fields);
-        
-        Object.entries(fields).forEach(([name, value]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = name;
-          input.value = value;
-          form.appendChild(input);
-        });
-        
-        // Submit the form in a hidden iframe to avoid page redirect
-        const iframe = document.createElement('iframe');
-        iframe.name = 'netlify-form-submission';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        
-        form.target = 'netlify-form-submission';
-        document.body.appendChild(form);
-        
-        console.log('📧 Submitting request form directly to Netlify');
-        form.submit();
-        
-        // Clean up after a delay
-        setTimeout(() => {
-          if (document.body.contains(form)) document.body.removeChild(form);
-          if (document.body.contains(iframe)) document.body.removeChild(iframe);
-        }, 2000);
-        
-        console.log('✅ Request form submitted directly to Netlify Forms');
-        console.log('📧 Email should be sent to: ' + (grandpaData?.email || 'NO EMAIL FOUND'));
-        
-      } catch (emailError) {
-        console.warn('⚠️ Email notification failed (continuing anyway):', emailError);
-      }
+      // Firebase Functions will automatically send email notifications
+      console.log('📧 Firebase Functions will send email notifications automatically');
 
       console.log('🎯 Redirecting to dashboard...');
       console.log('🎯 User state:', { uid: user?.uid, email: user?.email });
@@ -285,9 +224,7 @@ function RequestHelpForm() {
       <section className="pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30">
           
-          <form onSubmit={handleSubmit} name="grandpa-request" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
-            <input type="hidden" name="form-name" value="grandpa-request" />
-            <input type="hidden" name="bot-field" />
+          <form onSubmit={handleSubmit}>
             
             {/* Error Message */}
             {error && (
@@ -295,18 +232,6 @@ function RequestHelpForm() {
                 {error}
               </div>
             )}
-            
-            {/* Hidden fields for Netlify Forms detection */}
-            <div style={{ display: 'none' }}>
-              <input name="grandpa-name" value={grandpaName} readOnly />
-              <input name="grandpa-email" value={grandpaData?.email || ''} readOnly />
-              <input name="apprentice-name" value={user?.displayName || ''} readOnly />
-              <input name="apprentice-email" value={user?.email || ''} readOnly />
-              <input name="subject" value={formData.subject} readOnly />
-              <input name="availability" value={formData.availability} readOnly />
-              <textarea name="message" value={formData.message} readOnly />
-              <input name="timestamp" value={new Date().toLocaleString()} readOnly />
-            </div>
             
             {/* Subject */}
             <div className="mb-8">

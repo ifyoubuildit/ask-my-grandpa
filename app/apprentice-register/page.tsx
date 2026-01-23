@@ -197,9 +197,13 @@ function ApprenticeRegisterForm() {
       const apprenticeData: any = {
         name: formData.fullname,
         address: `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
+        city: formData.city,
+        province: formData.province,
         phone: formData.phone,
         email: formData.email,
         contactPreference: formData.contact_pref,
+        interests: formData.interests || '',
+        note: formData.note || '',
         timestamp: new Date().toISOString(),
         userId: userId,
         source: 'website',
@@ -213,70 +217,13 @@ function ApprenticeRegisterForm() {
 
       if (isUpdate && existingApprenticeId) {
         await updateDoc(doc(db, "apprentices", existingApprenticeId), apprenticeData);
+        console.log('✅ Apprentice profile updated successfully');
       } else {
         await addDoc(collection(db, "apprentices"), apprenticeData);
+        console.log('✅ New apprentice registered successfully');
       }
 
-      // Step 4: Send to Netlify Forms
-      try {
-        console.log('📧 Starting Netlify Forms submission...');
-        
-        // Create a hidden form and submit it directly (like the working HTML form)
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/';
-        form.style.display = 'none';
-        
-        // Add form fields
-        const fields = {
-          'form-name': 'apprentice-registration',
-          'name': formData.fullname,
-          'address': `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
-          'city': formData.city,
-          'province': formData.province,
-          'postal-code': formData.postalCode,
-          'phone': formData.phone,
-          'email': formData.email,
-          'contact-preference': formData.contact_pref,
-          'interested-grandpa': grandpaName,
-          'timestamp': new Date().toLocaleString()
-        };
-        
-        Object.entries(fields).forEach(([name, value]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = name;
-          input.value = value;
-          form.appendChild(input);
-        });
-        
-        // Submit the form in a hidden iframe to avoid page redirect
-        const iframe = document.createElement('iframe');
-        iframe.name = 'netlify-form-submission';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        
-        form.target = 'netlify-form-submission';
-        document.body.appendChild(form);
-        
-        console.log('📧 Submitting apprentice form directly to Netlify');
-        form.submit();
-        
-        // Clean up after a delay
-        setTimeout(() => {
-          document.body.removeChild(form);
-          document.body.removeChild(iframe);
-        }, 2000);
-        
-        console.log('✅ Apprentice form submitted directly to Netlify Forms');
-        console.log('📧 Check Netlify dashboard for submission with name: ' + formData.fullname);
-        
-      } catch (netlifyError) {
-        console.error('❌ Netlify Forms submission failed:', netlifyError);
-        // Don't throw error - continue with success since Firebase worked
-      }
-
-      // Success!
+      // Success! Firebase Functions will automatically send email notifications
       setShowModal(true);
       
       // Reset form for new registrations only
