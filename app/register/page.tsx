@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Camera, Lock, X, Check, Eye, EyeOff } from 'lucide-react';
+import { Camera, X, Check, Eye, EyeOff } from 'lucide-react';
 import { 
   collection, 
   addDoc, 
@@ -9,11 +9,10 @@ import {
   where, 
   getDocs, 
   doc, 
-  updateDoc,
-  getDoc 
+  updateDoc 
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage, initializeCollections } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { signUp } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -149,59 +148,13 @@ function RegisterForm() {
     }
   };
 
-  // Test Firebase connection
-  const testFirebaseConnection = async () => {
-    try {
-      console.log('🔥 Testing Firebase connection...');
-      
-      // Try to read from Firestore
-      const testQuery = query(collection(db, "grandpas"));
-      const querySnapshot = await getDocs(testQuery);
-      console.log('✅ Firebase connection successful. Found', querySnapshot.size, 'grandpas');
-      
-      // If no grandpas exist, the collection might not be created yet
-      if (querySnapshot.empty) {
-        console.log('ℹ️ No grandpas found - collection may not exist yet');
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('❌ Firebase connection failed:', error);
-      return false;
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('=== REGISTRATION FORM SUBMISSION STARTED ===');
-    console.log('Form data:', formData);
-    console.log('Is update:', isUpdate);
-    console.log('Current user:', user);
-    
-    // Test Firebase connection first
-    const connectionTest = await testFirebaseConnection();
-    if (!connectionTest) {
-      setError('Unable to connect to Firebase. Please check your internet connection and try again.');
-      return;
-    }
-    
-    try {
-      console.log('🔥 Testing Firebase connection...');
-      console.log('Firebase config:', {
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-      });
-    } catch (configError) {
-      console.error('❌ Firebase config error:', configError);
-    }
-    
     setIsSubmitting(true);
     setError('');
 
     // Basic validation
     if (!formData.fullname || !formData.email || !formData.address || !formData.city || !formData.province || !formData.postalCode || !formData.phone || !formData.skills || !formData.note) {
-      console.log('❌ Validation failed: Missing required fields');
       setError('Please fill in all required fields');
       setIsSubmitting(false);
       return;
@@ -210,21 +163,18 @@ function RegisterForm() {
     // Password validation only for new registrations
     if (!isUpdate) {
       if (!formData.password || formData.password !== formData.confirmPassword) {
-        console.log('❌ Password validation failed');
         setError('Please enter matching passwords');
         setIsSubmitting(false);
         return;
       }
 
       if (formData.password.length < 6) {
-        console.log('❌ Password too short');
         setError('Password must be at least 6 characters');
         setIsSubmitting(false);
         return;
       }
 
       if (!formData.terms_agreed) {
-        console.log('❌ Terms not agreed');
         setError('Please agree to the Terms of Service and Privacy Policy');
         setIsSubmitting(false);
         return;
@@ -236,29 +186,20 @@ function RegisterForm() {
 
       // Step 1: Create Firebase Auth account (only for new registrations)
       if (!isUpdate && !user) {
-        console.log('🔐 Creating Firebase Auth account...');
-        try {
-          const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
-          userId = result.user.uid;
-          console.log('✅ Auth account created:', userId);
-        } catch (authError) {
-          console.error('❌ Auth creation failed:', authError);
-          throw authError;
-        }
+        const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
+        userId = result.user.uid;
       }
 
-      // Step 2: Upload photo if provided (skip if Storage not configured)
+      // Step 2: Upload photo if provided
       let photoURL = '';
       if (photo && userId) {
-        console.log('📸 Attempting to upload photo...');
         try {
           const photoRef = ref(storage, `grandpa-photos/${userId}/${Date.now()}-${photo.name}`);
           const snapshot = await uploadBytes(photoRef, photo);
           photoURL = await getDownloadURL(snapshot.ref);
-          console.log('✅ Photo uploaded:', photoURL);
         } catch (photoError) {
-          console.error('❌ Photo upload failed (Storage may not be configured):', photoError);
-          // Continue without photo - this is not a critical failure
+          console.warn('Photo upload failed:', photoError);
+          // Continue without photo
         }
       }
 
@@ -280,22 +221,13 @@ function RegisterForm() {
         grandpaData.photoURL = photoURL;
       }
 
-      console.log('💾 Saving to Firestore...', grandpaData);
-      try {
-        if (isUpdate && existingGrandpaId) {
-          await updateDoc(doc(db, "grandpas", existingGrandpaId), grandpaData);
-          console.log('✅ Updated in Firestore');
-        } else {
-          const docRef = await addDoc(collection(db, "grandpas"), grandpaData);
-          console.log('✅ Saved to Firestore:', docRef.id);
-        }
-      } catch (firestoreError) {
-        console.error('❌ Firestore save failed:', firestoreError);
-        throw firestoreError;
+      if (isUpdate && existingGrandpaId) {
+        await updateDoc(doc(db, "grandpas", existingGrandpaId), grandpaData);
+      } else {
+        await addDoc(collection(db, "grandpas"), grandpaData);
       }
 
       // Step 4: Send to Netlify Forms
-      console.log('📧 Sending to Netlify Forms...');
       const netlifyFormData = new FormData();
       netlifyFormData.append('form-name', 'grandpa-registration');
       netlifyFormData.append('name', formData.fullname);
@@ -314,19 +246,12 @@ function RegisterForm() {
         netlifyFormData.append('photo', photo);
       }
 
-      try {
-        const netlifyResponse = await fetch('/', {
-          method: 'POST',
-          body: netlifyFormData
-        });
-        console.log('✅ Netlify Forms response:', netlifyResponse.status);
-      } catch (netlifyError) {
-        console.error('❌ Netlify Forms failed:', netlifyError);
-        // Continue anyway - Netlify Forms failure shouldn't stop the process
-      }
+      await fetch('/', {
+        method: 'POST',
+        body: netlifyFormData
+      });
 
       // Success!
-      console.log('🎉 Registration completed successfully');
       setShowModal(true);
       
       // Reset form for new registrations only
@@ -351,7 +276,7 @@ function RegisterForm() {
       }
 
     } catch (error) {
-      console.error('❌ Registration failed:', error);
+      console.error('Registration failed:', error);
       let errorMessage = 'Registration failed. Please try again.';
       
       if (error instanceof Error) {
@@ -372,7 +297,6 @@ function RegisterForm() {
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
-      console.log('=== REGISTRATION FORM SUBMISSION ENDED ===');
     }
   };
 
@@ -735,32 +659,6 @@ function RegisterForm() {
 
             {/* Submit Button */}
             <div className="text-center mb-6">
-              {/* Temporary Firebase Test Buttons */}
-              <div className="mb-4 space-x-2">
-                <button 
-                  type="button"
-                  onClick={testFirebaseConnection}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors shadow-lg"
-                >
-                  Test Firebase
-                </button>
-                <button 
-                  type="button"
-                  onClick={async () => {
-                    console.log('Initializing collections...');
-                    const result = await initializeCollections();
-                    if (result) {
-                      alert('Collections initialized successfully!');
-                    } else {
-                      alert('Failed to initialize collections. Check console for errors.');
-                    }
-                  }}
-                  className="bg-purple-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-purple-600 transition-colors shadow-lg"
-                >
-                  Initialize Collections
-                </button>
-              </div>
-              
               <button 
                 type="submit" 
                 disabled={isSubmitting}
