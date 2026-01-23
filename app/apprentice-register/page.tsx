@@ -202,8 +202,6 @@ function ApprenticeRegisterForm() {
         phone: formData.phone,
         email: formData.email,
         contactPreference: formData.contact_pref,
-        interests: formData.interests || '',
-        note: formData.note || '',
         timestamp: new Date().toISOString(),
         userId: userId,
         source: 'website',
