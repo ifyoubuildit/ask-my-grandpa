@@ -110,7 +110,7 @@ function RegisterForm() {
           email: user.email || ''
         }));
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error loading existing data:', error);
     } finally {
       setLoading(false);
@@ -202,7 +202,7 @@ function RegisterForm() {
           console.log('Firebase Auth result:', result);
           userId = result.user.uid;
           console.log('New user ID:', userId);
-        } catch (authError) {
+        } catch (authError: unknown) {
           console.error('Firebase Auth error:', authError);
           throw authError;
         }
@@ -221,7 +221,7 @@ function RegisterForm() {
           const snapshot = await uploadBytes(photoRef, photo);
           photoURL = await getDownloadURL(snapshot.ref);
           console.log('Photo uploaded successfully:', photoURL);
-        } catch (photoError) {
+        } catch (photoError: unknown) {
           console.error('Photo upload error:', photoError);
           // Don't fail the whole process for photo upload
         }
@@ -256,9 +256,10 @@ function RegisterForm() {
           const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
           console.log("✅ Registration saved to Firebase:", docRef.id);
         }
-      } catch (firestoreError) {
+      } catch (firestoreError: unknown) {
         console.error('Firestore error:', firestoreError);
-        throw new Error(`Database save failed: ${firestoreError.message}`);
+        const errorMessage = firestoreError instanceof Error ? firestoreError.message : 'Unknown database error';
+        throw new Error(`Database save failed: ${errorMessage}`);
       }
 
       console.log('=== SENDING TO NETLIFY FORMS ===');
@@ -328,7 +329,7 @@ function RegisterForm() {
             console.log('Alternative Netlify error response:', altResponseText);
           }
         }
-      } catch (netlifyError) {
+      } catch (netlifyError: unknown) {
         console.error("Netlify Forms error:", netlifyError);
         // Don't fail the whole process for Netlify Forms
       }
@@ -360,13 +361,21 @@ function RegisterForm() {
 
       console.log('=== FORM SUBMISSION COMPLETED SUCCESSFULLY ===');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('=== FORM SUBMISSION ERROR ===');
       console.error('Error details:', error);
-      console.error('Error message:', error.message);
-      console.error('Error code:', error.code);
-      console.error('Error stack:', error.stack);
-      setError(error.message || `Failed to ${isUpdate ? 'update' : 'create'} account. Please try again.`);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorCode = error instanceof Error && 'code' in error ? (error as any).code : 'unknown';
+      
+      console.error('Error message:', errorMessage);
+      console.error('Error code:', errorCode);
+      
+      if (error instanceof Error && error.stack) {
+        console.error('Error stack:', error.stack);
+      }
+      
+      setError(errorMessage || `Failed to ${isUpdate ? 'update' : 'create'} account. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
