@@ -32,12 +32,20 @@ function SearchResults() {
         
         querySnapshot.forEach((doc) => {
           const data = doc.data();
+          // Parse address to extract city and province/state only
+          const fullAddress = data.address || '';
+          const addressParts = fullAddress.split(', ');
+          const cityProvince = addressParts.length >= 3 
+            ? `${addressParts[1]}, ${addressParts[2].split(' ')[0]}` // City, Province
+            : addressParts.slice(-2).join(', '); // Last two parts if format is different
+          
           fetchedGrandpas.push({
             name: data.name || 'Unknown',
-            address: data.address || 'Location not specified',
+            address: cityProvince || 'Location not specified',
             skills: data.skills || '',
             note: data.note || '',
-            hasPhoto: false // We'll implement photo handling later
+            hasPhoto: !!data.photoURL, // Check if photo exists
+            image: data.photoURL || undefined // Use stored photo URL
           });
         });
         
@@ -126,14 +134,8 @@ function SearchResults() {
               </div>
             </div>
           ) : (
-            <>
-              <div className="text-center mb-8">
-                <p className="text-vintage-dark/70 font-body">
-                  Found {filteredGrandpas.length} Grandpa{filteredGrandpas.length !== 1 ? 's' : ''} in our community
-                </p>
-              </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
-                {filteredGrandpas.map((grandpa, index) => (
+            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+              {filteredGrandpas.map((grandpa, index) => (
                   <div key={index} className="bg-white rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20 overflow-hidden flex flex-col md:flex-row">
                     <div className="w-full md:w-1/3 bg-vintage-cream/50 relative h-64 md:h-auto flex items-center justify-center">
                       {grandpa.image ? (
@@ -177,8 +179,7 @@ function SearchResults() {
                     </div>
                   </div>
                 ))}
-              </div>
-            </>
+            </div>
           )}
         </div>
       </section>

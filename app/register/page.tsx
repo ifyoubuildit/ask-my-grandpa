@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { Camera, Lock, X, Check, Eye, EyeOff } from 'lucide-react';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase';
 import { signUp } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -164,6 +165,7 @@ function RegisterForm() {
 
     try {
       let userId = user?.uid;
+      let photoURL = '';
 
       // Create Firebase Auth account only for new registrations
       if (!isUpdate && !user) {
@@ -171,6 +173,20 @@ function RegisterForm() {
         const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
         console.log('Firebase Auth result:', result);
         userId = result.user.uid;
+      }
+
+      // Upload photo to Firebase Storage if provided
+      if (photo && userId) {
+        console.log('=== UPLOADING PHOTO TO FIREBASE STORAGE ===');
+        try {
+          const photoRef = ref(storage, `grandpa-photos/${userId}/${photo.name}`);
+          const snapshot = await uploadBytes(photoRef, photo);
+          photoURL = await getDownloadURL(snapshot.ref);
+          console.log('Photo uploaded successfully:', photoURL);
+        } catch (photoError) {
+          console.error('Photo upload error:', photoError);
+          // Don't fail the whole process for photo upload
+        }
       }
 
       // Prepare data for Firestore
@@ -184,7 +200,8 @@ function RegisterForm() {
         note: formData.note,
         timestamp: new Date().toISOString(),
         userId: userId,
-        source: 'website'
+        source: 'website',
+        ...(photoURL && { photoURL }) // Only add photoURL if it exists
       };
 
       if (isUpdate && existingGrandpaId) {
