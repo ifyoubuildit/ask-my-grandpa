@@ -8,22 +8,21 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Form notifications
+# Netlify Forms Configuration
 [forms]
+  # Explicitly enable form processing
+  enabled = true
+  
   # Global form settings
   [forms.settings]
     # Enable spam filtering
     spam_filter = true
     
-  # Grandpa registration notifications
+  # Form notifications
   [[forms.notifications]]
-    # Form name must match the name attribute
     form = "grandpa-registration"
-    # Your email for notifications
     to = "info@askmygrandpa.com"
-    # Email subject
     subject = "🎉 New Grandpa Registration!"
-    # Custom email template
     template = """
     Great news! A new Grandpa has registered on AskMyGrandpa.com
 
@@ -43,15 +42,10 @@
     You can view all submissions in your Netlify dashboard.
     """
     
-  # Apprentice registration notifications
   [[forms.notifications]]
-    # Form name must match the name attribute
     form = "apprentice-registration"
-    # Your email for notifications
     to = "info@askmygrandpa.com"
-    # Email subject
     subject = "🌟 New Apprentice Registration!"
-    # Custom email template
     template = """
     Exciting news! A new Apprentice has registered on AskMyGrandpa.com
 
@@ -69,15 +63,10 @@
     You can view all submissions in your Netlify dashboard.
     """
     
-  # Grandpa request notifications
   [[forms.notifications]]
-    # Form name must match the name attribute
     form = "grandpa-request"
-    # Send to the specific grandpa's email
     to = "{{ grandpa-email }}"
-    # Email subject
     subject = "🔧 New Help Request - {{ subject }}"
-    # Custom email template
     template = """
     You have a new help request on AskMyGrandpa.com!
 
@@ -94,3 +83,11 @@
     
     Thank you for being part of our community!
     """
+
+# Redirect rules for form submissions
+[[redirects]]
+  from = "/"
+  to = "/"
+  status = 200
+  force = false
+  conditions = {Role = ["form-submission"]}
