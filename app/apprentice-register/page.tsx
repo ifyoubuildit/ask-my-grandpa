@@ -16,6 +16,7 @@ function ApprenticeRegisterForm() {
   const searchParams = useSearchParams();
   const grandpaName = searchParams.get('grandpa') || '';
   const grandpaId = searchParams.get('grandpaId') || '';
+  const skill = searchParams.get('skill') || '';
   const isUpdate = searchParams.get('update') === 'true';
   
   const [formData, setFormData] = useState({
@@ -327,7 +328,7 @@ function ApprenticeRegisterForm() {
     // For updates, stay on the same page so they can make more changes
     // For new registrations, go to request help page
     if (!isUpdate) {
-      router.push(`/request-help?grandpa=${encodeURIComponent(grandpaName)}&grandpaId=${grandpaId}&skill=${encodeURIComponent(grandpaName.split(' ')[0])}`);
+      router.push(`/request-help?grandpa=${encodeURIComponent(grandpaName)}&grandpaId=${grandpaId}&skill=${encodeURIComponent(skill)}`);
     }
   };
 

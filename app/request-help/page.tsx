@@ -16,10 +16,20 @@ function RequestHelpForm() {
   const skill = searchParams.get('skill') || '';
   
   const [formData, setFormData] = useState({
-    subject: skill ? `${skill} Help` : '',
+    subject: '',
     availability: '',
     message: ''
   });
+  
+  // Initialize form data when skill is available
+  useEffect(() => {
+    if (skill) {
+      setFormData(prev => ({
+        ...prev,
+        subject: `${skill} Help`
+      }));
+    }
+  }, [skill]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -51,9 +61,11 @@ function RequestHelpForm() {
 
   // Update message when user info is available
   useEffect(() => {
+    console.log('🔧 Request Help Debug:', { user: user?.displayName, skill, grandpaName });
     if (user && skill) {
       setFormData(prev => ({
         ...prev,
+        subject: `${skill} Help`,
         message: `Hi! My name is ${user.displayName || 'Chris Wallace'} and I am looking for ${skill.toLowerCase()} help. Specifically...`
       }));
     }
@@ -315,7 +327,7 @@ function RequestHelpForm() {
                 ) : (
                   <>
                     <Send className="w-5 h-5" />
-                    Request Grandpa
+                    Request Mentorship
                   </>
                 )}
               </button>
