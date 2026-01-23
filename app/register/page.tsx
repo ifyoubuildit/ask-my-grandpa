@@ -142,19 +142,17 @@ function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Force rebuild - all TypeScript errors fixed
-    console.log('=== FORM SUBMISSION STARTED ===');
+    console.log('=== REGISTRATION FORM SUBMISSION STARTED ===');
     console.log('Form data:', formData);
     console.log('Is update:', isUpdate);
-    console.log('User:', user);
-    console.log('Existing Grandpa ID:', existingGrandpaId);
+    console.log('Current user:', user);
     
     setIsSubmitting(true);
     setError('');
 
     // Basic validation
-    if (!formData.fullname || !formData.email) {
-      console.error('Validation failed: Missing required fields');
+    if (!formData.fullname || !formData.email || !formData.address || !formData.city || !formData.province || !formData.postalCode || !formData.phone || !formData.skills || !formData.note) {
+      console.log('❌ Validation failed: Missing required fields');
       setError('Please fill in all required fields');
       setIsSubmitting(false);
       return;
@@ -162,29 +160,22 @@ function RegisterForm() {
 
     // Password validation only for new registrations
     if (!isUpdate) {
-      if (!formData.password) {
-        console.error('Validation failed: Password required for new registration');
-        setError('Password is required');
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (formData.password !== formData.confirmPassword) {
-        console.error('Validation failed: Passwords do not match');
-        setError('Passwords do not match');
+      if (!formData.password || formData.password !== formData.confirmPassword) {
+        console.log('❌ Password validation failed');
+        setError('Please enter matching passwords');
         setIsSubmitting(false);
         return;
       }
 
       if (formData.password.length < 6) {
-        console.error('Validation failed: Password too short');
+        console.log('❌ Password too short');
         setError('Password must be at least 6 characters');
         setIsSubmitting(false);
         return;
       }
 
       if (!formData.terms_agreed) {
-        console.error('Validation failed: Terms not agreed');
+        console.log('❌ Terms not agreed');
         setError('Please agree to the Terms of Service and Privacy Policy');
         setIsSubmitting(false);
         return;
@@ -193,43 +184,32 @@ function RegisterForm() {
 
     try {
       let userId = user?.uid;
-      let photoURL = '';
 
-      // Create Firebase Auth account only for new registrations
+      // Step 1: Create Firebase Auth account (only for new registrations)
       if (!isUpdate && !user) {
-        console.log('=== CREATING FIREBASE AUTH ACCOUNT ===');
-        try {
-          const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
-          console.log('Firebase Auth result:', result);
-          userId = result.user.uid;
-          console.log('New user ID:', userId);
-        } catch (authError: unknown) {
-          console.error('Firebase Auth error:', authError);
-          throw authError;
-        }
+        console.log('🔐 Creating Firebase Auth account...');
+        const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
+        userId = result.user.uid;
+        console.log('✅ Auth account created:', userId);
       }
 
-      if (!userId) {
-        console.error('No user ID available');
-        throw new Error('User authentication failed');
-      }
-
-      // Upload photo to Firebase Storage if provided
+      // Step 2: Upload photo if provided (skip if Storage not configured)
+      let photoURL = '';
       if (photo && userId) {
-        console.log('=== UPLOADING PHOTO TO FIREBASE STORAGE ===');
+        console.log('📸 Attempting to upload photo...');
         try {
-          const photoRef = ref(storage, `grandpa-photos/${userId}/${photo.name}`);
+          const photoRef = ref(storage, `grandpa-photos/${userId}/${Date.now()}-${photo.name}`);
           const snapshot = await uploadBytes(photoRef, photo);
           photoURL = await getDownloadURL(snapshot.ref);
-          console.log('Photo uploaded successfully:', photoURL);
-        } catch (photoError: unknown) {
-          console.error('Photo upload error:', photoError);
-          // Don't fail the whole process for photo upload
+          console.log('✅ Photo uploaded:', photoURL);
+        } catch (photoError) {
+          console.error('❌ Photo upload failed (Storage may not be configured):', photoError);
+          // Continue without photo - this is not a critical failure
         }
       }
 
-      // Prepare data for Firestore
-      const firestoreData = {
+      // Step 3: Save to Firestore
+      const grandpaData: any = {
         name: formData.fullname,
         address: `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
         phone: formData.phone,
@@ -239,32 +219,24 @@ function RegisterForm() {
         note: formData.note,
         timestamp: new Date().toISOString(),
         userId: userId,
-        source: 'website',
-        ...(photoURL && { photoURL }) // Only add photoURL if it exists
+        source: 'website'
       };
 
-      console.log('Firestore data to save:', firestoreData);
-
-      // Save or update in Firestore
-      try {
-        if (isUpdate && existingGrandpaId) {
-          console.log('=== UPDATING EXISTING FIRESTORE DOCUMENT ===');
-          const docRef = doc(db, "grandpas", existingGrandpaId);
-          await updateDoc(docRef, firestoreData);
-          console.log("✅ Profile updated in Firebase:", existingGrandpaId);
-        } else {
-          console.log('=== SAVING NEW FIRESTORE DOCUMENT ===');
-          const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
-          console.log("✅ Registration saved to Firebase:", docRef.id);
-        }
-      } catch (firestoreError: unknown) {
-        console.error('Firestore error:', firestoreError);
-        const errorMessage = firestoreError instanceof Error ? firestoreError.message : 'Unknown database error';
-        throw new Error(`Database save failed: ${errorMessage}`);
+      if (photoURL) {
+        grandpaData.photoURL = photoURL;
       }
 
-      console.log('=== SENDING TO NETLIFY FORMS ===');
-      // Send to Netlify Forms
+      console.log('💾 Saving to Firestore...', grandpaData);
+      if (isUpdate && existingGrandpaId) {
+        await updateDoc(doc(db, "grandpas", existingGrandpaId), grandpaData);
+        console.log('✅ Updated in Firestore');
+      } else {
+        const docRef = await addDoc(collection(db, "grandpas"), grandpaData);
+        console.log('✅ Saved to Firestore:', docRef.id);
+      }
+
+      // Step 4: Send to Netlify Forms
+      console.log('📧 Sending to Netlify Forms...');
       const netlifyFormData = new FormData();
       netlifyFormData.append('form-name', 'grandpa-registration');
       netlifyFormData.append('name', formData.fullname);
@@ -278,68 +250,27 @@ function RegisterForm() {
       netlifyFormData.append('skills', formData.skills);
       netlifyFormData.append('note', formData.note);
       netlifyFormData.append('timestamp', new Date().toLocaleString());
-      netlifyFormData.append('action', isUpdate ? 'update' : 'create');
       
       if (photo) {
         netlifyFormData.append('photo', photo);
       }
 
       try {
-        console.log('Trying primary Netlify method...');
-        const netlifyResponse = await fetch('/forms/grandpa-registration', {
+        const netlifyResponse = await fetch('/', {
           method: 'POST',
           body: netlifyFormData
         });
-
-        console.log('Netlify response status:', netlifyResponse.status);
-        console.log('Netlify response headers:', netlifyResponse.headers);
-        
-        if (netlifyResponse.ok) {
-          console.log("✅ Registration sent to Netlify Forms");
-        } else {
-          console.log("Primary Netlify method failed, trying alternative...");
-          const responseText = await netlifyResponse.text();
-          console.log('Netlify error response:', responseText);
-          
-          // Try alternative method
-          const altResponse = await fetch('/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-              'form-name': 'grandpa-registration',
-              'name': formData.fullname,
-              'address': formData.address,
-              'city': formData.city,
-              'province': formData.province,
-              'postal-code': formData.postalCode,
-              'phone': formData.phone,
-              'email': formData.email,
-              'contact-preference': formData.contact_pref,
-              'skills': formData.skills,
-              'note': formData.note,
-              'timestamp': new Date().toLocaleString(),
-              'action': isUpdate ? 'update' : 'create'
-            }).toString()
-          });
-          
-          console.log('Alternative Netlify response status:', altResponse.status);
-          if (altResponse.ok) {
-            console.log("✅ Registration sent to Netlify Forms (alternative method)");
-          } else {
-            const altResponseText = await altResponse.text();
-            console.log('Alternative Netlify error response:', altResponseText);
-          }
-        }
-      } catch (netlifyError: unknown) {
-        console.error("Netlify Forms error:", netlifyError);
-        // Don't fail the whole process for Netlify Forms
+        console.log('✅ Netlify Forms response:', netlifyResponse.status);
+      } catch (netlifyError) {
+        console.error('❌ Netlify Forms failed:', netlifyError);
+        // Continue anyway
       }
 
-      console.log('=== SHOWING SUCCESS MODAL ===');
-      // Show success modal
+      // Success!
+      console.log('🎉 Registration completed successfully');
       setShowModal(true);
       
-      // Don't reset form for updates - keep the data so they can make more changes
+      // Reset form for new registrations only
       if (!isUpdate) {
         setFormData({
           fullname: '',
@@ -360,25 +291,18 @@ function RegisterForm() {
         setPhotoPreview('');
       }
 
-      console.log('=== FORM SUBMISSION COMPLETED SUCCESSFULLY ===');
-
-    } catch (error: unknown) {
-      console.error('=== FORM SUBMISSION ERROR ===');
-      console.error('Error details:', error);
+    } catch (error) {
+      console.error('❌ Registration failed:', error);
+      let errorMessage = 'Registration failed. Please try again.';
       
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      const errorCode = error instanceof Error && 'code' in error ? (error as any).code : 'unknown';
-      
-      console.error('Error message:', errorMessage);
-      console.error('Error code:', errorCode);
-      
-      if (error instanceof Error && error.stack) {
-        console.error('Error stack:', error.stack);
+      if (error instanceof Error) {
+        errorMessage = error.message;
       }
       
-      setError(errorMessage || `Failed to ${isUpdate ? 'update' : 'create'} account. Please try again.`);
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
+      console.log('=== REGISTRATION FORM SUBMISSION ENDED ===');
     }
   };
 
@@ -745,12 +669,8 @@ function RegisterForm() {
                 type="submit" 
                 disabled={isSubmitting}
                 className="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg w-full md:w-auto disabled:opacity-50"
-                onClick={(e) => {
-                  console.log('Button clicked!');
-                  console.log('Form data at click:', formData);
-                }}
               >
-                                {isUpdate 
+                {isUpdate 
                   ? (isSubmitting ? "Updating Profile..." : "Update Profile")
                   : (isSubmitting ? "Creating Account..." : "Create Account")
                 }
