@@ -104,44 +104,26 @@ function RequestHelpForm() {
 
       // Send email notification to grandpa
       try {
-        console.log('📧 Attempting to send to Netlify Forms...');
+        console.log('📧 Starting Netlify Forms submission...');
         
-        // Create a hidden form and submit it to Netlify
-        const form = document.createElement('form');
-        form.setAttribute('name', 'grandpa-request');
-        form.setAttribute('method', 'POST');
-        form.setAttribute('data-netlify', 'true');
-        form.style.display = 'none';
-        
-        // Add all form fields
-        const fields = {
-          'form-name': 'grandpa-request',
-          'grandpa-name': grandpaName,
-          'grandpa-email': grandpaData?.email || '',
-          'apprentice-name': user.displayName || user.email || '',
-          'apprentice-email': user.email || '',
-          'subject': formData.subject,
-          'availability': formData.availability,
-          'message': formData.message,
-          'timestamp': new Date().toLocaleString()
-        };
-        
-        Object.entries(fields).forEach(([name, value]) => {
-          const input = document.createElement('input');
-          input.setAttribute('type', 'hidden');
-          input.setAttribute('name', name);
-          input.setAttribute('value', value);
-          form.appendChild(input);
-        });
-        
-        document.body.appendChild(form);
-        
-        // Submit the form
-        const formData2 = new FormData(form);
+        // Use URLSearchParams method (the method that works!)
+        const netlifyData = new URLSearchParams();
+        netlifyData.append('form-name', 'grandpa-request');
+        netlifyData.append('grandpa-name', grandpaName);
+        netlifyData.append('grandpa-email', grandpaData?.email || '');
+        netlifyData.append('apprentice-name', user.displayName || user.email || '');
+        netlifyData.append('apprentice-email', user.email || '');
+        netlifyData.append('subject', formData.subject);
+        netlifyData.append('availability', formData.availability);
+        netlifyData.append('message', formData.message);
+        netlifyData.append('timestamp', new Date().toLocaleString());
         
         const netlifyResponse = await fetch('/', {
           method: 'POST',
-          body: formData2
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: netlifyData.toString()
         });
         
         console.log('📧 Netlify response status:', netlifyResponse.status);
@@ -153,9 +135,6 @@ function RequestHelpForm() {
           console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
           console.warn('⚠️ Response body:', responseText);
         }
-        
-        // Clean up
-        document.body.removeChild(form);
         
       } catch (emailError) {
         console.warn('Email notification failed:', emailError);

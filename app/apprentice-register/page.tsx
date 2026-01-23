@@ -218,46 +218,28 @@ function ApprenticeRegisterForm() {
 
       // Step 4: Send to Netlify Forms
       try {
-        console.log('📧 Attempting to send to Netlify Forms...');
+        console.log('📧 Starting Netlify Forms submission...');
         
-        // Create a hidden form and submit it to Netlify
-        const form = document.createElement('form');
-        form.setAttribute('name', 'apprentice-registration');
-        form.setAttribute('method', 'POST');
-        form.setAttribute('data-netlify', 'true');
-        form.style.display = 'none';
-        
-        // Add all form fields
-        const fields = {
-          'form-name': 'apprentice-registration',
-          'name': formData.fullname,
-          'address': `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
-          'city': formData.city,
-          'province': formData.province,
-          'postal-code': formData.postalCode,
-          'phone': formData.phone,
-          'email': formData.email,
-          'contact-preference': formData.contact_pref,
-          'interested-grandpa': grandpaName,
-          'timestamp': new Date().toLocaleString()
-        };
-        
-        Object.entries(fields).forEach(([name, value]) => {
-          const input = document.createElement('input');
-          input.setAttribute('type', 'hidden');
-          input.setAttribute('name', name);
-          input.setAttribute('value', value);
-          form.appendChild(input);
-        });
-        
-        document.body.appendChild(form);
-        
-        // Submit the form
-        const formData2 = new FormData(form);
+        // Use URLSearchParams method (the method that works!)
+        const netlifyData = new URLSearchParams();
+        netlifyData.append('form-name', 'apprentice-registration');
+        netlifyData.append('name', formData.fullname);
+        netlifyData.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
+        netlifyData.append('city', formData.city);
+        netlifyData.append('province', formData.province);
+        netlifyData.append('postal-code', formData.postalCode);
+        netlifyData.append('phone', formData.phone);
+        netlifyData.append('email', formData.email);
+        netlifyData.append('contact-preference', formData.contact_pref);
+        netlifyData.append('interested-grandpa', grandpaName);
+        netlifyData.append('timestamp', new Date().toLocaleString());
         
         const netlifyResponse = await fetch('/', {
           method: 'POST',
-          body: formData2
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: netlifyData.toString()
         });
         
         console.log('📧 Netlify response status:', netlifyResponse.status);
@@ -269,9 +251,6 @@ function ApprenticeRegisterForm() {
           console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
           console.warn('⚠️ Response body:', responseText);
         }
-        
-        // Clean up
-        document.body.removeChild(form);
         
       } catch (netlifyError) {
         console.error('❌ Netlify Forms submission failed:', netlifyError);

@@ -231,44 +231,39 @@ function RegisterForm() {
       try {
         console.log('📧 Starting Netlify Forms submission...');
         
-        // Method 1: Try direct form submission with proper encoding
-        const netlifyFormData = new FormData();
-        netlifyFormData.append('form-name', 'grandpa-registration');
-        netlifyFormData.append('name', formData.fullname);
-        netlifyFormData.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
-        netlifyFormData.append('city', formData.city);
-        netlifyFormData.append('province', formData.province);
-        netlifyFormData.append('postal-code', formData.postalCode);
-        netlifyFormData.append('phone', formData.phone);
-        netlifyFormData.append('email', formData.email);
-        netlifyFormData.append('contact-preference', formData.contact_pref);
-        netlifyFormData.append('skills', formData.skills);
-        netlifyFormData.append('note', formData.note);
-        netlifyFormData.append('timestamp', new Date().toLocaleString());
+        // Use URLSearchParams method (Test 2 method that worked!)
+        const netlifyData = new URLSearchParams();
+        netlifyData.append('form-name', 'grandpa-registration');
+        netlifyData.append('name', formData.fullname);
+        netlifyData.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
+        netlifyData.append('city', formData.city);
+        netlifyData.append('province', formData.province);
+        netlifyData.append('postal-code', formData.postalCode);
+        netlifyData.append('phone', formData.phone);
+        netlifyData.append('email', formData.email);
+        netlifyData.append('contact-preference', formData.contact_pref);
+        netlifyData.append('skills', formData.skills);
+        netlifyData.append('note', formData.note);
+        netlifyData.append('timestamp', new Date().toLocaleString());
         
-        console.log('📧 Form data being sent:', {
-          'form-name': 'grandpa-registration',
-          'name': formData.fullname,
-          'email': formData.email,
-          'phone': formData.phone,
-          'skills': formData.skills
-        });
+        console.log('📧 Form data being sent:', Object.fromEntries(netlifyData));
         
         const netlifyResponse = await fetch('/', {
           method: 'POST',
-          body: netlifyFormData
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: netlifyData.toString()
         });
         
         console.log('📧 Netlify response status:', netlifyResponse.status);
-        console.log('📧 Netlify response headers:', [...netlifyResponse.headers.entries()]);
-        
-        const responseText = await netlifyResponse.text();
-        console.log('📧 Netlify response body:', responseText);
         
         if (netlifyResponse.ok) {
           console.log('✅ Successfully sent to Netlify Forms');
         } else {
-          console.warn('⚠️ Netlify Forms response not OK:', netlifyResponse.status, netlifyResponse.statusText);
+          const responseText = await netlifyResponse.text();
+          console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
+          console.warn('⚠️ Response body:', responseText);
         }
         
       } catch (netlifyError) {
@@ -685,65 +680,6 @@ function RegisterForm() {
 
             {/* Submit Button */}
             <div className="text-center mb-6">
-              {/* Test Netlify Button - TEMPORARY */}
-              <button 
-                type="button"
-                onClick={async () => {
-                  console.log('🧪 Testing Netlify Forms directly...');
-                  try {
-                    // Test 1: Try the standard Netlify Forms endpoint
-                    const testData = new FormData();
-                    testData.append('form-name', 'test-form');
-                    testData.append('test-field', 'Hello Netlify');
-                    
-                    console.log('🧪 Test 1: Standard endpoint');
-                    const response1 = await fetch('/', {
-                      method: 'POST',
-                      body: testData
-                    });
-                    
-                    console.log('🧪 Test 1 response:', response1.status);
-                    const text1 = await response1.text();
-                    console.log('🧪 Test 1 response body:', text1);
-                    
-                    // Test 2: Try with explicit content type
-                    console.log('🧪 Test 2: With explicit content type');
-                    const formData2 = new URLSearchParams();
-                    formData2.append('form-name', 'test-form');
-                    formData2.append('test-field', 'Hello Netlify 2');
-                    
-                    const response2 = await fetch('/', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                      },
-                      body: formData2.toString()
-                    });
-                    
-                    console.log('🧪 Test 2 response:', response2.status);
-                    const text2 = await response2.text();
-                    console.log('🧪 Test 2 response body:', text2);
-                    
-                    // Test 3: Check if forms are detected
-                    console.log('🧪 Test 3: Check forms detection');
-                    const response3 = await fetch('/netlify-forms.html');
-                    console.log('🧪 Forms file accessible:', response3.status);
-                    
-                    if (response1.ok || response2.ok) {
-                      alert('✅ At least one test succeeded! Check console for details.');
-                    } else {
-                      alert('❌ All tests failed. Netlify Forms may not be enabled on this site.');
-                    }
-                  } catch (error) {
-                    console.error('🧪 Test failed:', error);
-                    alert('❌ Test failed - Check console for details');
-                  }
-                }}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors shadow-lg mr-4 mb-4"
-              >
-                Test Netlify Forms (Enhanced)
-              </button>
-              
               <button 
                 type="submit" 
                 disabled={isSubmitting}
