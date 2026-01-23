@@ -32,6 +32,7 @@ function RequestHelpForm() {
   }, [skill]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState('');
   const [grandpaData, setGrandpaData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -94,6 +95,14 @@ function RequestHelpForm() {
       setIsSubmitting(false);
       return;
     }
+
+    // Debug authentication state
+    console.log('🔐 Authentication check before submission:', {
+      user: !!user,
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName
+    });
 
     try {
       console.log('🚀 Starting request submission...');
@@ -186,22 +195,28 @@ function RequestHelpForm() {
       console.log('🎯 User state:', { uid: user?.uid, email: user?.email });
       console.log('🎯 Router available:', !!router);
       
-      // Success - redirect to dashboard with a longer delay to ensure everything completes
-      setIsSubmitting(false); // Reset submitting state before redirect
+      // Success - show redirecting state and redirect immediately
+      setIsSubmitting(false);
+      setIsRedirecting(true);
       
-      // Longer delay to ensure Firestore and Netlify operations complete
+      console.log('🎯 Attempting immediate redirect to dashboard...');
+      try {
+        // Use replace instead of push to avoid back button issues
+        router.replace('/dashboard?message=request-sent');
+        console.log('✅ Redirect initiated successfully');
+      } catch (redirectError) {
+        console.error('❌ Redirect failed:', redirectError);
+        // Fallback: use window.location
+        window.location.href = '/dashboard?message=request-sent';
+      }
+      
+      // Fallback timeout in case redirect doesn't work
       setTimeout(() => {
-        console.log('🎯 Attempting redirect to dashboard...');
-        try {
-          // Use replace instead of push to avoid back button issues
-          router.replace('/dashboard?message=request-sent');
-          console.log('✅ Redirect initiated successfully');
-        } catch (redirectError) {
-          console.error('❌ Redirect failed:', redirectError);
-          // Fallback: use window.location
+        if (window.location.pathname !== '/dashboard') {
+          console.log('🔄 Fallback redirect triggered');
           window.location.href = '/dashboard?message=request-sent';
         }
-      }, 1000); // Increased delay to 1 second
+      }, 2000);
 
     } catch (error) {
       console.error('❌ Request submission failed:', error);
@@ -345,10 +360,15 @@ function RequestHelpForm() {
             <div className="text-center">
               <button 
                 type="submit" 
-                disabled={isSubmitting}
+                disabled={isSubmitting || isRedirecting}
                 className="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg w-full md:w-auto disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isSubmitting ? (
+                {isRedirecting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                    Redirecting to Dashboard...
+                  </>
+                ) : isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
                     Sending Request...
