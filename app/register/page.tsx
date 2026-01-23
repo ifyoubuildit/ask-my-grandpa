@@ -145,12 +145,15 @@ function RegisterForm() {
     console.log('=== FORM SUBMISSION STARTED ===');
     console.log('Form data:', formData);
     console.log('Is update:', isUpdate);
+    console.log('User:', user);
+    console.log('Existing Grandpa ID:', existingGrandpaId);
     
     setIsSubmitting(true);
     setError('');
 
     // Basic validation
     if (!formData.fullname || !formData.email) {
+      console.error('Validation failed: Missing required fields');
       setError('Please fill in all required fields');
       setIsSubmitting(false);
       return;
@@ -159,24 +162,28 @@ function RegisterForm() {
     // Password validation only for new registrations
     if (!isUpdate) {
       if (!formData.password) {
+        console.error('Validation failed: Password required for new registration');
         setError('Password is required');
         setIsSubmitting(false);
         return;
       }
 
       if (formData.password !== formData.confirmPassword) {
+        console.error('Validation failed: Passwords do not match');
         setError('Passwords do not match');
         setIsSubmitting(false);
         return;
       }
 
       if (formData.password.length < 6) {
+        console.error('Validation failed: Password too short');
         setError('Password must be at least 6 characters');
         setIsSubmitting(false);
         return;
       }
 
       if (!formData.terms_agreed) {
+        console.error('Validation failed: Terms not agreed');
         setError('Please agree to the Terms of Service and Privacy Policy');
         setIsSubmitting(false);
         return;
@@ -190,9 +197,20 @@ function RegisterForm() {
       // Create Firebase Auth account only for new registrations
       if (!isUpdate && !user) {
         console.log('=== CREATING FIREBASE AUTH ACCOUNT ===');
-        const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
-        console.log('Firebase Auth result:', result);
-        userId = result.user.uid;
+        try {
+          const result = await signUp(formData.email, formData.password, formData.fullname, 'grandpa');
+          console.log('Firebase Auth result:', result);
+          userId = result.user.uid;
+          console.log('New user ID:', userId);
+        } catch (authError) {
+          console.error('Firebase Auth error:', authError);
+          throw authError;
+        }
+      }
+
+      if (!userId) {
+        console.error('No user ID available');
+        throw new Error('User authentication failed');
       }
 
       // Upload photo to Firebase Storage if provided
@@ -224,15 +242,23 @@ function RegisterForm() {
         ...(photoURL && { photoURL }) // Only add photoURL if it exists
       };
 
-      if (isUpdate && existingGrandpaId) {
-        console.log('=== UPDATING EXISTING FIRESTORE DOCUMENT ===');
-        const docRef = doc(db, "grandpas", existingGrandpaId);
-        await updateDoc(docRef, firestoreData);
-        console.log("✅ Profile updated in Firebase:", existingGrandpaId);
-      } else {
-        console.log('=== SAVING NEW FIRESTORE DOCUMENT ===');
-        const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
-        console.log("✅ Registration saved to Firebase:", docRef.id);
+      console.log('Firestore data to save:', firestoreData);
+
+      // Save or update in Firestore
+      try {
+        if (isUpdate && existingGrandpaId) {
+          console.log('=== UPDATING EXISTING FIRESTORE DOCUMENT ===');
+          const docRef = doc(db, "grandpas", existingGrandpaId);
+          await updateDoc(docRef, firestoreData);
+          console.log("✅ Profile updated in Firebase:", existingGrandpaId);
+        } else {
+          console.log('=== SAVING NEW FIRESTORE DOCUMENT ===');
+          const docRef = await addDoc(collection(db, "grandpas"), firestoreData);
+          console.log("✅ Registration saved to Firebase:", docRef.id);
+        }
+      } catch (firestoreError) {
+        console.error('Firestore error:', firestoreError);
+        throw new Error(`Database save failed: ${firestoreError.message}`);
       }
 
       console.log('=== SENDING TO NETLIFY FORMS ===');
@@ -264,10 +290,16 @@ function RegisterForm() {
         });
 
         console.log('Netlify response status:', netlifyResponse.status);
+        console.log('Netlify response headers:', netlifyResponse.headers);
+        
         if (netlifyResponse.ok) {
           console.log("✅ Registration sent to Netlify Forms");
         } else {
-          console.log("Trying alternative Netlify method...");
+          console.log("Primary Netlify method failed, trying alternative...");
+          const responseText = await netlifyResponse.text();
+          console.log('Netlify error response:', responseText);
+          
+          // Try alternative method
           const altResponse = await fetch('/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -287,8 +319,14 @@ function RegisterForm() {
               'action': isUpdate ? 'update' : 'create'
             }).toString()
           });
+          
           console.log('Alternative Netlify response status:', altResponse.status);
-          console.log("✅ Registration sent to Netlify Forms (alternative method)");
+          if (altResponse.ok) {
+            console.log("✅ Registration sent to Netlify Forms (alternative method)");
+          } else {
+            const altResponseText = await altResponse.text();
+            console.log('Alternative Netlify error response:', altResponseText);
+          }
         }
       } catch (netlifyError) {
         console.error("Netlify Forms error:", netlifyError);
@@ -327,6 +365,7 @@ function RegisterForm() {
       console.error('Error details:', error);
       console.error('Error message:', error.message);
       console.error('Error code:', error.code);
+      console.error('Error stack:', error.stack);
       setError(error.message || `Failed to ${isUpdate ? 'update' : 'create'} account. Please try again.`);
     } finally {
       setIsSubmitting(false);
