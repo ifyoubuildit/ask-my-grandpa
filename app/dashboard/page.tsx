@@ -131,15 +131,15 @@ function DashboardContent() {
     );
   }
 
-  // Redirect if not authenticated
-  if (!loading && (!user || !profile)) {
+  // Redirect if not authenticated (only on client side)
+  if (typeof window !== 'undefined' && !loading && !user) {
     console.log('🔒 Dashboard auth check failed:', { user: !!user, profile: !!profile, loading });
     router.push('/login');
     return null;
   }
 
-  // Show loading while auth is being checked
-  if (loading) {
+  // Show loading while auth is being checked (only on client side)
+  if (typeof window !== 'undefined' && (loading || !user)) {
     console.log('🔄 Dashboard loading auth state...');
     return (
       <main className="flex-1 flex items-center justify-center">

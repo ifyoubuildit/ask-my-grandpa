@@ -1,12 +1,10 @@
 [build]
-  command = "echo 'Starting Next.js build...' && npm ci && npm run build && echo 'Next.js build completed successfully'"
+  command = "npm ci && npm run build"
   publish = ".next"
 
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
   NODE_VERSION = "20.9.0"
-  # Ensure we're building a Next.js app, not Astro
-  FRAMEWORK = "nextjs"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
