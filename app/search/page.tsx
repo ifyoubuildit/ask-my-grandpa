@@ -18,7 +18,6 @@ interface Grandpa {
 function SearchResults() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || "All Grandpas";
-  const [grandpas, setGrandpas] = useState<Grandpa[]>([]);
   const [loading, setLoading] = useState(true);
   const [filteredGrandpas, setFilteredGrandpas] = useState<Grandpa[]>([]);
 
@@ -55,7 +54,6 @@ function SearchResults() {
       }
 
       // Only use Firebase data - no simulated data
-      setGrandpas(fetchedGrandpas);
       
       // Filter logic
       let filtered = [];
@@ -169,16 +167,19 @@ function SearchResults() {
                         />
                       </div>
                       <div className="mt-auto border-t border-vintage-gold/20 pt-4">
-                        <p className="text-sm text-vintage-dark/70 italic">
+                        <p className="text-sm text-vintage-dark/70 italic mb-4">
                           "{grandpa.note}"
                         </p>
+                        <button 
+                          onClick={() => {
+                            console.log('🔗 Connect button clicked for:', grandpa.name);
+                            window.location.href = `/apprentice-register?grandpa=${encodeURIComponent(grandpa.name)}&grandpaId=${index}&skill=${encodeURIComponent(query)}`;
+                          }}
+                          className="w-full bg-vintage-accent text-white font-bold py-3 px-4 rounded-lg hover:bg-vintage-dark transition-colors shadow-md text-center"
+                        >
+                          Connect with {grandpa.name.split(' ')[0]}
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => window.location.href = `/apprentice-register?grandpa=${encodeURIComponent(grandpa.name)}&grandpaId=${index}&skill=${encodeURIComponent(query)}`}
-                        className="mt-4 w-full bg-vintage-accent text-white font-bold py-3 rounded-lg hover:bg-vintage-dark transition-colors"
-                      >
-                        Connect
-                      </button>
                     </div>
                   </div>
                 ))}

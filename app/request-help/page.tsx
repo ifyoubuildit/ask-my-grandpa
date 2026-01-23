@@ -128,8 +128,9 @@ function RequestHelpForm() {
         
         console.log('📧 Netlify response status:', netlifyResponse.status);
         
-        if (netlifyResponse.ok) {
-          console.log('✅ Successfully sent to Netlify Forms');
+        if (netlifyResponse.status === 200) {
+          console.log('✅ Successfully sent to Netlify Forms (Status 200)');
+          console.log('📧 Email notification should be sent to grandpa');
         } else {
           const responseText = await netlifyResponse.text();
           console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);

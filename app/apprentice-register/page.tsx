@@ -244,8 +244,9 @@ function ApprenticeRegisterForm() {
         
         console.log('📧 Netlify response status:', netlifyResponse.status);
         
-        if (netlifyResponse.ok) {
-          console.log('✅ Successfully sent to Netlify Forms');
+        if (netlifyResponse.status === 200) {
+          console.log('✅ Successfully sent to Netlify Forms (Status 200)');
+          console.log('📧 Form submission should appear in Netlify dashboard');
         } else {
           const responseText = await netlifyResponse.text();
           console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
