@@ -174,7 +174,7 @@ function SearchResults() {
                         </p>
                       </div>
                       <button 
-                        onClick={() => window.location.href = `/apprentice-register?grandpa=${encodeURIComponent(grandpa.name)}&grandpaId=${index}`}
+                        onClick={() => window.location.href = `/apprentice-register?grandpa=${encodeURIComponent(grandpa.name)}&grandpaId=${index}&skill=${encodeURIComponent(query)}`}
                         className="mt-4 w-full bg-vintage-accent text-white font-bold py-3 rounded-lg hover:bg-vintage-dark transition-colors"
                       >
                         Connect

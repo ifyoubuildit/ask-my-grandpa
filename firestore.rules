@@ -47,6 +47,29 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
     }
     
+    // Requests collection - for help requests between apprentices and grandpas
+    match /requests/{requestId} {
+      // Only involved parties can read requests
+      allow read: if request.auth != null 
+        && (request.auth.uid == resource.data.apprenticeId 
+            || request.auth.uid == resource.data.grandpaId);
+      
+      // Only authenticated apprentices can create requests
+      allow create: if request.auth != null 
+        && isValidRequestData(request.resource.data)
+        && request.resource.data.apprenticeId == request.auth.uid;
+      
+      // Only the grandpa can update request status
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.grandpaId
+        && request.resource.data.keys().hasAny(['status', 'acceptedAt', 'declinedAt']);
+      
+      // Only involved parties can delete requests
+      allow delete: if request.auth != null 
+        && (request.auth.uid == resource.data.apprenticeId 
+            || request.auth.uid == resource.data.grandpaId);
+    }
+    
     // Messages collection - for future messaging feature
     match /messages/{messageId} {
       // Users can only read messages they're involved in
@@ -93,6 +116,16 @@ service cloud.firestore {
       && data.email is string && data.email.matches('.*@.*')
       && data.timestamp is string
       && data.userId is string;
+  }
+  
+  function isValidRequestData(data) {
+    return data.keys().hasAll(['apprenticeId', 'grandpaId', 'subject', 'message', 'status', 'timestamp'])
+      && data.apprenticeId is string && data.apprenticeId.size() > 0
+      && data.grandpaId is string && data.grandpaId.size() > 0
+      && data.subject is string && data.subject.size() > 0
+      && data.message is string && data.message.size() > 0
+      && data.status is string && data.status in ['pending', 'accepted', 'declined']
+      && data.timestamp is string;
   }
   
   function isValidMessageData(data) {

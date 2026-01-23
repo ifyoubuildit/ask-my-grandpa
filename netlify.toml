@@ -68,3 +68,29 @@
     
     You can view all submissions in your Netlify dashboard.
     """
+    
+  # Grandpa request notifications
+  [[forms.notifications]]
+    # Form name must match the name attribute
+    form = "grandpa-request"
+    # Send to the specific grandpa's email
+    to = "{{ grandpa-email }}"
+    # Email subject
+    subject = "🔧 New Help Request - {{ subject }}"
+    # Custom email template
+    template = """
+    You have a new help request on AskMyGrandpa.com!
+
+    👤 From: {{ apprentice-name }} ({{ apprentice-email }})
+    📋 Subject: {{ subject }}
+    ⏰ Availability: {{ availability }}
+    
+    💬 Message:
+    {{ message }}
+    
+    📅 Submitted: {{ timestamp }}
+    
+    To respond to this request, please log into your dashboard at askmygrandpa.com/dashboard
+    
+    Thank you for being part of our community!
+    """

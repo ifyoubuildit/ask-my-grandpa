@@ -229,6 +229,8 @@ function RegisterForm() {
 
       // Step 4: Send to Netlify Forms
       try {
+        console.log('📧 Attempting to send to Netlify Forms...');
+        
         // Create form data for Netlify
         const netlifyData = new URLSearchParams();
         netlifyData.append('form-name', 'grandpa-registration');
@@ -244,6 +246,8 @@ function RegisterForm() {
         netlifyData.append('note', formData.note);
         netlifyData.append('timestamp', new Date().toLocaleString());
         
+        console.log('📧 Netlify form data:', Object.fromEntries(netlifyData));
+        
         const netlifyResponse = await fetch('/', {
           method: 'POST',
           headers: {
@@ -252,10 +256,15 @@ function RegisterForm() {
           body: netlifyData.toString()
         });
         
+        console.log('📧 Netlify response status:', netlifyResponse.status);
+        console.log('📧 Netlify response headers:', Object.fromEntries(netlifyResponse.headers));
+        
         if (netlifyResponse.ok) {
           console.log('✅ Successfully sent to Netlify Forms');
         } else {
+          const responseText = await netlifyResponse.text();
           console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
+          console.warn('⚠️ Response body:', responseText);
         }
       } catch (netlifyError) {
         console.error('❌ Netlify Forms submission failed:', netlifyError);
