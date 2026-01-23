@@ -11,171 +11,72 @@
 
 # Netlify Forms Configuration
 [forms]
-  # Explicitly enable form processing
   enabled = true
   
-  # Global form settings
   [forms.settings]
-    # Enable spam filtering
     spam_filter = true
     
-  # Form notifications
   [[forms.notifications]]
     form = "grandpa-registration"
     to = "info@askmygrandpa.com"
     subject = "🎉 New Grandpa Registration!"
     template = """
-    Great news! A new Grandpa has registered on AskMyGrandpa.com
+Great news! A new Grandpa has registered on AskMyGrandpa.com
 
-    📝 Registration Details:
-    Name: {{ name }}
-    Email: {{ email }}
-    Phone: {{ phone }}
-    Address: {{ address }}
-    Contact Preference: {{ contact-preference }}
-    
-    🛠️ Skills: {{ skills }}
-    
-    📖 Interesting Note: {{ note }}
-    
-    ⏰ Submitted: {{ timestamp }}
-    
-    You can view all submissions in your Netlify dashboard.
-    """
+📝 Registration Details:
+Name: {{ name }}
+Email: {{ email }}
+Phone: {{ phone }}
+Address: {{ address }}
+Contact Preference: {{ contact-preference }}
+
+🛠️ Skills: {{ skills }}
+
+📖 Interesting Note: {{ note }}
+
+⏰ Submitted: {{ timestamp }}
+
+You can view all submissions in your Netlify dashboard.
+"""
     
   [[forms.notifications]]
     form = "apprentice-registration"
     to = "info@askmygrandpa.com"
     subject = "🌟 New Apprentice Registration!"
     template = """
-    Exciting news! A new Apprentice has registered on AskMyGrandpa.com
+Exciting news! A new Apprentice has registered on AskMyGrandpa.com
 
-    📝 Registration Details:
-    Name: {{ name }}
-    Email: {{ email }}
-    Phone: {{ phone }}
-    Address: {{ address }}
-    Contact Preference: {{ contact-preference }}
-    
-    👴 Interested in connecting with: {{ interested-grandpa }}
-    
-    ⏰ Submitted: {{ timestamp }}
-    
-    You can view all submissions in your Netlify dashboard.
-    """
+📝 Registration Details:
+Name: {{ name }}
+Email: {{ email }}
+Phone: {{ phone }}
+Address: {{ address }}
+Contact Preference: {{ contact-preference }}
+
+👴 Interested in connecting with: {{ interested-grandpa }}
+
+⏰ Submitted: {{ timestamp }}
+
+You can view all submissions in your Netlify dashboard.
+"""
     
   [[forms.notifications]]
     form = "grandpa-request"
     to = "{{ grandpa-email }}"
     subject = "🔧 New Help Request - {{ subject }}"
     template = """
-    You have a new help request on AskMyGrandpa.com!
+You have a new help request on AskMyGrandpa.com!
 
-    👤 From: {{ apprentice-name }} ({{ apprentice-email }})
-    📋 Subject: {{ subject }}
-    ⏰ Availability: {{ availability }}
-    
-    💬 Message:
-    {{ message }}
-    
-    📅 Submitted: {{ timestamp }}
-    
-    To respond to this request, please log into your dashboard at askmygrandpa.com/dashboard
-    
-    Thank you for being part of our community!
-    """
+👤 From: {{ apprentice-name }} ({{ apprentice-email }})
+📋 Subject: {{ subject }}
+⏰ Availability: {{ availability }}
 
-# Redirect rules for form submissions
-[[redirects]]
-  from = "/"
-  to = "/"
-  status = 200
-  force = false
-  conditions = {Role = ["form-submission"]}
+💬 Message:
+{{ message }}
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+📅 Submitted: {{ timestamp }}
 
-# Netlify Forms Configuration
-[forms]
-  # Explicitly enable form processing
-  enabled = true
-  
-  # Global form settings
-  [forms.settings]
-    # Enable spam filtering
-    spam_filter = true
-    
-  # Form notifications
-  [[forms.notifications]]
-    form = "grandpa-registration"
-    to = "info@askmygrandpa.com"
-    subject = "🎉 New Grandpa Registration!"
-    template = """
-    Great news! A new Grandpa has registered on AskMyGrandpa.com
+To respond to this request, please log into your dashboard at askmygrandpa.com/dashboard
 
-    📝 Registration Details:
-    Name: {{ name }}
-    Email: {{ email }}
-    Phone: {{ phone }}
-    Address: {{ address }}
-    Contact Preference: {{ contact-preference }}
-    
-    🛠️ Skills: {{ skills }}
-    
-    📖 Interesting Note: {{ note }}
-    
-    ⏰ Submitted: {{ timestamp }}
-    
-    You can view all submissions in your Netlify dashboard.
-    """
-    
-  [[forms.notifications]]
-    form = "apprentice-registration"
-    to = "info@askmygrandpa.com"
-    subject = "🌟 New Apprentice Registration!"
-    template = """
-    Exciting news! A new Apprentice has registered on AskMyGrandpa.com
-
-    📝 Registration Details:
-    Name: {{ name }}
-    Email: {{ email }}
-    Phone: {{ phone }}
-    Address: {{ address }}
-    Contact Preference: {{ contact-preference }}
-    
-    👴 Interested in connecting with: {{ interested-grandpa }}
-    
-    ⏰ Submitted: {{ timestamp }}
-    
-    You can view all submissions in your Netlify dashboard.
-    """
-    
-  [[forms.notifications]]
-    form = "grandpa-request"
-    to = "{{ grandpa-email }}"
-    subject = "🔧 New Help Request - {{ subject }}"
-    template = """
-    You have a new help request on AskMyGrandpa.com!
-
-    👤 From: {{ apprentice-name }} ({{ apprentice-email }})
-    📋 Subject: {{ subject }}
-    ⏰ Availability: {{ availability }}
-    
-    💬 Message:
-    {{ message }}
-    
-    📅 Submitted: {{ timestamp }}
-    
-    To respond to this request, please log into your dashboard at askmygrandpa.com/dashboard
-    
-    Thank you for being part of our community!
-    """
-
-# Redirect rules for form submissions
-[[redirects]]
-  from = "/"
-  to = "/"
-  status = 200
-  force = false
-  conditions = {Role = ["form-submission"]}
+Thank you for being part of our community!
+"""
