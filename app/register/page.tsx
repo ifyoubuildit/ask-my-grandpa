@@ -691,37 +691,57 @@ function RegisterForm() {
                 onClick={async () => {
                   console.log('🧪 Testing Netlify Forms directly...');
                   try {
+                    // Test 1: Try the standard Netlify Forms endpoint
                     const testData = new FormData();
-                    testData.append('form-name', 'grandpa-registration');
-                    testData.append('name', 'Test Grandpa');
-                    testData.append('email', 'test@test.com');
-                    testData.append('phone', '555-1234');
-                    testData.append('skills', 'Testing');
-                    testData.append('note', 'This is a test submission');
-                    testData.append('timestamp', new Date().toLocaleString());
+                    testData.append('form-name', 'test-form');
+                    testData.append('test-field', 'Hello Netlify');
                     
-                    const response = await fetch('/', {
+                    console.log('🧪 Test 1: Standard endpoint');
+                    const response1 = await fetch('/', {
                       method: 'POST',
                       body: testData
                     });
                     
-                    console.log('🧪 Test response:', response.status);
-                    const text = await response.text();
-                    console.log('🧪 Test response body:', text);
+                    console.log('🧪 Test 1 response:', response1.status);
+                    const text1 = await response1.text();
+                    console.log('🧪 Test 1 response body:', text1);
                     
-                    if (response.ok) {
-                      alert('Test submission successful! Check Netlify dashboard.');
+                    // Test 2: Try with explicit content type
+                    console.log('🧪 Test 2: With explicit content type');
+                    const formData2 = new URLSearchParams();
+                    formData2.append('form-name', 'test-form');
+                    formData2.append('test-field', 'Hello Netlify 2');
+                    
+                    const response2 = await fetch('/', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                      },
+                      body: formData2.toString()
+                    });
+                    
+                    console.log('🧪 Test 2 response:', response2.status);
+                    const text2 = await response2.text();
+                    console.log('🧪 Test 2 response body:', text2);
+                    
+                    // Test 3: Check if forms are detected
+                    console.log('🧪 Test 3: Check forms detection');
+                    const response3 = await fetch('/netlify-forms.html');
+                    console.log('🧪 Forms file accessible:', response3.status);
+                    
+                    if (response1.ok || response2.ok) {
+                      alert('✅ At least one test succeeded! Check console for details.');
                     } else {
-                      alert(`Test failed: ${response.status} - Check console for details`);
+                      alert('❌ All tests failed. Netlify Forms may not be enabled on this site.');
                     }
                   } catch (error) {
                     console.error('🧪 Test failed:', error);
-                    alert('Test failed - Check console for details');
+                    alert('❌ Test failed - Check console for details');
                   }
                 }}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors shadow-lg mr-4 mb-4"
               >
-                Test Netlify Forms
+                Test Netlify Forms (Enhanced)
               </button>
               
               <button 
