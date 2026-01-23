@@ -72,7 +72,12 @@ export default function Navbar() {
                 <Link 
                   href="/dashboard" 
                   className="flex items-center gap-2 text-vintage-dark hover:text-vintage-accent transition-colors"
-                  onClick={() => console.log('🔗 Dashboard link clicked, user:', user?.uid)}
+                  onClick={(e) => {
+                    console.log('🔗 Dashboard link clicked');
+                    console.log('🔗 User state:', { uid: user?.uid, email: user?.email, displayName: user?.displayName });
+                    console.log('🔗 Profile state:', { displayName: profile?.displayName, role: profile?.role });
+                    console.log('🔗 Link href:', '/dashboard');
+                  }}
                 >
                   <User className="w-4 h-4" />
                   <span className="font-bold text-sm">

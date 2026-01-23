@@ -33,7 +33,7 @@ function DashboardContent() {
       if (!user || !profile) return;
       
       try {
-        if (profile.role === 'grandpa') {
+        if (profile?.role === 'grandpa') {
           // Load requests sent to this grandpa
           const requestsQuery = query(
             collection(db, "requests"), 
@@ -122,25 +122,18 @@ function DashboardContent() {
     }
   };
 
-  // Show loading state
-  if (loading) {
-    return (
-      <main className="flex-1 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent"></div>
-      </main>
-    );
-  }
+  // Client-side only authentication checks
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !loading) {
+      if (!user) {
+        console.log('🔒 Dashboard auth check failed:', { user: !!user, profile: !!profile, loading });
+        router.push('/login');
+      }
+    }
+  }, [user, loading, router]);
 
-  // Redirect if not authenticated (only on client side)
-  if (typeof window !== 'undefined' && !loading && !user) {
-    console.log('🔒 Dashboard auth check failed:', { user: !!user, profile: !!profile, loading });
-    router.push('/login');
-    return null;
-  }
-
-  // Show loading while auth is being checked (only on client side)
-  if (typeof window !== 'undefined' && (loading || !user)) {
-    console.log('🔄 Dashboard loading auth state...');
+  // Show loading state during authentication check
+  if (loading || !user || !profile) {
     return (
       <main className="flex-1 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent"></div>
@@ -164,7 +157,7 @@ function DashboardContent() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between">
             <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark">
-              Welcome, {profile.displayName}!
+              Welcome, {profile?.displayName || 'User'}!
             </h1>
             <button
               onClick={handleLogout}
@@ -185,7 +178,7 @@ function DashboardContent() {
             
             {/* Profile Management */}
             <Link 
-              href={profile.role === 'grandpa' ? "/register?update=true" : "/apprentice-register?update=true"} 
+              href={profile?.role === 'grandpa' ? "/register?update=true" : "/apprentice-register?update=true"} 
               className="bg-white p-6 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20 hover:shadow-[6px_6px_0px_rgba(74,64,54,0.15)] hover:-translate-y-0.5 transition-all group"
             >
               <div className="flex items-center gap-4">
@@ -197,7 +190,7 @@ function DashboardContent() {
                     Update Profile
                   </h3>
                   <p className="text-sm text-vintage-dark/70">
-                    {profile.role === 'grandpa' ? 'Update your skills and info' : 'Update your info and preferences'}
+                    {profile?.role === 'grandpa' ? 'Update your skills and info' : 'Update your info and preferences'}
                   </p>
                 </div>
               </div>
@@ -298,7 +291,7 @@ function DashboardContent() {
                   <div className="flex items-center justify-center gap-2">
                     <Clock className={`w-5 h-5 ${activeTab === 'previous' ? 'text-vintage-accent' : 'text-vintage-dark'}`} />
                     <span className={activeTab === 'previous' ? 'text-vintage-accent' : 'text-vintage-dark'}>
-                      {profile.role === 'grandpa' ? 'Previous Mentorship' : 'Previous Apprentice'}
+                      {profile?.role === 'grandpa' ? 'Previous Mentorship' : 'Previous Apprentice'}
                     </span>
                   </div>
                 </button>
@@ -309,7 +302,7 @@ function DashboardContent() {
                   <div className="flex items-center justify-center gap-2">
                     <Calendar className={`w-5 h-5 ${activeTab === 'upcoming' ? 'text-vintage-accent' : 'text-vintage-dark'}`} />
                     <span className={activeTab === 'upcoming' ? 'text-vintage-accent' : 'text-vintage-dark'}>
-                      {profile.role === 'grandpa' ? 'Upcoming Mentorship' : 'Upcoming Apprentice'}
+                      {profile?.role === 'grandpa' ? 'Upcoming Mentorship' : 'Upcoming Apprentice'}
                     </span>
                   </div>
                 </button>
@@ -329,10 +322,10 @@ function DashboardContent() {
                 <div className="text-center py-12">
                   <Clock className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
                   <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-2">
-                    {profile.role === 'grandpa' ? 'No Previous Mentorships' : 'No Previous Apprenticeships'}
+                    {profile?.role === 'grandpa' ? 'No Previous Mentorships' : 'No Previous Apprenticeships'}
                   </h3>
                   <p className="text-vintage-dark/70 max-w-md mx-auto">
-                    {profile.role === 'grandpa' 
+                    {profile?.role === 'grandpa' 
                       ? "Your completed mentorship sessions will be listed here for your reference."
                       : "Your completed learning sessions with Grandpas will appear here."
                     }
@@ -348,15 +341,15 @@ function DashboardContent() {
                     <div className="text-center py-12">
                       <Calendar className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
                       <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-2">
-                        {profile.role === 'grandpa' ? 'No Upcoming Mentorships' : 'No Upcoming Apprenticeships'}
+                        {profile?.role === 'grandpa' ? 'No Upcoming Mentorships' : 'No Upcoming Apprenticeships'}
                       </h3>
                       <p className="text-vintage-dark/70 mb-6 max-w-md mx-auto">
-                        {profile.role === 'grandpa' 
+                        {profile?.role === 'grandpa' 
                           ? "When someone reaches out for your help, their sessions will appear here."
                           : "Your scheduled mentorship sessions will appear here once you connect with a Grandpa."
                         }
                       </p>
-                      {profile.role === 'seeker' && (
+                      {profile?.role === 'seeker' && (
                         <Link 
                           href="/search"
                           className="inline-flex items-center gap-2 bg-vintage-green text-white px-6 py-3 rounded-full font-bold hover:bg-vintage-dark transition-colors"
@@ -376,7 +369,7 @@ function DashboardContent() {
                             </div>
                             <div className="flex-1">
                               <h4 className="font-heading font-bold text-vintage-dark text-lg">
-                                {profile.role === 'grandpa' ? mentorship.apprenticeName : mentorship.grandpaName}
+                                {profile?.role === 'grandpa' ? mentorship.apprenticeName : mentorship.grandpaName}
                               </h4>
                               <p className="text-vintage-accent font-bold text-sm mb-2">
                                 {mentorship.subject}
@@ -407,10 +400,10 @@ function DashboardContent() {
           {/* Role-specific Tips */}
           <div className="mt-12 bg-vintage-cream p-8 rounded-2xl border border-vintage-gold/30">
             <h2 className="text-2xl font-heading font-bold text-vintage-dark mb-4">
-              {profile.role === 'grandpa' ? 'Grandpa Resources' : 'How to Get Help'}
+              {profile?.role === 'grandpa' ? 'Grandpa Resources' : 'How to Get Help'}
             </h2>
             
-            {profile.role === 'grandpa' ? (
+            {profile?.role === 'grandpa' ? (
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-bold text-vintage-dark mb-2">Getting Started</h3>

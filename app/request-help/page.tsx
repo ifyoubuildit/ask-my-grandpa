@@ -186,21 +186,22 @@ function RequestHelpForm() {
       console.log('🎯 User state:', { uid: user?.uid, email: user?.email });
       console.log('🎯 Router available:', !!router);
       
-      // Success - redirect to dashboard after a brief delay to ensure everything completes
+      // Success - redirect to dashboard with a longer delay to ensure everything completes
       setIsSubmitting(false); // Reset submitting state before redirect
       
-      // Small delay to ensure Firestore and Netlify operations complete
+      // Longer delay to ensure Firestore and Netlify operations complete
       setTimeout(() => {
         console.log('🎯 Attempting redirect to dashboard...');
         try {
-          router.push('/dashboard?message=request-sent');
+          // Use replace instead of push to avoid back button issues
+          router.replace('/dashboard?message=request-sent');
           console.log('✅ Redirect initiated successfully');
         } catch (redirectError) {
           console.error('❌ Redirect failed:', redirectError);
           // Fallback: use window.location
           window.location.href = '/dashboard?message=request-sent';
         }
-      }, 500);
+      }, 1000); // Increased delay to 1 second
 
     } catch (error) {
       console.error('❌ Request submission failed:', error);
