@@ -227,25 +227,19 @@ function RegisterForm() {
         await addDoc(collection(db, "grandpas"), grandpaData);
       }
 
-      // Step 4: Send to Netlify Forms using the official Next.js method
+      // Step 4: Send to Netlify Forms using form action method
       try {
-        console.log('📧 Starting Netlify Forms submission (Next.js method)...');
-        console.log('📧 Form data to send:', {
-          'form-name': 'grandpa-registration',
-          'name': formData.fullname,
-          'email': formData.email,
-          'phone': formData.phone,
-          'skills': formData.skills
-        });
+        console.log('📧 Starting Netlify Forms submission (form action method)...');
         
-        // Method 1: Try the encode function approach (official Netlify docs)
-        const encode = (data: Record<string, string>) => {
-          return Object.keys(data)
-            .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
-            .join("&");
-        };
+        // Create a real form and submit it with action="/" 
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/';
+        form.setAttribute('data-netlify', 'true');
+        form.style.display = 'none';
         
-        const netlifyData = {
+        // Add all form fields as hidden inputs
+        const fields = {
           'form-name': 'grandpa-registration',
           'name': formData.fullname,
           'address': `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
@@ -260,26 +254,30 @@ function RegisterForm() {
           'timestamp': new Date().toLocaleString()
         };
         
-        console.log('📧 Encoded data:', encode(netlifyData));
-        
-        const netlifyResponse = await fetch('/', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/x-www-form-urlencoded' 
-          },
-          body: encode(netlifyData)
+        Object.entries(fields).forEach(([name, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = name;
+          input.value = value;
+          form.appendChild(input);
         });
         
-        console.log('📧 Netlify response status:', netlifyResponse.status);
-        console.log('📧 Netlify response headers:', Object.fromEntries(netlifyResponse.headers.entries()));
+        // Add to page and submit
+        document.body.appendChild(form);
+        console.log('📧 Submitting via form action method...');
         
-        if (netlifyResponse.status === 200) {
-          console.log('✅ Netlify Forms submission successful (Status 200)');
-          console.log('📧 Check Netlify Dashboard > Forms > grandpa-registration');
-          console.log('📧 Look for submission with name: ' + formData.fullname);
-        } else {
-          console.warn('⚠️ Netlify Forms response not 200:', netlifyResponse.status);
-        }
+        // Submit and handle the redirect
+        form.addEventListener('submit', (e) => {
+          console.log('✅ Form submitted via action method');
+          // Let it submit normally, then clean up
+          setTimeout(() => {
+            if (document.body.contains(form)) {
+              document.body.removeChild(form);
+            }
+          }, 1000);
+        });
+        
+        form.submit();
         
       } catch (netlifyError) {
         console.error('❌ Netlify Forms submission failed:', netlifyError);
