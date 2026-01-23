@@ -15,7 +15,7 @@
     # Enable spam filtering
     spam_filter = true
     
-  # Specific form notifications
+  # Grandpa registration notifications
   [[forms.notifications]]
     # Form name must match the name attribute
     form = "grandpa-registration"
@@ -37,6 +37,32 @@
     🛠️ Skills: {{ skills }}
     
     📖 Interesting Note: {{ note }}
+    
+    ⏰ Submitted: {{ timestamp }}
+    
+    You can view all submissions in your Netlify dashboard.
+    """
+    
+  # Apprentice registration notifications
+  [[forms.notifications]]
+    # Form name must match the name attribute
+    form = "apprentice-registration"
+    # Your email for notifications
+    to = "info@askmygrandpa.com"
+    # Email subject
+    subject = "🌟 New Apprentice Registration!"
+    # Custom email template
+    template = """
+    Exciting news! A new Apprentice has registered on AskMyGrandpa.com
+
+    📝 Registration Details:
+    Name: {{ name }}
+    Email: {{ email }}
+    Phone: {{ phone }}
+    Address: {{ address }}
+    Contact Preference: {{ contact-preference }}
+    
+    👴 Interested in connecting with: {{ interested-grandpa }}
     
     ⏰ Submitted: {{ timestamp }}
     

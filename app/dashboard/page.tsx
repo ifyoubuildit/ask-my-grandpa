@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { logOut } from '@/lib/auth';
-import { User, Settings, Search, MessageCircle, LogOut, Calendar, Clock } from 'lucide-react';
+import { User, Search, MessageCircle, Calendar, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -63,7 +63,10 @@ export default function DashboardPage() {
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             
             {/* Profile Management */}
-            <Link href="/register?update=true" className="bg-white p-6 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20 hover:shadow-[6px_6px_0px_rgba(74,64,54,0.15)] hover:-translate-y-0.5 transition-all group">
+            <Link 
+              href={profile.role === 'grandpa' ? "/register?update=true" : "/apprentice-register?update=true"} 
+              className="bg-white p-6 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/20 hover:shadow-[6px_6px_0px_rgba(74,64,54,0.15)] hover:-translate-y-0.5 transition-all group"
+            >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-vintage-accent/20 rounded-full flex items-center justify-center group-hover:bg-vintage-accent/30 transition-colors">
                   <User className="w-6 h-6 text-vintage-accent" />
@@ -73,7 +76,7 @@ export default function DashboardPage() {
                     Update Profile
                   </h3>
                   <p className="text-sm text-vintage-dark/70">
-                    Update your skills and info
+                    {profile.role === 'grandpa' ? 'Update your skills and info' : 'Update your info and preferences'}
                   </p>
                 </div>
               </div>
@@ -106,7 +109,7 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-center gap-2">
                     <Clock className={`w-5 h-5 ${activeTab === 'previous' ? 'text-vintage-accent' : 'text-vintage-dark'}`} />
                     <span className={activeTab === 'previous' ? 'text-vintage-accent' : 'text-vintage-dark'}>
-                      Previous Mentorship
+                      {profile.role === 'grandpa' ? 'Previous Mentorship' : 'Previous Apprentice'}
                     </span>
                   </div>
                 </button>
@@ -117,7 +120,7 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-center gap-2">
                     <Calendar className={`w-5 h-5 ${activeTab === 'upcoming' ? 'text-vintage-accent' : 'text-vintage-dark'}`} />
                     <span className={activeTab === 'upcoming' ? 'text-vintage-accent' : 'text-vintage-dark'}>
-                      Upcoming Mentorship
+                      {profile.role === 'grandpa' ? 'Upcoming Mentorship' : 'Upcoming Apprentice'}
                     </span>
                   </div>
                 </button>
@@ -130,7 +133,7 @@ export default function DashboardPage() {
                 <div className="text-center py-12">
                   <Clock className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
                   <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-2">
-                    No Previous Mentorships
+                    {profile.role === 'grandpa' ? 'No Previous Mentorships' : 'No Previous Apprenticeships'}
                   </h3>
                   <p className="text-vintage-dark/70 max-w-md mx-auto">
                     {profile.role === 'grandpa' 
@@ -143,7 +146,7 @@ export default function DashboardPage() {
                 <div className="text-center py-12">
                   <Calendar className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
                   <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-2">
-                    No Upcoming Mentorships
+                    {profile.role === 'grandpa' ? 'No Upcoming Mentorships' : 'No Upcoming Apprenticeships'}
                   </h3>
                   <p className="text-vintage-dark/70 mb-6 max-w-md mx-auto">
                     {profile.role === 'grandpa' 

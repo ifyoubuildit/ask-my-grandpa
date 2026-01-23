@@ -27,6 +27,26 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
     }
     
+    // Apprentices collection - public read, authenticated write with validation
+    match /apprentices/{apprenticeId} {
+      // Anyone can read apprentice profiles (for matching)
+      allow read: if true;
+      
+      // Only authenticated users can create apprentice profiles
+      allow create: if request.auth != null 
+        && isValidApprenticeData(request.resource.data)
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Only the owner can update their profile
+      allow update: if request.auth != null 
+        && resource.data.userId == request.auth.uid
+        && isValidApprenticeData(request.resource.data);
+      
+      // Only the owner can delete their profile
+      allow delete: if request.auth != null 
+        && resource.data.userId == request.auth.uid;
+    }
+    
     // Messages collection - for future messaging feature
     match /messages/{messageId} {
       // Users can only read messages they're involved in
@@ -61,6 +81,16 @@ service cloud.firestore {
       && data.email is string && data.email.matches('.*@.*')
       && data.skills is string && data.skills.size() > 0
       && data.note is string && data.note.size() > 0
+      && data.timestamp is string
+      && data.userId is string;
+  }
+  
+  function isValidApprenticeData(data) {
+    return data.keys().hasAll(['name', 'address', 'phone', 'email', 'timestamp', 'userId'])
+      && data.name is string && data.name.size() > 0
+      && data.address is string && data.address.size() > 0
+      && data.phone is string && data.phone.size() > 0
+      && data.email is string && data.email.matches('.*@.*')
       && data.timestamp is string
       && data.userId is string;
   }
