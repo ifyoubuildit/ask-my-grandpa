@@ -227,61 +227,52 @@ function RegisterForm() {
         await addDoc(collection(db, "grandpas"), grandpaData);
       }
 
-      // Step 4: Send to Netlify Forms using form action method
+      // Step 4: Send to Netlify Forms using direct Netlify endpoint
       try {
-        console.log('📧 Starting Netlify Forms submission (form action method)...');
+        console.log('📧 Starting Netlify Forms submission (direct endpoint method)...');
         
-        // Create a real form and submit it with action="/" 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/';
-        form.setAttribute('data-netlify', 'true');
-        form.style.display = 'none';
+        // Use Netlify's direct form processing endpoint
+        const netlifyEndpoint = 'https://askmygrandpa.com/';
         
-        // Add all form fields as hidden inputs
-        const fields = {
-          'form-name': 'grandpa-registration',
-          'name': formData.fullname,
-          'address': `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
-          'city': formData.city,
-          'province': formData.province,
-          'postal-code': formData.postalCode,
-          'phone': formData.phone,
-          'email': formData.email,
-          'contact-preference': formData.contact_pref,
-          'skills': formData.skills,
-          'note': formData.note,
-          'timestamp': new Date().toLocaleString()
-        };
+        const formData_netlify = new FormData();
+        formData_netlify.append('form-name', 'grandpa-registration');
+        formData_netlify.append('name', formData.fullname);
+        formData_netlify.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
+        formData_netlify.append('city', formData.city);
+        formData_netlify.append('province', formData.province);
+        formData_netlify.append('postal-code', formData.postalCode);
+        formData_netlify.append('phone', formData.phone);
+        formData_netlify.append('email', formData.email);
+        formData_netlify.append('contact-preference', formData.contact_pref);
+        formData_netlify.append('skills', formData.skills);
+        formData_netlify.append('note', formData.note);
+        formData_netlify.append('timestamp', new Date().toLocaleString());
         
-        Object.entries(fields).forEach(([name, value]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = name;
-          input.value = value;
-          form.appendChild(input);
+        console.log('📧 Submitting to Netlify direct endpoint...');
+        
+        const netlifyResponse = await fetch(netlifyEndpoint, {
+          method: 'POST',
+          body: formData_netlify,
+          headers: {
+            'Accept': 'application/json'
+          }
         });
         
-        // Add to page and submit
-        document.body.appendChild(form);
-        console.log('📧 Submitting via form action method...');
+        console.log('📧 Netlify direct response status:', netlifyResponse.status);
+        console.log('📧 Netlify direct response headers:', Object.fromEntries(netlifyResponse.headers.entries()));
         
-        // Submit and handle the redirect
-        form.addEventListener('submit', (e) => {
-          console.log('✅ Form submitted via action method');
-          // Let it submit normally, then clean up
-          setTimeout(() => {
-            if (document.body.contains(form)) {
-              document.body.removeChild(form);
-            }
-          }, 1000);
-        });
-        
-        form.submit();
+        if (netlifyResponse.ok) {
+          console.log('✅ Netlify Forms direct submission successful');
+          console.log('📧 Check Netlify Dashboard > Forms > grandpa-registration');
+        } else {
+          console.warn('⚠️ Netlify direct submission failed:', netlifyResponse.status);
+          const responseText = await netlifyResponse.text();
+          console.warn('⚠️ Response:', responseText);
+        }
         
       } catch (netlifyError) {
-        console.error('❌ Netlify Forms submission failed:', netlifyError);
-        // Don't throw error - continue with success since Firebase worked
+        console.error('❌ Netlify Forms direct submission failed:', netlifyError);
+        // Don't throw error - Firebase still works
       }
 
       // Success!

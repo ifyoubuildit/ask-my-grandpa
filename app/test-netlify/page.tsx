@@ -120,44 +120,48 @@ Next: Compare this with actual registration form submission
     }
   };
 
-  const testGrandpaRequestForm = async () => {
+  const testNetlifyAPI = async () => {
     setLoading(true);
-    setResult('Testing Grandpa Request Form...');
+    setResult('Testing Netlify Forms API...');
 
     try {
-      // Test the grandpa request form with sample data
-      const netlifyData = new URLSearchParams();
-      netlifyData.append('form-name', 'grandpa-request');
-      netlifyData.append('grandpa-name', 'Test Grandpa');
-      netlifyData.append('grandpa-email', 'testgrandpa@example.com'); // This should receive the email
-      netlifyData.append('apprentice-name', 'Test Apprentice');
-      netlifyData.append('apprentice-email', 'testapprentice@example.com');
-      netlifyData.append('subject', 'Plumbing Help');
-      netlifyData.append('availability', 'Weekends');
-      netlifyData.append('message', 'Hi! I need help with a leaky faucet.');
-      netlifyData.append('timestamp', new Date().toLocaleString());
+      // Try Netlify's official forms API endpoint
+      const siteId = 'askmygrandpa'; // Your site name
+      const formData = new FormData();
+      formData.append('form-name', 'grandpa-registration');
+      formData.append('name', 'API Test Grandpa');
+      formData.append('email', 'apitest@example.com');
+      formData.append('phone', '555-API-TEST');
+      formData.append('skills', 'Testing Netlify Forms API');
+      formData.append('note', 'This is testing the Netlify Forms API directly');
+      formData.append('timestamp', new Date().toLocaleString());
       
-      console.log('🧪 Testing Grandpa Request Form...');
+      console.log('🧪 Testing Netlify Forms API...');
       
-      const response = await fetch('/', {
+      // Try the site's form endpoint directly
+      const response = await fetch('https://askmygrandpa.com/', {
         method: 'POST',
+        body: formData,
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: netlifyData.toString()
+          'Accept': 'application/json'
+        }
       });
       
+      const responseText = await response.text();
+      
       setResult(`
-Grandpa Request Test Results:
+Netlify API Test Results:
 Status: ${response.status} ${response.ok ? '✅' : '❌'}
+Response Length: ${responseText.length} chars
 
-This tests the email notification system.
-If successful, testgrandpa@example.com should receive an email.
-Check Netlify dashboard > Forms > grandpa-request for submission.
+This tests submitting directly to the site URL with FormData.
+If successful, "API Test Grandpa" should appear in Netlify dashboard.
+
+Response preview: ${responseText.substring(0, 200)}...
       `);
       
     } catch (error) {
-      setResult(`Grandpa Request Error: ${error}`);
+      setResult(`Netlify API Error: ${error}`);
     } finally {
       setLoading(false);
     }
@@ -186,11 +190,11 @@ Check Netlify dashboard > Forms > grandpa-request for submission.
           </button>
           
           <button 
-            onClick={testGrandpaRequestForm}
+            onClick={testNetlifyAPI}
             disabled={loading}
             className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 disabled:opacity-50"
           >
-            {loading ? 'Testing...' : 'Test Grandpa Request Email'}
+            {loading ? 'Testing...' : 'Test Netlify API Direct'}
           </button>
         </div>
         
