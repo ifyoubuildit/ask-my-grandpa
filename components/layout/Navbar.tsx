@@ -75,7 +75,7 @@ export default function Navbar() {
                 >
                   <User className="w-4 h-4" />
                   <span className="font-bold text-sm">
-                    {profile?.displayName || user.displayName || 'Dashboard'}
+                    {profile?.displayName || user.displayName || 'User'} Dashboard
                   </span>
                 </Link>
                 <button

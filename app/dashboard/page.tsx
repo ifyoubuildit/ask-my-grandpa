@@ -428,14 +428,14 @@ function DashboardContent() {
                   <p className="text-sm text-vintage-dark/70">Find a Grandpa with the skills you need</p>
                 </div>
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-vintage-accent rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-16 h-16 bg-vintage-green rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-2xl font-bold text-white">2</span>
                   </div>
                   <h3 className="font-bold text-vintage-dark mb-2">Connect</h3>
                   <p className="text-sm text-vintage-dark/70">Reach out and schedule a time</p>
                 </div>
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-vintage-dark rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-16 h-16 bg-vintage-green rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-2xl font-bold text-white">3</span>
                   </div>
                   <h3 className="font-bold text-vintage-dark mb-2">Learn</h3>
