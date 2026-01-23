@@ -45,17 +45,12 @@ export default function DashboardPage() {
             <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark">
               Welcome, {profile.displayName}!
             </h1>
-            <div className="flex items-center gap-4">
-              <span className="text-lg font-bold text-vintage-dark">
-                {profile.displayName}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="text-vintage-dark font-bold hover:text-vintage-accent transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="text-vintage-dark font-bold hover:text-vintage-accent transition-colors"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </header>
@@ -101,33 +96,29 @@ export default function DashboardPage() {
           {/* Mentorship Section */}
           <div className="bg-white rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30 overflow-hidden">
             
-            {/* Tab Navigation - Both Always Visible */}
+            {/* Tab Navigation - Both Always Visible, Only Text Color Changes */}
             <div className="border-b border-vintage-gold/20">
               <div className="grid grid-cols-2">
                 <button
                   onClick={() => setActiveTab('previous')}
-                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors border-r border-vintage-gold/20 ${
-                    activeTab === 'previous'
-                      ? 'bg-vintage-accent text-white'
-                      : 'text-vintage-dark hover:bg-vintage-cream'
-                  }`}
+                  className="px-6 py-4 font-heading font-bold text-lg transition-colors border-r border-vintage-gold/20 hover:bg-vintage-cream"
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <Clock className="w-5 h-5" />
-                    Previous Mentorship
+                    <Clock className={`w-5 h-5 ${activeTab === 'previous' ? 'text-vintage-accent' : 'text-vintage-dark'}`} />
+                    <span className={activeTab === 'previous' ? 'text-vintage-accent' : 'text-vintage-dark'}>
+                      Previous Mentorship
+                    </span>
                   </div>
                 </button>
                 <button
                   onClick={() => setActiveTab('upcoming')}
-                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors ${
-                    activeTab === 'upcoming'
-                      ? 'bg-vintage-accent text-white'
-                      : 'text-vintage-dark hover:bg-vintage-cream'
-                  }`}
+                  className="px-6 py-4 font-heading font-bold text-lg transition-colors hover:bg-vintage-cream"
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Upcoming Mentorship
+                    <Calendar className={`w-5 h-5 ${activeTab === 'upcoming' ? 'text-vintage-accent' : 'text-vintage-dark'}`} />
+                    <span className={activeTab === 'upcoming' ? 'text-vintage-accent' : 'text-vintage-dark'}>
+                      Upcoming Mentorship
+                    </span>
                   </div>
                 </button>
               </div>
