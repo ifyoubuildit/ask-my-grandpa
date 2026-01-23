@@ -228,28 +228,39 @@ function RegisterForm() {
       }
 
       // Step 4: Send to Netlify Forms
-      const netlifyFormData = new FormData();
-      netlifyFormData.append('form-name', 'grandpa-registration');
-      netlifyFormData.append('name', formData.fullname);
-      netlifyFormData.append('address', formData.address);
-      netlifyFormData.append('city', formData.city);
-      netlifyFormData.append('province', formData.province);
-      netlifyFormData.append('postal-code', formData.postalCode);
-      netlifyFormData.append('phone', formData.phone);
-      netlifyFormData.append('email', formData.email);
-      netlifyFormData.append('contact-preference', formData.contact_pref);
-      netlifyFormData.append('skills', formData.skills);
-      netlifyFormData.append('note', formData.note);
-      netlifyFormData.append('timestamp', new Date().toLocaleString());
-      
-      if (photo) {
-        netlifyFormData.append('photo', photo);
+      try {
+        // Create form data for Netlify
+        const netlifyData = new URLSearchParams();
+        netlifyData.append('form-name', 'grandpa-registration');
+        netlifyData.append('name', formData.fullname);
+        netlifyData.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
+        netlifyData.append('city', formData.city);
+        netlifyData.append('province', formData.province);
+        netlifyData.append('postal-code', formData.postalCode);
+        netlifyData.append('phone', formData.phone);
+        netlifyData.append('email', formData.email);
+        netlifyData.append('contact-preference', formData.contact_pref);
+        netlifyData.append('skills', formData.skills);
+        netlifyData.append('note', formData.note);
+        netlifyData.append('timestamp', new Date().toLocaleString());
+        
+        const netlifyResponse = await fetch('/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: netlifyData.toString()
+        });
+        
+        if (netlifyResponse.ok) {
+          console.log('✅ Successfully sent to Netlify Forms');
+        } else {
+          console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
+        }
+      } catch (netlifyError) {
+        console.error('❌ Netlify Forms submission failed:', netlifyError);
+        // Don't throw error - continue with success since Firebase worked
       }
-
-      await fetch('/', {
-        method: 'POST',
-        body: netlifyFormData
-      });
 
       // Success!
       setShowModal(true);
