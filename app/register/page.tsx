@@ -229,61 +229,47 @@ function RegisterForm() {
 
       // Step 4: Send to Netlify Forms
       try {
-        console.log('📧 Attempting to send to Netlify Forms...');
+        console.log('📧 Starting Netlify Forms submission...');
         
-        // Create a hidden form and submit it to Netlify
-        const form = document.createElement('form');
-        form.setAttribute('name', 'grandpa-registration');
-        form.setAttribute('method', 'POST');
-        form.setAttribute('data-netlify', 'true');
-        form.style.display = 'none';
+        // Method 1: Try direct form submission with proper encoding
+        const netlifyFormData = new FormData();
+        netlifyFormData.append('form-name', 'grandpa-registration');
+        netlifyFormData.append('name', formData.fullname);
+        netlifyFormData.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
+        netlifyFormData.append('city', formData.city);
+        netlifyFormData.append('province', formData.province);
+        netlifyFormData.append('postal-code', formData.postalCode);
+        netlifyFormData.append('phone', formData.phone);
+        netlifyFormData.append('email', formData.email);
+        netlifyFormData.append('contact-preference', formData.contact_pref);
+        netlifyFormData.append('skills', formData.skills);
+        netlifyFormData.append('note', formData.note);
+        netlifyFormData.append('timestamp', new Date().toLocaleString());
         
-        // Add all form fields
-        const fields = {
+        console.log('📧 Form data being sent:', {
           'form-name': 'grandpa-registration',
           'name': formData.fullname,
-          'address': `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
-          'city': formData.city,
-          'province': formData.province,
-          'postal-code': formData.postalCode,
-          'phone': formData.phone,
           'email': formData.email,
-          'contact-preference': formData.contact_pref,
-          'skills': formData.skills,
-          'note': formData.note,
-          'timestamp': new Date().toLocaleString()
-        };
-        
-        Object.entries(fields).forEach(([name, value]) => {
-          const input = document.createElement('input');
-          input.setAttribute('type', 'hidden');
-          input.setAttribute('name', name);
-          input.setAttribute('value', value);
-          form.appendChild(input);
+          'phone': formData.phone,
+          'skills': formData.skills
         });
-        
-        document.body.appendChild(form);
-        
-        // Submit the form
-        const formData2 = new FormData(form);
         
         const netlifyResponse = await fetch('/', {
           method: 'POST',
-          body: formData2
+          body: netlifyFormData
         });
         
         console.log('📧 Netlify response status:', netlifyResponse.status);
+        console.log('📧 Netlify response headers:', [...netlifyResponse.headers.entries()]);
+        
+        const responseText = await netlifyResponse.text();
+        console.log('📧 Netlify response body:', responseText);
         
         if (netlifyResponse.ok) {
           console.log('✅ Successfully sent to Netlify Forms');
         } else {
-          const responseText = await netlifyResponse.text();
-          console.warn('⚠️ Netlify Forms response:', netlifyResponse.status, netlifyResponse.statusText);
-          console.warn('⚠️ Response body:', responseText);
+          console.warn('⚠️ Netlify Forms response not OK:', netlifyResponse.status, netlifyResponse.statusText);
         }
-        
-        // Clean up
-        document.body.removeChild(form);
         
       } catch (netlifyError) {
         console.error('❌ Netlify Forms submission failed:', netlifyError);
@@ -699,6 +685,45 @@ function RegisterForm() {
 
             {/* Submit Button */}
             <div className="text-center mb-6">
+              {/* Test Netlify Button - TEMPORARY */}
+              <button 
+                type="button"
+                onClick={async () => {
+                  console.log('🧪 Testing Netlify Forms directly...');
+                  try {
+                    const testData = new FormData();
+                    testData.append('form-name', 'grandpa-registration');
+                    testData.append('name', 'Test Grandpa');
+                    testData.append('email', 'test@test.com');
+                    testData.append('phone', '555-1234');
+                    testData.append('skills', 'Testing');
+                    testData.append('note', 'This is a test submission');
+                    testData.append('timestamp', new Date().toLocaleString());
+                    
+                    const response = await fetch('/', {
+                      method: 'POST',
+                      body: testData
+                    });
+                    
+                    console.log('🧪 Test response:', response.status);
+                    const text = await response.text();
+                    console.log('🧪 Test response body:', text);
+                    
+                    if (response.ok) {
+                      alert('Test submission successful! Check Netlify dashboard.');
+                    } else {
+                      alert(`Test failed: ${response.status} - Check console for details`);
+                    }
+                  } catch (error) {
+                    console.error('🧪 Test failed:', error);
+                    alert('Test failed - Check console for details');
+                  }
+                }}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors shadow-lg mr-4 mb-4"
+              >
+                Test Netlify Forms
+              </button>
+              
               <button 
                 type="submit" 
                 disabled={isSubmitting}

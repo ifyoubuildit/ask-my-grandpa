@@ -48,6 +48,12 @@ export default function Home() {
           <div className="mt-12 max-w-2xl mx-auto relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-vintage-green to-vintage-accent rounded-full blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
             <div className="relative flex items-center bg-white rounded-full shadow-lg border-2 border-vintage-dark/10 focus-within:border-vintage-accent transition-colors p-2">
+              
+              {/* Hidden Test Form for Netlify */}
+              <form name="test-form" method="POST" data-netlify="true" style={{ display: 'none' }}>
+                <input type="hidden" name="form-name" value="test-form" />
+                <input type="text" name="test-field" />
+              </form>
               <div className="pl-4 text-vintage-dark/40">
                 <Search className="w-6 h-6" />
               </div>
