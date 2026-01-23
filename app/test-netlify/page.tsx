@@ -120,41 +120,24 @@ Next: Compare this with actual registration form submission
     }
   };
 
-  const testExactRegistrationData = async () => {
+  const testGrandpaRequestForm = async () => {
     setLoading(true);
-    setResult('Testing with exact registration form data structure...');
+    setResult('Testing Grandpa Request Form...');
 
     try {
-      // Simulate exactly what the registration form sends
-      const formData = {
-        fullname: 'John Test Smith',
-        email: 'johntest@example.com',
-        address: '456 Real Street',
-        city: 'Calgary',
-        province: 'AB',
-        postalCode: 'T2P 1J9',
-        phone: '(403) 555-0123',
-        contact_pref: 'both',
-        skills: 'Plumbing, Electrical work, Carpentry',
-        note: 'I have 40 years of experience and love helping people learn.'
-      };
-
+      // Test the grandpa request form with sample data
       const netlifyData = new URLSearchParams();
-      netlifyData.append('form-name', 'grandpa-registration');
-      netlifyData.append('name', formData.fullname);
-      netlifyData.append('address', `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`);
-      netlifyData.append('city', formData.city);
-      netlifyData.append('province', formData.province);
-      netlifyData.append('postal-code', formData.postalCode);
-      netlifyData.append('phone', formData.phone);
-      netlifyData.append('email', formData.email);
-      netlifyData.append('contact-preference', formData.contact_pref);
-      netlifyData.append('skills', formData.skills);
-      netlifyData.append('note', formData.note);
+      netlifyData.append('form-name', 'grandpa-request');
+      netlifyData.append('grandpa-name', 'Test Grandpa');
+      netlifyData.append('grandpa-email', 'testgrandpa@example.com'); // This should receive the email
+      netlifyData.append('apprentice-name', 'Test Apprentice');
+      netlifyData.append('apprentice-email', 'testapprentice@example.com');
+      netlifyData.append('subject', 'Plumbing Help');
+      netlifyData.append('availability', 'Weekends');
+      netlifyData.append('message', 'Hi! I need help with a leaky faucet.');
       netlifyData.append('timestamp', new Date().toLocaleString());
       
-      console.log('🧪 Testing with EXACT registration form structure...');
-      console.log('🧪 This should match exactly what the real form sends');
+      console.log('🧪 Testing Grandpa Request Form...');
       
       const response = await fetch('/', {
         method: 'POST',
@@ -165,18 +148,16 @@ Next: Compare this with actual registration form submission
       });
       
       setResult(`
-Exact Registration Test Results:
+Grandpa Request Test Results:
 Status: ${response.status} ${response.ok ? '✅' : '❌'}
 
-This test uses the EXACT same structure as the registration form.
-If this appears in Netlify but real registrations don't, 
-there's a bug in the registration form code.
-
-Check Netlify dashboard for "John Test Smith" submission.
+This tests the email notification system.
+If successful, testgrandpa@example.com should receive an email.
+Check Netlify dashboard > Forms > grandpa-request for submission.
       `);
       
     } catch (error) {
-      setResult(`Exact Registration Error: ${error}`);
+      setResult(`Grandpa Request Error: ${error}`);
     } finally {
       setLoading(false);
     }
@@ -205,11 +186,11 @@ Check Netlify dashboard for "John Test Smith" submission.
           </button>
           
           <button 
-            onClick={testExactRegistrationData}
+            onClick={testGrandpaRequestForm}
             disabled={loading}
-            className="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 disabled:opacity-50"
+            className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 disabled:opacity-50"
           >
-            {loading ? 'Testing...' : 'Test Exact Registration Structure'}
+            {loading ? 'Testing...' : 'Test Grandpa Request Email'}
           </button>
         </div>
         

@@ -121,6 +121,12 @@ function RequestHelpForm() {
       // Send email notification to grandpa
       try {
         console.log('📧 Starting Netlify Forms submission...');
+        console.log('📧 Grandpa email:', grandpaData?.email);
+        console.log('📧 Grandpa data:', grandpaData);
+        
+        if (!grandpaData?.email) {
+          console.warn('⚠️ No grandpa email found - email notification will not be sent');
+        }
         
         // Create a hidden form and submit it directly (like the working HTML form)
         const form = document.createElement('form');
@@ -140,6 +146,8 @@ function RequestHelpForm() {
           'message': formData.message,
           'timestamp': new Date().toLocaleString()
         };
+        
+        console.log('📧 Form fields being sent:', fields);
         
         Object.entries(fields).forEach(([name, value]) => {
           const input = document.createElement('input');
@@ -168,7 +176,7 @@ function RequestHelpForm() {
         }, 2000);
         
         console.log('✅ Request form submitted directly to Netlify Forms');
-        console.log('📧 Email should be sent to: ' + (grandpaData?.email || 'grandpa email'));
+        console.log('📧 Email should be sent to: ' + (grandpaData?.email || 'NO EMAIL FOUND'));
         
       } catch (emailError) {
         console.warn('⚠️ Email notification failed (continuing anyway):', emailError);

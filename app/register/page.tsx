@@ -227,9 +227,9 @@ function RegisterForm() {
         await addDoc(collection(db, "grandpas"), grandpaData);
       }
 
-      // Step 4: Send to Netlify Forms
+      // Step 4: Send to Netlify Forms using the official Next.js method
       try {
-        console.log('📧 Starting Netlify Forms submission...');
+        console.log('📧 Starting Netlify Forms submission (Next.js method)...');
         console.log('📧 Form data to send:', {
           'form-name': 'grandpa-registration',
           'name': formData.fullname,
@@ -238,14 +238,14 @@ function RegisterForm() {
           'skills': formData.skills
         });
         
-        // Create a hidden form and submit it directly (like the working HTML form)
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/';
-        form.style.display = 'none';
+        // Method 1: Try the encode function approach (official Netlify docs)
+        const encode = (data: Record<string, string>) => {
+          return Object.keys(data)
+            .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+            .join("&");
+        };
         
-        // Add form fields
-        const fields = {
+        const netlifyData = {
           'form-name': 'grandpa-registration',
           'name': formData.fullname,
           'address': `${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}`,
@@ -260,34 +260,26 @@ function RegisterForm() {
           'timestamp': new Date().toLocaleString()
         };
         
-        Object.entries(fields).forEach(([name, value]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = name;
-          input.value = value;
-          form.appendChild(input);
+        console.log('📧 Encoded data:', encode(netlifyData));
+        
+        const netlifyResponse = await fetch('/', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded' 
+          },
+          body: encode(netlifyData)
         });
         
-        // Submit the form in a hidden iframe to avoid page redirect
-        const iframe = document.createElement('iframe');
-        iframe.name = 'netlify-form-submission';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
+        console.log('📧 Netlify response status:', netlifyResponse.status);
+        console.log('📧 Netlify response headers:', Object.fromEntries(netlifyResponse.headers.entries()));
         
-        form.target = 'netlify-form-submission';
-        document.body.appendChild(form);
-        
-        console.log('📧 Submitting form directly to Netlify (bypassing Next.js fetch)');
-        form.submit();
-        
-        // Clean up after a delay
-        setTimeout(() => {
-          document.body.removeChild(form);
-          document.body.removeChild(iframe);
-        }, 2000);
-        
-        console.log('✅ Form submitted directly to Netlify Forms');
-        console.log('📧 Check Netlify dashboard for submission with name: ' + formData.fullname);
+        if (netlifyResponse.status === 200) {
+          console.log('✅ Netlify Forms submission successful (Status 200)');
+          console.log('📧 Check Netlify Dashboard > Forms > grandpa-registration');
+          console.log('📧 Look for submission with name: ' + formData.fullname);
+        } else {
+          console.warn('⚠️ Netlify Forms response not 200:', netlifyResponse.status);
+        }
         
       } catch (netlifyError) {
         console.error('❌ Netlify Forms submission failed:', netlifyError);
