@@ -1,5 +1,5 @@
 [build]
-  command = "npm ci && npm run build"
+  command = "npm install && npm run build"
   publish = ".next"
 
 [build.environment]
@@ -8,75 +8,3 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-# Netlify Forms Configuration
-[forms]
-  enabled = true
-  
-  [forms.settings]
-    spam_filter = true
-    
-  [[forms.notifications]]
-    form = "grandpa-registration"
-    to = "info@askmygrandpa.com"
-    subject = "🎉 New Grandpa Registration!"
-    template = """
-Great news! A new Grandpa has registered on AskMyGrandpa.com
-
-📝 Registration Details:
-Name: {{ name }}
-Email: {{ email }}
-Phone: {{ phone }}
-Address: {{ address }}
-Contact Preference: {{ contact-preference }}
-
-🛠️ Skills: {{ skills }}
-
-📖 Interesting Note: {{ note }}
-
-⏰ Submitted: {{ timestamp }}
-
-You can view all submissions in your Netlify dashboard.
-"""
-    
-  [[forms.notifications]]
-    form = "apprentice-registration"
-    to = "info@askmygrandpa.com"
-    subject = "🌟 New Apprentice Registration!"
-    template = """
-Exciting news! A new Apprentice has registered on AskMyGrandpa.com
-
-📝 Registration Details:
-Name: {{ name }}
-Email: {{ email }}
-Phone: {{ phone }}
-Address: {{ address }}
-Contact Preference: {{ contact-preference }}
-
-👴 Interested in connecting with: {{ interested-grandpa }}
-
-⏰ Submitted: {{ timestamp }}
-
-You can view all submissions in your Netlify dashboard.
-"""
-    
-  [[forms.notifications]]
-    form = "grandpa-request"
-    to = "{{ grandpa-email }}"
-    subject = "🔧 New Help Request - {{ subject }}"
-    template = """
-You have a new help request on AskMyGrandpa.com!
-
-👤 From: {{ apprentice-name }} ({{ apprentice-email }})
-📋 Subject: {{ subject }}
-⏰ Availability: {{ availability }}
-
-💬 Message:
-{{ message }}
-
-📅 Submitted: {{ timestamp }}
-
-To respond to this request, please log into your dashboard at askmygrandpa.com/dashboard
-
-Thank you for being part of our community!
-"""
