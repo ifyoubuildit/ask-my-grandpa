@@ -316,9 +316,7 @@ function RegisterForm() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30">
           
-          <form onSubmit={handleSubmit} name="grandpa-registration" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" encType="multipart/form-data">
-            <input type="hidden" name="form-name" value="grandpa-registration" />
-            <input type="hidden" name="bot-field" />
+          <form onSubmit={handleSubmit}>
             
             {/* Error Message */}
             {error && (
@@ -326,21 +324,6 @@ function RegisterForm() {
                 {error}
               </div>
             )}
-            
-            {/* Hidden fields for Netlify Forms detection */}
-            <div style={{ display: 'none' }}>
-              <input name="name" value={formData.fullname} readOnly />
-              <input name="address" value={formData.address} readOnly />
-              <input name="city" value={formData.city} readOnly />
-              <input name="province" value={formData.province} readOnly />
-              <input name="postal-code" value={formData.postalCode} readOnly />
-              <input name="phone" value={formData.phone} readOnly />
-              <input name="email" value={formData.email} readOnly />
-              <input name="contact-preference" value={formData.contact_pref} readOnly />
-              <textarea name="skills" value={formData.skills} readOnly />
-              <textarea name="note" value={formData.note} readOnly />
-              <input name="timestamp" value={new Date().toLocaleString()} readOnly />
-            </div>
             
             {/* Full Name */}
             <div className="mb-8">

@@ -41,58 +41,6 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Footer />
-          
-          {/* Hidden forms for Netlify detection - DO NOT REMOVE */}
-          <div style={{ display: 'none' }}>
-            <form name="grandpa-registration" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
-              <input type="hidden" name="form-name" value="grandpa-registration" />
-              <input type="hidden" name="bot-field" />
-              <input type="text" name="name" />
-              <input type="email" name="email" />
-              <input type="tel" name="phone" />
-              <input type="text" name="address" />
-              <input type="text" name="city" />
-              <input type="text" name="province" />
-              <input type="text" name="postal-code" />
-              <input type="text" name="contact-preference" />
-              <textarea name="skills"></textarea>
-              <textarea name="note"></textarea>
-              <input type="text" name="timestamp" />
-            </form>
-            
-            <form name="apprentice-registration" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
-              <input type="hidden" name="form-name" value="apprentice-registration" />
-              <input type="hidden" name="bot-field" />
-              <input type="text" name="name" />
-              <input type="email" name="email" />
-              <input type="tel" name="phone" />
-              <input type="text" name="address" />
-              <input type="text" name="city" />
-              <input type="text" name="province" />
-              <input type="text" name="postal-code" />
-              <input type="text" name="contact-preference" />
-              <input type="text" name="interested-grandpa" />
-              <input type="text" name="timestamp" />
-            </form>
-            
-            <form name="grandpa-request" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
-              <input type="hidden" name="form-name" value="grandpa-request" />
-              <input type="hidden" name="bot-field" />
-              <input type="text" name="grandpa-name" />
-              <input type="email" name="grandpa-email" />
-              <input type="text" name="apprentice-name" />
-              <input type="email" name="apprentice-email" />
-              <input type="text" name="subject" />
-              <input type="text" name="availability" />
-              <textarea name="message"></textarea>
-              <input type="text" name="timestamp" />
-            </form>
-            
-            <form name="test-form" method="POST" data-netlify="true">
-              <input type="hidden" name="form-name" value="test-form" />
-              <input type="text" name="test-field" />
-            </form>
-          </div>
         </AuthProvider>
       </body>
     </html>
