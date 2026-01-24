@@ -32,7 +32,6 @@ function RequestHelpForm() {
   }, [skill]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState('');
   const [grandpaData, setGrandpaData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -131,31 +130,12 @@ function RequestHelpForm() {
       console.log('📧 Firebase Functions will send email notifications automatically');
 
       console.log('🎯 Redirecting to dashboard...');
-      console.log('🎯 User state:', { uid: user?.uid, email: user?.email });
-      console.log('🎯 Router available:', !!router);
       
-      // Success - show redirecting state and redirect immediately
+      // Success - redirect immediately
       setIsSubmitting(false);
-      setIsRedirecting(true);
       
       console.log('🎯 Attempting immediate redirect to dashboard...');
-      try {
-        // Use replace instead of push to avoid back button issues
-        router.replace('/dashboard?message=request-sent');
-        console.log('✅ Redirect initiated successfully');
-      } catch (redirectError) {
-        console.error('❌ Redirect failed:', redirectError);
-        // Fallback: use window.location
-        window.location.href = '/dashboard?message=request-sent';
-      }
-      
-      // Fallback timeout in case redirect doesn't work
-      setTimeout(() => {
-        if (window.location.pathname !== '/dashboard') {
-          console.log('🔄 Fallback redirect triggered');
-          window.location.href = '/dashboard?message=request-sent';
-        }
-      }, 2000);
+      router.replace('/dashboard?message=request-sent');
 
     } catch (error) {
       console.error('❌ Request submission failed:', error);
@@ -285,15 +265,10 @@ function RequestHelpForm() {
             <div className="text-center">
               <button 
                 type="submit" 
-                disabled={isSubmitting || isRedirecting}
+                disabled={isSubmitting}
                 className="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg w-full md:w-auto disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isRedirecting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                    Redirecting to Dashboard...
-                  </>
-                ) : isSubmitting ? (
+                {isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
                     Sending Request...
