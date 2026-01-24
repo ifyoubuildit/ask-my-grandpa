@@ -4,7 +4,8 @@ import {
   signOut, 
   onAuthStateChanged,
   User,
-  updateProfile
+  updateProfile,
+  sendEmailVerification
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
@@ -26,6 +27,12 @@ export const signUp = async (email: string, password: string, displayName: strin
     
     // Update display name
     await updateProfile(user, { displayName });
+    
+    // Send email verification
+    await sendEmailVerification(user, {
+      url: `${window.location.origin}/dashboard`, // Redirect after verification
+      handleCodeInApp: false
+    });
     
     // Create user profile in Firestore
     const userProfile: UserProfile = {

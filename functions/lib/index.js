@@ -41,8 +41,9 @@ exports.onGrandpaRegistration = functions.firestore
     .document('grandpas/{grandpaId}')
     .onCreate(async (snap, context) => {
     const grandpaData = snap.data();
-    const subject = '🎉 New Grandpa Registration - Ask My Grandpa';
-    const htmlContent = `
+    // Send admin notification
+    const adminSubject = '🎉 New Grandpa Registration - Ask My Grandpa';
+    const adminHtmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #9A3412;">New Grandpa Registration!</h2>
         
@@ -67,7 +68,7 @@ exports.onGrandpaRegistration = functions.firestore
         </p>
       </div>
     `;
-    const textContent = `
+    const adminTextContent = `
 New Grandpa Registration!
 
 Name: ${grandpaData.name}
@@ -80,15 +81,94 @@ ${grandpaData.note ? `Note: ${grandpaData.note}` : ''}
 
 Registration Time: ${new Date().toLocaleString()}
     `;
-    await sendNotificationEmail(subject, htmlContent, textContent);
+    await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
+    // Send welcome/verification email to grandpa
+    const welcomeSubject = '🎉 Welcome to Ask My Grandpa - Please Verify Your Email';
+    const welcomeHtmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #9A3412;">Welcome to Ask My Grandpa, ${grandpaData.name}!</h2>
+        
+        <p>Thank you for joining our community of skilled grandpas ready to help the next generation!</p>
+        
+        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Your Registration Details:</h3>
+          <p><strong>Name:</strong> ${grandpaData.name}</p>
+          <p><strong>Email:</strong> ${grandpaData.email}</p>
+          <p><strong>Skills:</strong> ${grandpaData.skills}</p>
+          <p><strong>Location:</strong> ${grandpaData.city}, ${grandpaData.province}</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="https://askmygrandpa.com/dashboard" 
+             style="background: #22c55e; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            Access Your Dashboard
+          </a>
+        </div>
+        
+        <p><strong>What's Next?</strong></p>
+        <ul>
+          <li>Complete your profile if needed</li>
+          <li>Wait for apprentices to reach out for help</li>
+          <li>Share your knowledge and experience!</li>
+        </ul>
+        
+        <p>We'll notify you by email when someone requests your expertise.</p>
+        
+        <p>Best regards,<br>The Ask My Grandpa Team</p>
+        
+        <hr style="border: 1px solid #ddd; margin: 20px 0;">
+        <p style="font-size: 12px; color: #999;">
+          If you didn't create this account, please ignore this email.
+        </p>
+      </div>
+    `;
+    const welcomeTextContent = `
+Welcome to Ask My Grandpa, ${grandpaData.name}!
+
+Thank you for joining our community of skilled grandpas ready to help the next generation!
+
+Your Registration Details:
+Name: ${grandpaData.name}
+Email: ${grandpaData.email}
+Skills: ${grandpaData.skills}
+Location: ${grandpaData.city}, ${grandpaData.province}
+
+Access your dashboard: https://askmygrandpa.com/dashboard
+
+What's Next?
+- Complete your profile if needed
+- Wait for apprentices to reach out for help
+- Share your knowledge and experience!
+
+We'll notify you by email when someone requests your expertise.
+
+Best regards,
+The Ask My Grandpa Team
+    `;
+    // Send welcome email to grandpa
+    const welcomeMailOptions = {
+        from: gmailEmail,
+        to: grandpaData.email,
+        subject: welcomeSubject,
+        text: welcomeTextContent,
+        html: welcomeHtmlContent,
+    };
+    try {
+        await transporter.sendMail(welcomeMailOptions);
+        console.log('Welcome email sent to grandpa successfully');
+    }
+    catch (error) {
+        console.error('Error sending welcome email to grandpa:', error);
+    }
 });
 // Function triggered when a new apprentice registers
 exports.onApprenticeRegistration = functions.firestore
     .document('apprentices/{apprenticeId}')
     .onCreate(async (snap, context) => {
     const apprenticeData = snap.data();
-    const subject = '🎓 New Apprentice Registration - Ask My Grandpa';
-    const htmlContent = `
+    // Send admin notification
+    const adminSubject = '🎓 New Apprentice Registration - Ask My Grandpa';
+    const adminHtmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #22c55e;">New Apprentice Registration!</h2>
         
@@ -112,7 +192,7 @@ exports.onApprenticeRegistration = functions.firestore
         </p>
       </div>
     `;
-    const textContent = `
+    const adminTextContent = `
 New Apprentice Registration!
 
 Name: ${apprenticeData.name}
@@ -124,7 +204,85 @@ ${apprenticeData.note ? `Note: ${apprenticeData.note}` : ''}
 
 Registration Time: ${new Date().toLocaleString()}
     `;
-    await sendNotificationEmail(subject, htmlContent, textContent);
+    await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
+    // Send welcome email to apprentice
+    const welcomeSubject = '🎓 Welcome to Ask My Grandpa - Start Learning!';
+    const welcomeHtmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #22c55e;">Welcome to Ask My Grandpa, ${apprenticeData.name}!</h2>
+        
+        <p>Welcome to our community! You're now connected to experienced grandpas ready to share their knowledge.</p>
+        
+        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Your Registration Details:</h3>
+          <p><strong>Name:</strong> ${apprenticeData.name}</p>
+          <p><strong>Email:</strong> ${apprenticeData.email}</p>
+          <p><strong>Interests:</strong> ${apprenticeData.interests}</p>
+          <p><strong>Location:</strong> ${apprenticeData.city}, ${apprenticeData.province}</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="https://askmygrandpa.com/search" 
+             style="background: #c05621; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+            Find a Grandpa
+          </a>
+        </div>
+        
+        <p><strong>What's Next?</strong></p>
+        <ul>
+          <li>Browse available grandpas in your area</li>
+          <li>Send help requests for specific skills</li>
+          <li>Learn from experienced mentors!</li>
+        </ul>
+        
+        <p>Ready to start learning? Search for grandpas with the skills you need!</p>
+        
+        <p>Best regards,<br>The Ask My Grandpa Team</p>
+        
+        <hr style="border: 1px solid #ddd; margin: 20px 0;">
+        <p style="font-size: 12px; color: #999;">
+          If you didn't create this account, please ignore this email.
+        </p>
+      </div>
+    `;
+    const welcomeTextContent = `
+Welcome to Ask My Grandpa, ${apprenticeData.name}!
+
+Welcome to our community! You're now connected to experienced grandpas ready to share their knowledge.
+
+Your Registration Details:
+Name: ${apprenticeData.name}
+Email: ${apprenticeData.email}
+Interests: ${apprenticeData.interests}
+Location: ${apprenticeData.city}, ${apprenticeData.province}
+
+Find a grandpa: https://askmygrandpa.com/search
+
+What's Next?
+- Browse available grandpas in your area
+- Send help requests for specific skills
+- Learn from experienced mentors!
+
+Ready to start learning? Search for grandpas with the skills you need!
+
+Best regards,
+The Ask My Grandpa Team
+    `;
+    // Send welcome email to apprentice
+    const welcomeMailOptions = {
+        from: gmailEmail,
+        to: apprenticeData.email,
+        subject: welcomeSubject,
+        text: welcomeTextContent,
+        html: welcomeHtmlContent,
+    };
+    try {
+        await transporter.sendMail(welcomeMailOptions);
+        console.log('Welcome email sent to apprentice successfully');
+    }
+    catch (error) {
+        console.error('Error sending welcome email to apprentice:', error);
+    }
 });
 // Function triggered when a new help request is created
 exports.onHelpRequest = functions.firestore

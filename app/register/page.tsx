@@ -672,7 +672,7 @@ function RegisterForm() {
             <p className="text-lg text-vintage-dark/80 mb-8 font-body">
               {isUpdate 
                 ? 'Your profile has been updated successfully.' 
-                : 'Your account has been created successfully! You\'ll receive email notifications when apprentices reach out for help.'
+                : 'Your account has been created successfully! Please check your email and click the verification link to activate your account.'
               }
             </p>
             <button 
