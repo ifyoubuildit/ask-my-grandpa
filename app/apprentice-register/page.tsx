@@ -271,9 +271,9 @@ function ApprenticeRegisterForm() {
   const closeModal = () => {
     setShowModal(false);
     // For updates, stay on the same page so they can make more changes
-    // For new registrations, go to request help page
+    // For new registrations, go to dashboard
     if (!isUpdate) {
-      router.push(`/request-help?grandpa=${encodeURIComponent(grandpaName)}&grandpaId=${grandpaId}&skill=${encodeURIComponent(skill)}`);
+      router.push('/dashboard');
     }
   };
 

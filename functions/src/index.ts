@@ -67,7 +67,7 @@ export const sendCustomEmailVerification = functions.https.onCall(async (data, c
     const firstName = displayName.split(' ')[0];
     const verificationUrl = `https://askmygrandpa.com/verify-email?token=${verificationToken}&uid=${userId}`;
     
-    const subject = 'Just checking: Is this the right email?';
+    const subject = 'Ask My Grandpa Email Confirmation';
     
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
@@ -255,7 +255,7 @@ Registration Time: ${new Date().toLocaleString()}
     await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
     
     // Send welcome/verification email to grandpa
-    const welcomeSubject = 'We could use a hand. Thanks for offering yours.';
+    const welcomeSubject = 'Welcome to Ask My Grandpa';
     
     const welcomeHtmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
@@ -271,7 +271,7 @@ Registration Time: ${new Date().toLocaleString()}
           </p>
           
           <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-            <strong>Thank you for stepping up to join Ask Grandpa.</strong>
+            <strong>We could use a hand. Thanks for offering yours.</strong>
           </p>
           
           <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
@@ -320,7 +320,7 @@ Registration Time: ${new Date().toLocaleString()}
     const welcomeTextContent = `
 Hello ${grandpaData.name.split(' ')[0]},
 
-Thank you for stepping up to join Ask Grandpa.
+We could use a hand. Thanks for offering yours.
 
 We know you have decades of hard-earned skills and practical knowledge locked away—the kind of stuff you just can't get from a quick internet search. We are incredibly grateful that you're willing to share it with the next generation.
 
