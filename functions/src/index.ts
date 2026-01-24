@@ -94,69 +94,87 @@ Registration Time: ${new Date().toLocaleString()}
     await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
     
     // Send welcome/verification email to grandpa
-    const welcomeSubject = '🎉 Welcome to Ask My Grandpa - Please Verify Your Email';
+    const welcomeSubject = 'We could use a hand. Thanks for offering yours.';
     
     const welcomeHtmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #9A3412;">Welcome to Ask My Grandpa, ${grandpaData.name}!</h2>
-        
-        <p>Thank you for joining our community of skilled grandpas ready to help the next generation!</p>
-        
-        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0;">Your Registration Details:</h3>
-          <p><strong>Name:</strong> ${grandpaData.name}</p>
-          <p><strong>Email:</strong> ${grandpaData.email}</p>
-          <p><strong>Skills:</strong> ${grandpaData.skills}</p>
-          <p><strong>Location:</strong> ${grandpaData.city}, ${grandpaData.province}</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+        <!-- Header with logo/banner space -->
+        <div style="background: #4a4037; padding: 20px; text-align: center;">
+          <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+          <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Welcome to the mentor community.</p>
         </div>
         
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="https://askmygrandpa.com/dashboard" 
-             style="background: #22c55e; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-            Access Your Dashboard
-          </a>
+        <div style="padding: 30px; background: white; margin: 0;">
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Hello ${grandpaData.name.split(' ')[0]},
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            <strong>Thank you for stepping up to join Ask Grandpa.</strong>
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            We know you have decades of hard-earned skills and practical knowledge locked away—the kind of stuff you just can't get from a quick internet search. We are incredibly grateful that you're willing to share it with the next generation.
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            By signing up as a mentor, you aren't just helping someone fix a garbage disposal or patch a wall. <strong>You're connecting with your neighbors and passing down a legacy of self-reliance.</strong>
+          </p>
+          
+          <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 25px 0;">
+            <p style="color: #4a4037; margin: 0; font-size: 16px; line-height: 1.6;">
+              As a reminder, our golden rule is that <strong>the apprentice holds the tools</strong>. Your job isn't to do free labor; it's to guide, teach, ensure safety, and enjoy a cup of coffee while watching someone gain new confidence.
+            </p>
+          </div>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+            To help match you with the right neighbors looking for help, we need to know what you're best at.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://askmygrandpa.com/dashboard" 
+               style="background: #9A3412; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+              Complete My Skills Profile
+            </a>
+          </div>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 30px;">
+            Thanks again for being here.
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6;">
+            With respect,<br>
+            <strong>The Ask Grandpa Team</strong>
+          </p>
         </div>
         
-        <p><strong>What's Next?</strong></p>
-        <ul>
-          <li>Complete your profile if needed</li>
-          <li>Wait for apprentices to reach out for help</li>
-          <li>Share your knowledge and experience!</li>
-        </ul>
-        
-        <p>We'll notify you by email when someone requests your expertise.</p>
-        
-        <p>Best regards,<br>The Ask My Grandpa Team</p>
-        
-        <hr style="border: 1px solid #ddd; margin: 20px 0;">
-        <p style="font-size: 12px; color: #999;">
-          If you didn't create this account, please ignore this email.
-        </p>
+        <div style="background: #f0ede6; padding: 20px; text-align: center;">
+          <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+            Thank you for joining the Ask My Grandpa mentor community.
+          </p>
+        </div>
       </div>
     `;
     
     const welcomeTextContent = `
-Welcome to Ask My Grandpa, ${grandpaData.name}!
+Hello ${grandpaData.name.split(' ')[0]},
 
-Thank you for joining our community of skilled grandpas ready to help the next generation!
+Thank you for stepping up to join Ask Grandpa.
 
-Your Registration Details:
-Name: ${grandpaData.name}
-Email: ${grandpaData.email}
-Skills: ${grandpaData.skills}
-Location: ${grandpaData.city}, ${grandpaData.province}
+We know you have decades of hard-earned skills and practical knowledge locked away—the kind of stuff you just can't get from a quick internet search. We are incredibly grateful that you're willing to share it with the next generation.
 
-Access your dashboard: https://askmygrandpa.com/dashboard
+By signing up as a mentor, you aren't just helping someone fix a garbage disposal or patch a wall. You're connecting with your neighbors and passing down a legacy of self-reliance.
 
-What's Next?
-- Complete your profile if needed
-- Wait for apprentices to reach out for help
-- Share your knowledge and experience!
+As a reminder, our golden rule is that the apprentice holds the tools. Your job isn't to do free labor; it's to guide, teach, ensure safety, and enjoy a cup of coffee while watching someone gain new confidence.
 
-We'll notify you by email when someone requests your expertise.
+To help match you with the right neighbors looking for help, we need to know what you're best at.
 
-Best regards,
-The Ask My Grandpa Team
+Complete your profile: https://askmygrandpa.com/dashboard
+
+Thanks again for being here.
+
+With respect,
+The Ask Grandpa Team
     `;
     
     // Send welcome email to grandpa
@@ -226,69 +244,82 @@ Registration Time: ${new Date().toLocaleString()}
     await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
     
     // Send welcome email to apprentice
-    const welcomeSubject = '🎓 Welcome to Ask My Grandpa - Start Learning!';
+    const welcomeSubject = 'Stuck on a project? Let\'s get it fixed, together.';
     
     const welcomeHtmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #22c55e;">Welcome to Ask My Grandpa, ${apprenticeData.name}!</h2>
-        
-        <p>Welcome to our community! You're now connected to experienced grandpas ready to share their knowledge.</p>
-        
-        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin-top: 0;">Your Registration Details:</h3>
-          <p><strong>Name:</strong> ${apprenticeData.name}</p>
-          <p><strong>Email:</strong> ${apprenticeData.email}</p>
-          <p><strong>Interests:</strong> ${apprenticeData.interests}</p>
-          <p><strong>Location:</strong> ${apprenticeData.city}, ${apprenticeData.province}</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+        <!-- Header with logo/banner space -->
+        <div style="background: #4a4037; padding: 20px; text-align: center;">
+          <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+          <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Help is on the way.</p>
         </div>
         
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="https://askmygrandpa.com/search" 
-             style="background: #c05621; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-            Find a Grandpa
-          </a>
+        <div style="padding: 30px; background: white; margin: 0;">
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Hi ${apprenticeData.name.split(' ')[0]},
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            That leaky faucet isn't going to fix itself. But that doesn't mean you have to figure it out alone.
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            <strong>Welcome to Ask Grandpa.</strong> You've just joined a community of folks ready to pass down years of practical, hands-on wisdom.
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            We aren't a directory of contractors. We're neighbors helping neighbors. Our mentors ("Grandpas") are here to guide you, instruct you, and supervise—but remember, <strong>you hold the tools</strong>. We want you to finish the job with a fixed problem and a new skill you get to keep forever.
+          </p>
+          
+          <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 25px 0;">
+            <h3 style="color: #4a4037; margin-top: 0; font-size: 18px;">The House Rules at a glance:</h3>
+            <p style="color: #4a4037; margin: 10px 0;"><strong>It's Free:</strong> No cash changes hands here. Payment is a hot cup of tea or coffee for your mentor when the job is done.</p>
+            <p style="color: #4a4037; margin: 10px 0;"><strong>Learn for Life:</strong> Our goal isn't a quick fix; it's to teach you self-reliance.</p>
+          </div>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+            Ready to tackle that project?
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://askmygrandpa.com/search" 
+               style="background: #9A3412; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+              Post My First Request
+            </a>
+          </div>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 30px;">
+            Let's get to work,<br>
+            <strong>The Ask Grandpa Team</strong>
+          </p>
         </div>
         
-        <p><strong>What's Next?</strong></p>
-        <ul>
-          <li>Browse available grandpas in your area</li>
-          <li>Send help requests for specific skills</li>
-          <li>Learn from experienced mentors!</li>
-        </ul>
-        
-        <p>Ready to start learning? Search for grandpas with the skills you need!</p>
-        
-        <p>Best regards,<br>The Ask My Grandpa Team</p>
-        
-        <hr style="border: 1px solid #ddd; margin: 20px 0;">
-        <p style="font-size: 12px; color: #999;">
-          If you didn't create this account, please ignore this email.
-        </p>
+        <div style="background: #f0ede6; padding: 20px; text-align: center;">
+          <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+            Welcome to the Ask My Grandpa community. Help is on the way.
+          </p>
+        </div>
       </div>
     `;
     
     const welcomeTextContent = `
-Welcome to Ask My Grandpa, ${apprenticeData.name}!
+Hi ${apprenticeData.name.split(' ')[0]},
 
-Welcome to our community! You're now connected to experienced grandpas ready to share their knowledge.
+That leaky faucet isn't going to fix itself. But that doesn't mean you have to figure it out alone.
 
-Your Registration Details:
-Name: ${apprenticeData.name}
-Email: ${apprenticeData.email}
-Interests: ${apprenticeData.interests}
-Location: ${apprenticeData.city}, ${apprenticeData.province}
+Welcome to Ask Grandpa. You've just joined a community of folks ready to pass down years of practical, hands-on wisdom.
 
+We aren't a directory of contractors. We're neighbors helping neighbors. Our mentors ("Grandpas") are here to guide you, instruct you, and supervise—but remember, you hold the tools. We want you to finish the job with a fixed problem and a new skill you get to keep forever.
+
+The House Rules at a glance:
+• It's Free: No cash changes hands here. Payment is a hot cup of tea or coffee for your mentor when the job is done.
+• Learn for Life: Our goal isn't a quick fix; it's to teach you self-reliance.
+
+Ready to tackle that project?
 Find a grandpa: https://askmygrandpa.com/search
 
-What's Next?
-- Browse available grandpas in your area
-- Send help requests for specific skills
-- Learn from experienced mentors!
-
-Ready to start learning? Search for grandpas with the skills you need!
-
-Best regards,
-The Ask My Grandpa Team
+Let's get to work,
+The Ask Grandpa Team
     `;
     
     // Send welcome email to apprentice
