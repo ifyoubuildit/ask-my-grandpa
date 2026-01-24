@@ -410,55 +410,133 @@ Request Time: ${new Date().toLocaleString()}
     
     // Also send email to the grandpa
     if (requestData.grandpaEmail) {
+      const grandpaSubject = `A neighbor needs a hand: New ${requestData.skill || requestData.subject} Request`;
+      
+      const grandpaHtmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+          <!-- Header with logo/banner space -->
+          <div style="background: #4a4037; padding: 20px; text-align: center;">
+            <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+            <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">${requestData.apprenticeName} is looking for some guidance. Can you help?</p>
+          </div>
+          
+          <div style="padding: 30px; background: white; margin: 0;">
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Hello ${requestData.grandpaName.split(' ')[0]},
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              <strong>Your skills are in demand.</strong>
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              An apprentice in your area has run into a snag with a project and is hoping to borrow some of your wisdom to get it fixed.
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              <strong>Are you available to lend a hand?</strong>
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+              Below are the details of their request. Please review the information to see if it's a good match for your expertise and schedule.
+            </p>
+            
+            <!-- Request Details Block -->
+            <div style="background: #f0ede6; padding: 25px; border-radius: 8px; margin: 25px 0; border: 1px solid #e0ddd6;">
+              <h3 style="color: #4a4037; margin-top: 0; margin-bottom: 20px; font-size: 20px;">The Request Details</h3>
+              
+              <p style="color: #4a4037; margin: 12px 0; font-size: 16px;">
+                <strong>The Apprentice:</strong> ${requestData.apprenticeName}
+              </p>
+              
+              <p style="color: #4a4037; margin: 12px 0; font-size: 16px;">
+                <strong>The Challenge:</strong> ${requestData.skill || requestData.subject}
+              </p>
+              
+              <p style="color: #4a4037; margin: 12px 0 8px 0; font-size: 16px;">
+                <strong>Their Note to You:</strong>
+              </p>
+              <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #9A3412; margin: 8px 0 12px 0;">
+                <p style="color: #4a4037; margin: 0; font-style: italic; font-size: 16px; line-height: 1.5;">
+                  "${requestData.message}"
+                </p>
+              </div>
+              
+              <p style="color: #4a4037; margin: 12px 0; font-size: 16px;">
+                <strong>Preferred Availability:</strong> ${requestData.availability}
+              </p>
+            </div>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+              <strong>What's Next?</strong> If you are available and willing to guide ${requestData.apprenticeName.split(' ')[0]} through this project, please click below to accept the request and coordinate a time to meet.
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://askmygrandpa.com/dashboard" 
+                 style="background: #9A3412; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+                View Request & Reply
+              </a>
+            </div>
+            
+            <div style="text-align: center; margin: 15px 0;">
+              <p style="color: #4a4037; font-size: 14px; margin: 0;">
+                <a href="https://askmygrandpa.com/dashboard" style="color: #9A3412; text-decoration: underline;">
+                  Not able to help with this one? Click here to decline.
+                </a>
+              </p>
+            </div>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 40px;">
+              Thank you for being a generous part of our community.
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6;">
+              With respect,<br>
+              <strong>The Ask Grandpa Team</strong>
+            </p>
+          </div>
+          
+          <div style="background: #f0ede6; padding: 20px; text-align: center;">
+            <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+              ${requestData.apprenticeName} is looking for guidance with ${requestData.skill || requestData.subject}.
+            </p>
+          </div>
+        </div>
+      `;
+      
+      const grandpaTextContent = `
+Hello ${requestData.grandpaName.split(' ')[0]},
+
+Your skills are in demand.
+
+An apprentice in your area has run into a snag with a project and is hoping to borrow some of your wisdom to get it fixed.
+
+Are you available to lend a hand?
+
+Below are the details of their request. Please review the information to see if it's a good match for your expertise and schedule.
+
+THE REQUEST DETAILS
+The Apprentice: ${requestData.apprenticeName}
+The Challenge: ${requestData.skill || requestData.subject}
+Their Note to You: "${requestData.message}"
+Preferred Availability: ${requestData.availability}
+
+What's Next? If you are available and willing to guide ${requestData.apprenticeName.split(' ')[0]} through this project, please visit your dashboard to accept the request and coordinate a time to meet.
+
+View Request & Reply: https://askmygrandpa.com/dashboard
+
+Thank you for being a generous part of our community.
+
+With respect,
+The Ask Grandpa Team
+      `;
+      
       const grandpaMailOptions = {
         from: gmailEmail,
         to: requestData.grandpaEmail,
-        subject: `🤝 New Help Request: ${requestData.subject}`,
-        text: `
-Hi ${requestData.grandpaName},
-
-You have a new help request from ${requestData.apprenticeName}!
-
-Subject: ${requestData.subject}
-Message: ${requestData.message}
-Availability: ${requestData.availability}
-
-Apprentice Contact:
-Email: ${requestData.apprenticeEmail}
-
-Please log into your dashboard at https://askmygrandpa.com/dashboard to respond.
-
-Best regards,
-Ask My Grandpa Team
-        `,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #c05621;">New Help Request!</h2>
-            
-            <p>Hi ${requestData.grandpaName},</p>
-            
-            <p>You have a new help request from <strong>${requestData.apprenticeName}</strong>!</p>
-            
-            <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p><strong>Subject:</strong> ${requestData.subject}</p>
-              <p><strong>Message:</strong></p>
-              <p style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #c05621;">
-                ${requestData.message}
-              </p>
-              <p><strong>Availability:</strong> ${requestData.availability}</p>
-              <p><strong>Apprentice Email:</strong> ${requestData.apprenticeEmail}</p>
-            </div>
-            
-            <p>
-              <a href="https://askmygrandpa.com/dashboard" 
-                 style="background: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                View in Dashboard
-              </a>
-            </p>
-            
-            <p>Best regards,<br>Ask My Grandpa Team</p>
-          </div>
-        `,
+        subject: grandpaSubject,
+        text: grandpaTextContent,
+        html: grandpaHtmlContent,
       };
       
       try {
