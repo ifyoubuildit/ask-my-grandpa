@@ -222,10 +222,11 @@ function ApprenticeRegisterForm() {
       }
 
       // Success! Firebase Functions will automatically send email notifications
-      setShowModal(true);
+      console.log('✅ Registration successful, redirecting to dashboard...');
       
-      // Reset form for new registrations only
+      // For new registrations, redirect immediately to dashboard
       if (!isUpdate) {
+        // Reset form
         setFormData({
           fullname: '',
           email: '',
@@ -241,7 +242,14 @@ function ApprenticeRegisterForm() {
         });
         setPhoto(null);
         setPhotoPreview('');
+        
+        // Redirect immediately to dashboard
+        router.push('/dashboard');
+        return;
       }
+      
+      // For updates, show the modal
+      setShowModal(true);
 
     } catch (error) {
       console.error('Registration failed:', error);

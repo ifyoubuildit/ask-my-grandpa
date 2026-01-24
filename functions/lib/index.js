@@ -366,7 +366,7 @@ Registration Time: ${new Date().toLocaleString()}
     `;
     await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
     // Send welcome email to apprentice
-    const welcomeSubject = 'Stuck on a project? Let\'s get it fixed, together.';
+    const welcomeSubject = 'Welcome to Ask My Grandpa';
     const welcomeHtmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
         <!-- Header with logo/banner space -->
@@ -381,7 +381,7 @@ Registration Time: ${new Date().toLocaleString()}
           </p>
           
           <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-            That leaky faucet isn't going to fix itself. But that doesn't mean you have to figure it out alone.
+            <strong>Stuck on a project? Let's get it fixed, together.</strong>
           </p>
           
           <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
@@ -424,6 +424,8 @@ Registration Time: ${new Date().toLocaleString()}
     `;
     const welcomeTextContent = `
 Hi ${apprenticeData.name.split(' ')[0]},
+
+Stuck on a project? Let's get it fixed, together.
 
 That leaky faucet isn't going to fix itself. But that doesn't mean you have to figure it out alone.
 
