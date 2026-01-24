@@ -324,211 +324,342 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Main Content Tabs */}
+          {/* Main Content */}
           <div className="bg-white rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30 overflow-hidden">
             
-            {/* Tab Navigation */}
-            <div className="border-b border-vintage-gold/20">
-              <div className="grid grid-cols-2">
-                <button
-                  onClick={() => setActiveTab('messages')}
-                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors border-r border-vintage-gold/20 ${
-                    activeTab === 'messages' 
-                      ? 'bg-vintage-cream text-vintage-accent' 
-                      : 'text-vintage-dark hover:bg-vintage-cream/50'
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Mail className="w-5 h-5" />
-                    <span>Messages</span>
-                    {requests.filter(r => needsResponse(r)).length > 0 && (
-                      <span className="bg-vintage-accent text-white text-xs px-2 py-1 rounded-full">
-                        {requests.filter(r => needsResponse(r)).length}
-                      </span>
-                    )}
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => setActiveTab('upcoming')}
-                  className={`px-6 py-4 font-heading font-bold text-lg transition-colors ${
-                    activeTab === 'upcoming' 
-                      ? 'bg-vintage-cream text-vintage-accent' 
-                      : 'text-vintage-dark hover:bg-vintage-cream/50'
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    <span>Upcoming</span>
-                    {confirmedMeetings.length > 0 && (
-                      <span className="bg-vintage-green text-white text-xs px-2 py-1 rounded-full">
-                        {confirmedMeetings.length}
-                      </span>
-                    )}
-                  </div>
-                </button>
+            {/* Messages Header */}
+            <div className="border-b border-vintage-gold/20 bg-vintage-cream">
+              <div className="px-6 py-4">
+                <div className="flex items-center justify-center gap-2">
+                  <Mail className="w-6 h-6 text-vintage-accent" />
+                  <h2 className="text-2xl font-heading font-bold text-vintage-dark">Messages</h2>
+                  {requests.filter(r => needsResponse(r)).length > 0 && (
+                    <span className="bg-vintage-accent text-white text-xs px-2 py-1 rounded-full">
+                      {requests.filter(r => needsResponse(r)).length}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Tab Content */}
             <div className="p-6">
-              {activeTab === 'messages' && (
-                <div>
-                  <h2 className="text-2xl font-heading font-bold text-vintage-dark mb-6">
-                    {profile?.role === 'grandpa' ? 'Help Requests' : 'Your Messages'}
-                  </h2>
-                  
-                  {loadingData ? (
-                    <div className="text-center py-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent mx-auto"></div>
-                      <p className="text-vintage-dark/60 mt-4">Loading messages...</p>
-                    </div>
-                  ) : requests.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Mail className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
-                      <h3 className="text-xl font-bold text-vintage-dark mb-2">No messages yet</h3>
-                      <p className="text-vintage-dark/60 mb-6">
-                        {profile?.role === 'grandpa' 
-                          ? 'When apprentices request your help, their messages will appear here.'
-                          : 'Your sent help requests will appear here.'
-                        }
-                      </p>
-                      {profile?.role === 'seeker' && (
-                        <Link 
-                          href="/search"
-                          className="bg-vintage-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-vintage-dark transition-colors"
-                        >
-                          Find a Mentor
-                        </Link>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {requests.map((request) => (
-                        <div 
-                          key={request.id}
-                          onClick={() => handleMessageClick(request)}
-                          className="border border-vintage-gold/20 rounded-lg p-4 hover:bg-vintage-cream/30 cursor-pointer transition-colors group"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start gap-4 flex-1">
-                              <div className="flex-shrink-0">
-                                {needsResponse(request) ? (
-                                  <MailOpen className="w-6 h-6 text-vintage-accent" />
-                                ) : (
-                                  <Mail className="w-6 h-6 text-vintage-dark/40" />
-                                )}
+              <div>
+                {/* Sub-tabs for Previous and Upcoming */}
+                <div className="border-b border-vintage-gold/20 mb-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={() => setActiveTab('messages')}
+                      className={`px-4 py-3 font-heading font-bold text-lg transition-colors rounded-t-lg ${
+                        activeTab === 'messages' 
+                          ? 'bg-vintage-cream text-vintage-accent border-b-2 border-vintage-accent' 
+                          : 'text-vintage-dark hover:bg-vintage-cream/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <MessageCircle className="w-5 h-5" />
+                        <span>Previous {profile?.role === 'grandpa' ? 'Apprentices' : 'Requests'}</span>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={() => setActiveTab('upcoming')}
+                      className={`px-4 py-3 font-heading font-bold text-lg transition-colors rounded-t-lg ${
+                        activeTab === 'upcoming' 
+                          ? 'bg-vintage-cream text-vintage-accent border-b-2 border-vintage-accent' 
+                          : 'text-vintage-dark hover:bg-vintage-cream/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <Calendar className="w-5 h-5" />
+                        <span>Upcoming {profile?.role === 'grandpa' ? 'Apprentices' : 'Meetings'}</span>
+                        {confirmedMeetings.length > 0 && (
+                          <span className="bg-vintage-green text-white text-xs px-2 py-1 rounded-full">
+                            {confirmedMeetings.length}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {activeTab === 'messages' && (
+                  <div>
+                    <h3 className="text-xl font-heading font-bold text-vintage-dark mb-4">
+                      {profile?.role === 'grandpa' ? 'Previous Help Requests' : 'Your Previous Requests'}
+                    </h3>
+                    
+                    {loadingData ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent mx-auto"></div>
+                        <p className="text-vintage-dark/60 mt-4">Loading messages...</p>
+                      </div>
+                    ) : requests.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Mail className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
+                        <h4 className="text-xl font-bold text-vintage-dark mb-2">No messages yet</h4>
+                        <p className="text-vintage-dark/60 mb-6">
+                          {profile?.role === 'grandpa' 
+                            ? 'When apprentices request your help, their messages will appear here.'
+                            : 'Your sent help requests will appear here.'
+                          }
+                        </p>
+                        {profile?.role === 'seeker' && (
+                          <Link 
+                            href="/search"
+                            className="bg-vintage-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-vintage-dark transition-colors"
+                          >
+                            Find a Mentor
+                          </Link>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {requests.map((request) => (
+                          <div 
+                            key={request.id}
+                            onClick={() => handleMessageClick(request)}
+                            className="border border-vintage-gold/20 rounded-lg p-4 hover:bg-vintage-cream/30 cursor-pointer transition-colors group"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-4 flex-1">
+                                <div className="flex-shrink-0">
+                                  {needsResponse(request) ? (
+                                    <MailOpen className="w-6 h-6 text-vintage-accent" />
+                                  ) : (
+                                    <Mail className="w-6 h-6 text-vintage-dark/40" />
+                                  )}
+                                </div>
+                                
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-3 mb-1">
+                                    <h4 className="font-bold text-vintage-dark group-hover:text-vintage-accent transition-colors">
+                                      {request.subject}
+                                    </h4>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)}`}>
+                                      <div className="flex items-center gap-1">
+                                        {getStatusIcon(request.status)}
+                                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                      </div>
+                                    </span>
+                                  </div>
+                                  
+                                  <p className="text-sm text-vintage-dark/70 mb-2">
+                                    {profile?.role === 'grandpa' 
+                                      ? `From: ${request.apprenticeName}` 
+                                      : `To: ${request.grandpaName}`
+                                    }
+                                  </p>
+                                  
+                                  <p className="text-sm text-vintage-dark/80 line-clamp-2">
+                                    {request.message}
+                                  </p>
+                                  
+                                  {needsResponse(request) && (
+                                    <p className="text-sm text-vintage-accent font-medium mt-2">
+                                      {profile?.role === 'grandpa' ? 'Needs your response' : 'Waiting for your confirmation'}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                               
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-3 mb-1">
-                                  <h3 className="font-bold text-vintage-dark group-hover:text-vintage-accent transition-colors">
-                                    {request.subject}
-                                  </h3>
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)}`}>
-                                    <div className="flex items-center gap-1">
-                                      {getStatusIcon(request.status)}
-                                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                    </div>
-                                  </span>
-                                </div>
-                                
-                                <p className="text-sm text-vintage-dark/70 mb-2">
-                                  {profile?.role === 'grandpa' 
-                                    ? `From: ${request.apprenticeName}` 
-                                    : `To: ${request.grandpaName}`
-                                  }
-                                </p>
-                                
-                                <p className="text-sm text-vintage-dark/80 line-clamp-2">
-                                  {request.message}
-                                </p>
-                                
-                                {needsResponse(request) && (
-                                  <p className="text-sm text-vintage-accent font-medium mt-2">
-                                    {profile?.role === 'grandpa' ? 'Needs your response' : 'Waiting for your confirmation'}
-                                  </p>
-                                )}
+                              <div className="flex items-center gap-2 ml-4">
+                                <span className="text-xs text-vintage-dark/60">
+                                  {new Date(request.timestamp).toLocaleDateString()}
+                                </span>
+                                <ChevronRight className="w-4 h-4 text-vintage-dark/40 group-hover:text-vintage-accent transition-colors" />
                               </div>
                             </div>
-                            
-                            <div className="flex items-center gap-2 ml-4">
-                              <span className="text-xs text-vintage-dark/60">
-                                {new Date(request.timestamp).toLocaleDateString()}
-                              </span>
-                              <ChevronRight className="w-4 h-4 text-vintage-dark/40 group-hover:text-vintage-accent transition-colors" />
-                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
-              {activeTab === 'upcoming' && (
-                <div>
-                  <h2 className="text-2xl font-heading font-bold text-vintage-dark mb-6">
-                    Upcoming Meetings
-                  </h2>
-                  
-                  {loadingData ? (
-                    <div className="text-center py-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent mx-auto"></div>
-                      <p className="text-vintage-dark/60 mt-4">Loading meetings...</p>
-                    </div>
-                  ) : confirmedMeetings.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Calendar className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
-                      <h3 className="text-xl font-bold text-vintage-dark mb-2">No upcoming meetings</h3>
-                      <p className="text-vintage-dark/60">
-                        Confirmed meetings will appear here.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid gap-4">
-                      {confirmedMeetings.map((meeting) => (
-                        <div key={meeting.id} className="bg-green-50 border border-green-200 rounded-lg p-6">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h3 className="text-xl font-bold text-vintage-dark mb-2">
-                                {meeting.subject}
-                              </h3>
-                              <div className="grid md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                  <p className="text-sm font-medium text-vintage-dark">
-                                    {profile?.role === 'grandpa' ? 'Apprentice' : 'Mentor'}:
-                                  </p>
-                                  <p className="text-vintage-dark">
-                                    {profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName}
-                                  </p>
-                                  <p className="text-sm text-vintage-dark/60">
-                                    {profile?.role === 'grandpa' ? meeting.apprenticeEmail : meeting.grandpaEmail}
+                {activeTab === 'upcoming' && (
+                  <div>
+                    <h3 className="text-xl font-heading font-bold text-vintage-dark mb-4">
+                      Upcoming Meetings
+                    </h3>
+                    
+                    {loadingData ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent mx-auto"></div>
+                        <p className="text-vintage-dark/60 mt-4">Loading meetings...</p>
+                      </div>
+                    ) : confirmedMeetings.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Calendar className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
+                        <h4 className="text-xl font-bold text-vintage-dark mb-2">No upcoming meetings</h4>
+                        <p className="text-vintage-dark/60">
+                          Confirmed meetings will appear here.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid gap-4">
+                        {confirmedMeetings.map((meeting) => (
+                          <div key={meeting.id} className="bg-green-50 border border-green-200 rounded-lg p-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="text-xl font-bold text-vintage-dark mb-2">
+                                  {meeting.subject}
+                                </h4>
+                                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                                  <div>
+                                    <p className="text-sm font-medium text-vintage-dark">
+                                      {profile?.role === 'grandpa' ? 'Apprentice' : 'Mentor'}:
+                                    </p>
+                                    <p className="text-vintage-dark">
+                                      {profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName}
+                                    </p>
+                                    <p className="text-sm text-vintage-dark/60">
+                                      {profile?.role === 'grandpa' ? meeting.apprenticeEmail : meeting.grandpaEmail}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-medium text-vintage-dark">Scheduled Time:</p>
+                                    <p className="text-vintage-dark">{meeting.proposedTime}</p>
+                                  </div>
+                                </div>
+                                <div className="bg-white p-3 rounded border">
+                                  <p className="text-sm text-vintage-dark">
+                                    <strong>Project:</strong> {meeting.message}
                                   </p>
                                 </div>
-                                <div>
-                                  <p className="text-sm font-medium text-vintage-dark">Scheduled Time:</p>
-                                  <p className="text-vintage-dark">{meeting.proposedTime}</p>
-                                </div>
                               </div>
-                              <div className="bg-white p-3 rounded border">
-                                <p className="text-sm text-vintage-dark">
-                                  <strong>Project:</strong> {meeting.message}
-                                </p>
+                              <div className="ml-4">
+                                <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                  Confirmed
+                                </span>
                               </div>
-                            </div>
-                            <div className="ml-4">
-                              <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                                Confirmed
-                              </span>
                             </div>
                           </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* How It Works Section for Apprentices */}
+                {profile?.role === 'seeker' && (
+                  <div className="mt-12 bg-vintage-cream p-8 rounded-xl border border-vintage-gold/30">
+                    <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-6 text-center">
+                      How Ask My Grandpa Works
+                    </h3>
+                    
+                    <div className="grid md:grid-cols-3 gap-6">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-vintage-accent text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                          1
                         </div>
-                      ))}
+                        <h4 className="font-heading font-bold text-vintage-dark mb-2">Find a Grandpa</h4>
+                        <p className="text-vintage-dark/70 text-sm">
+                          Browse skilled mentors in your area who can guide you through your project.
+                        </p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-vintage-accent text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                          2
+                        </div>
+                        <h4 className="font-heading font-bold text-vintage-dark mb-2">Send a Request</h4>
+                        <p className="text-vintage-dark/70 text-sm">
+                          Describe your project and when you're available. Your Grandpa will respond with a time to meet.
+                        </p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-vintage-accent text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                          3
+                        </div>
+                        <h4 className="font-heading font-bold text-vintage-dark mb-2">Learn & Build</h4>
+                        <p className="text-vintage-dark/70 text-sm">
+                          Meet up, learn the skill, and complete your project. Payment is just a cup of coffee!
+                        </p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
+
+                {/* How It Works Section for Grandpas */}
+                {profile?.role === 'grandpa' && (
+                  <div className="mt-12 bg-vintage-cream p-8 rounded-xl border border-vintage-gold/30">
+                    <h3 className="text-2xl font-heading font-bold text-vintage-dark mb-6 text-center">
+                      How Ask My Grandpa Works
+                    </h3>
+                    
+                    <div className="grid md:grid-cols-3 gap-6 mb-8">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-vintage-accent text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                          1
+                        </div>
+                        <h4 className="font-heading font-bold text-vintage-dark mb-2">Receive Requests</h4>
+                        <p className="text-vintage-dark/70 text-sm">
+                          Apprentices in your area will send requests for help with projects that match your skills.
+                        </p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-vintage-accent text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                          2
+                        </div>
+                        <h4 className="font-heading font-bold text-vintage-dark mb-2">Accept & Schedule</h4>
+                        <p className="text-vintage-dark/70 text-sm">
+                          Review the request and propose a time that works for both of you to meet up.
+                        </p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-vintage-accent text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                          3
+                        </div>
+                        <h4 className="font-heading font-bold text-vintage-dark mb-2">Guide & Teach</h4>
+                        <p className="text-vintage-dark/70 text-sm">
+                          Share your knowledge, ensure safety, and watch them gain confidence. Enjoy some coffee together!
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Helpful Hints Section */}
+                    <div className="border-t border-vintage-gold/30 pt-8">
+                      <h4 className="text-xl font-heading font-bold text-vintage-dark mb-4 text-center">
+                        Helpful Hints for Grandpas
+                      </h4>
+                      
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-white p-4 rounded-lg border border-vintage-gold/20">
+                          <h5 className="font-bold text-vintage-dark mb-2">🛠️ Remember the Golden Rule</h5>
+                          <p className="text-vintage-dark/70 text-sm">
+                            The apprentice holds the tools. Your job is to guide, teach, and ensure safety—not to do the work for them.
+                          </p>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-lg border border-vintage-gold/20">
+                          <h5 className="font-bold text-vintage-dark mb-2">☕ Keep It Simple</h5>
+                          <p className="text-vintage-dark/70 text-sm">
+                            No money changes hands. A cup of coffee or tea is the perfect way to say thanks.
+                          </p>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-lg border border-vintage-gold/20">
+                          <h5 className="font-bold text-vintage-dark mb-2">🎯 Focus on Learning</h5>
+                          <p className="text-vintage-dark/70 text-sm">
+                            The goal isn't just to fix the problem—it's to teach a skill they can use forever.
+                          </p>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-lg border border-vintage-gold/20">
+                          <h5 className="font-bold text-vintage-dark mb-2">🤝 Build Community</h5>
+                          <p className="text-vintage-dark/70 text-sm">
+                            You're not just helping with a project—you're connecting with neighbors and passing down wisdom.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
