@@ -4,11 +4,11 @@ import {
   signOut, 
   onAuthStateChanged,
   User,
-  updateProfile,
-  sendEmailVerification
+  updateProfile
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { httpsCallable } from 'firebase/functions';
+import { auth, db, functions } from './firebase';
 
 export interface UserProfile {
   uid: string;
@@ -28,12 +28,6 @@ export const signUp = async (email: string, password: string, displayName: strin
     // Update display name
     await updateProfile(user, { displayName });
     
-    // Send email verification
-    await sendEmailVerification(user, {
-      url: `${window.location.origin}/dashboard`, // Redirect after verification
-      handleCodeInApp: false
-    });
-    
     // Create user profile in Firestore
     const userProfile: UserProfile = {
       uid: user.uid,
@@ -45,6 +39,20 @@ export const signUp = async (email: string, password: string, displayName: strin
     };
     
     await setDoc(doc(db, 'users', user.uid), userProfile);
+    
+    // Send custom email verification
+    try {
+      const sendCustomEmailVerification = httpsCallable(functions, 'sendCustomEmailVerification');
+      await sendCustomEmailVerification({
+        email: user.email,
+        displayName,
+        userId: user.uid
+      });
+      console.log('Custom verification email sent');
+    } catch (verificationError) {
+      console.error('Failed to send verification email:', verificationError);
+      // Don't throw error - user account is still created
+    }
     
     return { user, profile: userProfile };
   } catch (error) {

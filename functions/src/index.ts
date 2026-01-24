@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as nodemailer from 'nodemailer';
+import * as crypto from 'crypto';
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -41,6 +42,166 @@ const sendNotificationEmail = async (
     throw error;
   }
 };
+
+// Function to send custom email verification
+export const sendCustomEmailVerification = functions.https.onCall(async (data, context) => {
+  const { email, displayName, userId } = data;
+  
+  if (!email || !displayName || !userId) {
+    throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
+  }
+  
+  try {
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    
+    // Store verification token in Firestore
+    await admin.firestore().collection('emailVerifications').doc(userId).set({
+      email,
+      displayName,
+      token: verificationToken,
+      createdAt: new Date().toISOString(),
+      verified: false
+    });
+    
+    const firstName = displayName.split(' ')[0];
+    const verificationUrl = `https://askmygrandpa.com/verify-email?token=${verificationToken}&uid=${userId}`;
+    
+    const subject = 'Just checking: Is this the right email?';
+    
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+        <!-- Header with logo/banner space -->
+        <div style="background: #4a4037; padding: 20px; text-align: center;">
+          <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+          <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Please confirm your address to finish joining Ask Grandpa.</p>
+        </div>
+        
+        <div style="padding: 30px; background: white; margin: 0;">
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Hi ${firstName},
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            <strong>Welcome to the neighborhood.</strong>
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Before we can fully open the doors to the Ask Grandpa community, we need to make sure we have your correct email address.
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+            Our community is built on trust. Verifying your account helps us keep everyone safe and ensures you don't miss important updates about your projects.
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+            Please click the button below to confirm your account.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationUrl}" 
+               style="background: #9A3412; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+              Verify My Email
+            </a>
+          </div>
+          
+          <p style="color: #4a4037; font-size: 14px; line-height: 1.6; margin-top: 40px; opacity: 0.8;">
+            If you didn't sign up for Ask Grandpa, you can safely ignore this email.
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 30px;">
+            Best,<br>
+            <strong>The Ask Grandpa Team</strong>
+          </p>
+        </div>
+        
+        <div style="background: #f0ede6; padding: 20px; text-align: center;">
+          <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+            Please confirm your address to finish joining Ask Grandpa.
+          </p>
+        </div>
+      </div>
+    `;
+    
+    const textContent = `
+Hi ${firstName},
+
+Welcome to the neighborhood.
+
+Before we can fully open the doors to the Ask Grandpa community, we need to make sure we have your correct email address.
+
+Our community is built on trust. Verifying your account helps us keep everyone safe and ensures you don't miss important updates about your projects.
+
+Please click the link below to confirm your account:
+${verificationUrl}
+
+If you didn't sign up for Ask Grandpa, you can safely ignore this email.
+
+Best,
+The Ask Grandpa Team
+    `;
+    
+    const mailOptions = {
+      from: gmailEmail,
+      to: email,
+      subject: subject,
+      text: textContent,
+      html: htmlContent,
+    };
+    
+    await transporter.sendMail(mailOptions);
+    console.log('Custom verification email sent successfully');
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending custom verification email:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to send verification email');
+  }
+});
+
+// Function to verify email token
+export const verifyEmailToken = functions.https.onCall(async (data, context) => {
+  const { token, uid } = data;
+  
+  if (!token || !uid) {
+    throw new functions.https.HttpsError('invalid-argument', 'Missing token or uid');
+  }
+  
+  try {
+    const verificationDoc = await admin.firestore().collection('emailVerifications').doc(uid).get();
+    
+    if (!verificationDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'Verification record not found');
+    }
+    
+    const verificationData = verificationDoc.data();
+    
+    if (verificationData?.token !== token) {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid verification token');
+    }
+    
+    if (verificationData?.verified) {
+      throw new functions.https.HttpsError('already-exists', 'Email already verified');
+    }
+    
+    // Mark as verified
+    await admin.firestore().collection('emailVerifications').doc(uid).update({
+      verified: true,
+      verifiedAt: new Date().toISOString()
+    });
+    
+    // Update user profile
+    await admin.firestore().collection('users').doc(uid).update({
+      isVerified: true
+    });
+    
+    console.log('Email verification completed successfully');
+    return { success: true };
+  } catch (error) {
+    console.error('Error verifying email token:', error);
+    throw error;
+  }
+});
 
 // Function triggered when a new grandpa registers
 export const onGrandpaRegistration = functions.firestore
