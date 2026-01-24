@@ -243,8 +243,8 @@ function ApprenticeRegisterForm() {
         setPhoto(null);
         setPhotoPreview('');
         
-        // Redirect immediately to dashboard
-        router.push('/dashboard');
+        // Redirect immediately to request help form with grandpa info
+        router.push(`/request-help?grandpa=${encodeURIComponent(grandpaName)}&grandpaId=${grandpaId}&skill=${encodeURIComponent(skill)}`);
         return;
       }
       
