@@ -131,11 +131,9 @@ function RequestHelpForm() {
 
       console.log('🎯 Redirecting to dashboard...');
       
-      // Success - redirect immediately
-      setIsSubmitting(false);
-      
+      // Success - redirect with window.location for more reliable redirect
       console.log('🎯 Attempting immediate redirect to dashboard...');
-      router.replace('/dashboard?message=request-sent');
+      window.location.href = '/dashboard?message=request-sent';
 
     } catch (error) {
       console.error('❌ Request submission failed:', error);
