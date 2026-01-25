@@ -18,8 +18,8 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "AskMyGrandpa - The Lost Art of Doing It Yourself",
-  description: "Connect with experienced Grandpas for free advice on DIY repairs, home maintenance, and life skills. The lost art of doing it yourself, guided by wisdom.",
+  title: "Ask My Grandpa | On-Demand Wisdom & Mentorship",
+  description: "Connect with local mentors for hands-on help with home repairs. Ask My Grandpa matches you with skilled neighbors to fix leaky sinks, patch walls, and learn skills for life.",
 };
 
 export default function RootLayout({
@@ -27,8 +27,63 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Ask My Grandpa",
+    "description": "Connect with local mentors for hands-on help with home repairs. Ask My Grandpa matches you with skilled neighbors to fix leaky sinks, patch walls, and learn skills for life.",
+    "url": "https://askmygrandpa.com",
+    "logo": "https://askmygrandpa.com/logo.png",
+    "sameAs": [
+      "https://askmygrandpa.com"
+    ],
+    "serviceType": "Mentorship and Home Repair Guidance",
+    "areaServed": {
+      "@type": "Country",
+      "name": "United States"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Home Repair Mentorship Services",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Plumbing Guidance",
+            "description": "Learn to fix leaky faucets, unclog drains, and basic plumbing repairs"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Home Maintenance Mentorship",
+            "description": "Guidance on wall patching, painting, and general home maintenance"
+          }
+        },
+        {
+          "@type": "Service",
+          "name": "DIY Skill Teaching",
+          "description": "One-on-one mentorship for learning practical home repair skills"
+        }
+      ]
+    },
+    "priceRange": "Free",
+    "paymentAccepted": "Coffee or Tea",
+    "openingHours": "Mo-Su 00:00-23:59"
+  };
+
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
+      </head>
       <body
         className={`${playfairDisplay.variable} ${lora.variable} font-body antialiased flex flex-col min-h-screen`}
         style={{

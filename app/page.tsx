@@ -32,16 +32,16 @@ export default function Home() {
       {/* Hero Section */}
       <header className="relative pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden bg-[#f0ede6] border-b border-vintage-gold/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h1 className="text-4xl md:text-6xl font-heading font-bold text-vintage-dark mb-6 leading-tight">
-            Wisdom <span className="text-[#9A3412]">On Demand</span>
+          <h1 className="text-3xl md:text-4xl font-heading font-extrabold text-vintage-dark tracking-tight mb-4">
+            Just Ask Grandpa.
           </h1>
+          
+          <h2 className="text-2xl md:text-3xl font-heading font-bold text-vintage-dark mb-6 leading-tight">
+            Wisdom <span className="text-[#9A3412]">On Demand</span>
+          </h2>
           
           <p className="mt-4 max-w-2xl mx-auto text-xl text-vintage-dark/80 font-body">
             From fixing a leaky faucet to patching and painting that wall.
-          </p>
-          
-          <p className="mt-8 text-xl md:text-3xl font-heading font-extrabold text-vintage-dark tracking-tight">
-            Just Ask Grandpa.
           </p>
 
           {/* Search Bar */}
