@@ -433,6 +433,7 @@ function ApprenticeRegisterForm() {
                       )}
                     </button>
                   </div>
+                  <p className="text-sm text-vintage-dark/50 italic mt-1">Must be at least 6 characters</p>
                 </div>
                 <div>
                   <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
@@ -460,6 +461,7 @@ function ApprenticeRegisterForm() {
                       )}
                     </button>
                   </div>
+                  <p className="text-sm text-vintage-dark/50 italic mt-1">Must match the password above</p>
                 </div>
               </div>
             )}

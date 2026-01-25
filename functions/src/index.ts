@@ -1155,33 +1155,73 @@ export const send24HourReminders = functions.pubsub.schedule('0 9 * * *')
       
       for (const doc of querySnapshot.docs) {
         const sessionData = doc.data();
+        console.log(`🔍 Checking session ${doc.id} for ${sessionData.apprenticeName} with ${sessionData.grandpaName}`);
         
-        // For now, we'll use the proposedTime field
-        // In a production system, you'd want a proper datetime field
-        const sessionTimeStr = sessionData.proposedTime;
+        // Check if session has calendar-based availability or confirmed time
+        let sessionDateTime = null;
         
-        if (!sessionTimeStr) {
-          console.log(`⚠️ Session ${doc.id} has no proposed time, skipping`);
-          continue;
+        // Try to parse calendar-based confirmed time
+        if (sessionData.confirmedDateTime) {
+          sessionDateTime = new Date(sessionData.confirmedDateTime);
+        } 
+        // Try to parse from grandpaAvailability (new calendar format)
+        else if (sessionData.grandpaAvailability && Array.isArray(sessionData.grandpaAvailability)) {
+          // Get the first available slot as the session time
+          const firstSlot = sessionData.grandpaAvailability[0];
+          if (firstSlot && firstSlot.date && firstSlot.timeSlots && firstSlot.timeSlots.length > 0) {
+            const sessionDate = new Date(firstSlot.date);
+            const sessionHour = firstSlot.timeSlots[0]; // Use first time slot
+            sessionDate.setHours(sessionHour, 0, 0, 0);
+            sessionDateTime = sessionDate;
+          }
+        }
+        // Fallback to legacy text parsing
+        else if (sessionData.proposedTime) {
+          const sessionTimeStr = sessionData.proposedTime.toLowerCase();
+          // Simple check if the session mentions "tomorrow" or contains time indicators
+          const shouldSendReminder = sessionTimeStr.includes('tomorrow') || 
+                                   sessionTimeStr.includes('24 hour') ||
+                                   sessionTimeStr.includes('next day');
+          
+          if (shouldSendReminder) {
+            sessionDateTime = tomorrow; // Use tomorrow as approximate time
+          }
         }
         
-        // Simple check if the session mentions "tomorrow" or contains time indicators
-        // This is a basic implementation - in production you'd want proper datetime parsing
-        const shouldSendReminder = sessionTimeStr.toLowerCase().includes('tomorrow') || 
-                                 sessionTimeStr.toLowerCase().includes('24 hour') ||
-                                 sessionTimeStr.toLowerCase().includes('next day');
-        
-        if (shouldSendReminder) {
-          console.log(`📧 Sending 24-hour reminders for session ${doc.id}`);
+        // Check if session is within our 24-hour window
+        if (sessionDateTime && sessionDateTime >= bufferStart && sessionDateTime <= bufferEnd) {
+          console.log(`📧 Sending 24-hour reminders for session ${doc.id} scheduled for ${sessionDateTime.toISOString()}`);
           
           // Send reminder to apprentice
           if (sessionData.apprenticeEmail) {
-            await sendApprenticeReminder(sessionData);
+            await sendApprenticeReminder({
+              ...sessionData,
+              sessionDateTime: sessionDateTime.toISOString(),
+              formattedDateTime: sessionDateTime.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+              })
+            });
           }
           
           // Send reminder to grandpa
           if (sessionData.grandpaEmail) {
-            await sendGrandpaReminder(sessionData);
+            await sendGrandpaReminder({
+              ...sessionData,
+              sessionDateTime: sessionDateTime.toISOString(),
+              formattedDateTime: sessionDateTime.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+              })
+            });
           }
           
           remindersSent++;
@@ -1560,7 +1600,7 @@ const sendApprenticeReminder = async (sessionData: any) => {
           </p>
           
           <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
-            <strong>Time:</strong> Tomorrow at ${sessionData.proposedTime}
+            <strong>Time:</strong> ${sessionData.formattedDateTime || sessionData.proposedTime || 'Time TBD'}
           </p>
         </div>
         
@@ -1660,7 +1700,7 @@ const sendGrandpaReminder = async (sessionData: any) => {
           </p>
           
           <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
-            <strong>Time:</strong> Tomorrow at ${sessionData.proposedTime}
+            <strong>Time:</strong> ${sessionData.formattedDateTime || sessionData.proposedTime || 'Time TBD'}
           </p>
           
           <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">

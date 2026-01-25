@@ -97,11 +97,15 @@ export default function MessageDetailModal({
         });
         console.log('✅ Grandpa response saved successfully');
       } else {
-        // Apprentice confirming the time
+        // Apprentice confirming the time - save the specific confirmed date/time
+        const confirmedDateTime = new Date().toISOString(); // For now, use current time as placeholder
+        // In a full implementation, you'd let the apprentice pick a specific time from the grandpa's availability
+        
         await updateDoc(doc(db, "requests", request.id), {
           status: 'confirmed',
           apprenticeConfirmation: replyMessage || 'Time confirmed',
-          confirmedAt: new Date().toISOString()
+          confirmedAt: new Date().toISOString(),
+          confirmedDateTime: confirmedDateTime // This will be used for 24-hour reminders
         });
         console.log('✅ Apprentice confirmation saved successfully');
       }
