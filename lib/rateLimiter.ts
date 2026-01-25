@@ -15,10 +15,12 @@ class ClientRateLimiter {
 
   private loadFromStorage() {
     try {
-      const stored = localStorage.getItem(this.storageKey);
-      if (stored) {
-        const data = JSON.parse(stored);
-        this.storage = new Map(Object.entries(data));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem(this.storageKey);
+        if (stored) {
+          const data = JSON.parse(stored);
+          this.storage = new Map(Object.entries(data));
+        }
       }
     } catch (error) {
       console.warn('Failed to load rate limit data from storage:', error);
@@ -27,8 +29,10 @@ class ClientRateLimiter {
 
   private saveToStorage() {
     try {
-      const data = Object.fromEntries(this.storage);
-      localStorage.setItem(this.storageKey, JSON.stringify(data));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const data = Object.fromEntries(this.storage);
+        localStorage.setItem(this.storageKey, JSON.stringify(data));
+      }
     } catch (error) {
       console.warn('Failed to save rate limit data to storage:', error);
     }

@@ -1,20 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { trackPageView } from '@/lib/gtag';
+import { usePathname } from 'next/navigation';
+import { trackRouteChange } from '@/lib/gtag';
 
-// Hook to track page views in SPA
+// Hook to track page views in SPA - safe for prerendering
 export const useAnalytics = () => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (pathname) {
-      const url = window.location.origin + pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
-      trackPageView(url);
+    // Only run on client side after hydration
+    if (typeof window !== 'undefined' && pathname) {
+      trackRouteChange();
     }
-  }, [pathname, searchParams]);
+  }, [pathname]);
 };
 
 export default useAnalytics;

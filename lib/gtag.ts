@@ -3,8 +3,10 @@
 
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-JTDCP0844B';
 
-// Initialize Google Analytics
+// Initialize Google Analytics (client-side only)
 export const initGA = () => {
+  if (typeof window === 'undefined') return;
+  
   // Load gtag script
   const script1 = document.createElement('script');
   script1.async = true;
@@ -25,25 +27,28 @@ export const initGA = () => {
   document.head.appendChild(script2);
 };
 
-// Track page views (for SPA route changes)
-export const trackPageView = (url: string, title?: string) => {
-  if (typeof window !== 'undefined' && (window as any).gtag) {
-    (window as any).gtag('config', GA_MEASUREMENT_ID, {
-      page_title: title || document.title,
-      page_location: url,
-    });
-  }
+// Track page views (for SPA route changes) - client-side only
+export const trackPageView = (url?: string, title?: string) => {
+  if (typeof window === 'undefined' || !(window as any).gtag) return;
+  
+  const pageUrl = url || window.location.href;
+  const pageTitle = title || document.title;
+  
+  (window as any).gtag('config', GA_MEASUREMENT_ID, {
+    page_title: pageTitle,
+    page_location: pageUrl,
+  });
 };
 
-// Track custom events
+// Track custom events - client-side only
 export const trackEvent = (action: string, category: string, label?: string, value?: number) => {
-  if (typeof window !== 'undefined' && (window as any).gtag) {
-    (window as any).gtag('event', action, {
-      event_category: category,
-      event_label: label,
-      value: value,
-    });
-  }
+  if (typeof window === 'undefined' || !(window as any).gtag) return;
+  
+  (window as any).gtag('event', action, {
+    event_category: category,
+    event_label: label,
+    value: value,
+  });
 };
 
 // Track user registrations
@@ -59,6 +64,16 @@ export const trackHelpRequest = (skill: string) => {
 // Track form submissions
 export const trackFormSubmission = (formName: string) => {
   trackEvent('form_submit', 'engagement', formName);
+};
+
+// Safe page view tracking for route changes
+export const trackRouteChange = () => {
+  if (typeof window === 'undefined') return;
+  
+  // Use a small delay to ensure the page has updated
+  setTimeout(() => {
+    trackPageView();
+  }, 100);
 };
 
 // Declare gtag for TypeScript
