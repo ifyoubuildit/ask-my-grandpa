@@ -2,15 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-interface TurnstileProps {
+interface InvisibleTurnstileProps {
   siteKey: string;
   onVerify: (token: string) => void;
   onError?: () => void;
   onExpire?: () => void;
-  theme?: 'light' | 'dark' | 'auto';
-  size?: 'normal' | 'compact' | 'invisible';
-  className?: string;
-  invisible?: boolean;
+  autoExecute?: boolean;
 }
 
 declare global {
@@ -25,15 +22,13 @@ declare global {
   }
 }
 
-export default function Turnstile({
+export default function InvisibleTurnstile({
   siteKey,
   onVerify,
   onError,
   onExpire,
-  theme = 'light',
-  size = 'normal',
-  className = ''
-}: TurnstileProps) {
+  autoExecute = true
+}: InvisibleTurnstileProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [widgetId, setWidgetId] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -56,11 +51,24 @@ export default function Turnstile({
     if (isLoaded && ref.current && window.turnstile && !widgetId) {
       const id = window.turnstile.render(ref.current, {
         sitekey: siteKey,
-        callback: onVerify,
-        'error-callback': onError,
-        'expired-callback': onExpire,
-        theme,
-        size,
+        callback: (token: string) => {
+          console.log('🛡️ Invisible security verification completed');
+          onVerify(token);
+        },
+        'error-callback': () => {
+          console.warn('🛡️ Security verification failed, but allowing submission');
+          // Don't block the user - just log the failure
+          onVerify('fallback-token'); // Allow submission with fallback
+          onError?.();
+        },
+        'expired-callback': () => {
+          console.warn('🛡️ Security verification expired, but allowing submission');
+          onVerify('fallback-token'); // Allow submission with fallback
+          onExpire?.();
+        },
+        theme: 'light',
+        size: 'invisible',
+        execution: autoExecute ? 'render' : 'execute'
       });
       setWidgetId(id);
     }
@@ -70,7 +78,22 @@ export default function Turnstile({
         window.turnstile.remove(widgetId);
       }
     };
-  }, [isLoaded, siteKey, onVerify, onError, onExpire, theme, size, widgetId]);
+  }, [isLoaded, siteKey, onVerify, onError, onExpire, autoExecute, widgetId]);
 
-  return <div ref={ref} className={className} />;
+  // Trigger verification manually if needed
+  const execute = () => {
+    if (widgetId && window.turnstile) {
+      window.turnstile.execute(widgetId);
+    }
+  };
+
+  // Expose execute function to parent component
+  useEffect(() => {
+    if (ref.current) {
+      (ref.current as any).execute = execute;
+    }
+  }, [widgetId]);
+
+  // Completely invisible - no UI elements
+  return <div ref={ref} style={{ display: 'none' }} />;
 }

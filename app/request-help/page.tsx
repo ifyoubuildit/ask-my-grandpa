@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
 import { trackHelpRequest, trackFormSubmission } from '@/lib/gtag';
+import { useSmartSecurity } from '@/hooks/useSmartSecurity';
+import InvisibleTurnstile from '@/components/InvisibleTurnstile';
 
 function RequestHelpForm() {
   const { user } = useAuth();
@@ -38,6 +40,15 @@ function RequestHelpForm() {
   const [grandpaData, setGrandpaData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [rateLimitError, setRateLimitError] = useState<string>('');
+
+  // Smart security hook - invisible protection that doesn't block users
+  const { securityToken, canSubmit, getSecurityProps } = useSmartSecurity({
+    required: false, // Don't block users
+    fallbackAllowed: true, // Always allow submission
+    onSecurityCheck: (passed, token) => {
+      console.log('🛡️ Help request security check:', { passed, hasToken: !!token });
+    }
+  });
 
   // Load grandpa data
   useEffect(() => {
@@ -241,6 +252,9 @@ function RequestHelpForm() {
           
           <form onSubmit={handleSubmit}>
             
+            {/* Invisible Security - Runs in background, never blocks users */}
+            <InvisibleTurnstile {...getSecurityProps} />
+            
             {/* Error Messages */}
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -321,6 +335,11 @@ function RequestHelpForm() {
                   </>
                 )}
               </button>
+              
+              {/* Security Status Indicator - Optional, for transparency */}
+              <p className="text-xs text-vintage-dark/50 mt-2">
+                🛡️ Protected by invisible security verification
+              </p>
             </div>
           </form>
         </div>

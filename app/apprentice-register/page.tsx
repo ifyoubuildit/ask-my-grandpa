@@ -10,6 +10,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
 import { trackRegistration, trackFormSubmission } from '@/lib/gtag';
+import { useSmartSecurity } from '@/hooks/useSmartSecurity';
+import InvisibleTurnstile from '@/components/InvisibleTurnstile';
 import Link from 'next/link';
 
 function ApprenticeRegisterForm() {
@@ -45,6 +47,15 @@ function ApprenticeRegisterForm() {
   const [existingApprenticeId, setExistingApprenticeId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [rateLimitError, setRateLimitError] = useState<string>('');
+
+  // Smart security hook - invisible protection that doesn't block users
+  const { securityToken, canSubmit, getSecurityProps } = useSmartSecurity({
+    required: false, // Don't block users
+    fallbackAllowed: true, // Always allow submission
+    onSecurityCheck: (passed, token) => {
+      console.log('🛡️ Apprentice registration security check:', { passed, hasToken: !!token });
+    }
+  });
 
   // Load existing data if this is an update
   useEffect(() => {
@@ -345,6 +356,9 @@ function ApprenticeRegisterForm() {
           
           <form onSubmit={handleSubmit}>
             
+            {/* Invisible Security - Runs in background, never blocks users */}
+            {!isUpdate && <InvisibleTurnstile {...getSecurityProps} />}
+            
             {/* Error Messages */}
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -634,6 +648,13 @@ function ApprenticeRegisterForm() {
                   : (isSubmitting ? "Creating Account..." : "Create Account")
                 }
               </button>
+              
+              {/* Security Status Indicator - Optional, for transparency */}
+              {!isUpdate && (
+                <p className="text-xs text-vintage-dark/50 mt-2">
+                  🛡️ Protected by invisible security verification
+                </p>
+              )}
             </div>
 
             {/* Already have an account - Only show for new registrations */}

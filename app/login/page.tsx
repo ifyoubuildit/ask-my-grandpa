@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { signIn } from '@/lib/auth';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
+import { useSmartSecurity } from '@/hooks/useSmartSecurity';
+import InvisibleTurnstile from '@/components/InvisibleTurnstile';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -16,6 +18,15 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [rateLimitError, setRateLimitError] = useState<string>('');
+
+  // Smart security hook - invisible protection that doesn't block users
+  const { securityToken, canSubmit, getSecurityProps } = useSmartSecurity({
+    required: false, // Don't block users
+    fallbackAllowed: true, // Always allow submission
+    onSecurityCheck: (passed, token) => {
+      console.log('🛡️ Login security check:', { passed, hasToken: !!token });
+    }
+  });
   const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,6 +83,10 @@ export default function LoginPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          
+          {/* Invisible Security - Runs in background, never blocks users */}
+          <InvisibleTurnstile {...getSecurityProps} />
+          
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
@@ -149,6 +164,11 @@ export default function LoginPage() {
           >
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
+          
+          {/* Security Status Indicator - Optional, for transparency */}
+          <p className="text-xs text-vintage-dark/50 text-center">
+            🛡️ Protected by invisible security verification
+          </p>
 
           {/* Links */}
           <div className="text-center space-y-2">

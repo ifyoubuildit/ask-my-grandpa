@@ -18,6 +18,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
 import { trackRegistration, trackFormSubmission } from '@/lib/gtag';
+import { useSmartSecurity } from '@/hooks/useSmartSecurity';
+import InvisibleTurnstile from '@/components/InvisibleTurnstile';
 import Link from 'next/link';
 
 function RegisterForm() {
@@ -52,6 +54,15 @@ function RegisterForm() {
   const [existingGrandpaId, setExistingGrandpaId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [rateLimitError, setRateLimitError] = useState<string>('');
+
+  // Smart security hook - invisible protection that doesn't block users
+  const { securityToken, canSubmit, getSecurityProps } = useSmartSecurity({
+    required: false, // Don't block users
+    fallbackAllowed: true, // Always allow submission
+    onSecurityCheck: (passed, token) => {
+      console.log('🛡️ Registration security check:', { passed, hasToken: !!token });
+    }
+  });
 
   // Load existing data if this is an update
   useEffect(() => {
@@ -175,6 +186,7 @@ function RegisterForm() {
 
     // Turnstile validation for new registrations (optional - removed for better UX)
     // Security verification is now optional to improve user experience
+    // Smart security runs invisibly in background
 
     // Basic validation
     if (!formData.fullname || !formData.email || !formData.address || !formData.city || !formData.province || !formData.postalCode || !formData.phone || !formData.skills || !formData.note) {
@@ -350,6 +362,9 @@ function RegisterForm() {
         <div className="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-2xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] border border-vintage-gold/30">
           
           <form onSubmit={handleSubmit}>
+            
+            {/* Invisible Security - Runs in background, never blocks users */}
+            {!isUpdate && <InvisibleTurnstile {...getSecurityProps} />}
             
             {/* Error Messages */}
             {error && (
@@ -672,6 +687,13 @@ function RegisterForm() {
                   : (isSubmitting ? "Creating Account..." : "Create Account")
                 }
               </button>
+              
+              {/* Security Status Indicator - Optional, for transparency */}
+              {!isUpdate && (
+                <p className="text-xs text-vintage-dark/50 mt-2">
+                  🛡️ Protected by invisible security verification
+                </p>
+              )}
             </div>
 
             {/* Already have an account - Only show for new registrations */}
