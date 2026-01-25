@@ -1052,3 +1052,264 @@ Confirmed Time: ${new Date().toLocaleString()}
     
     await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
   });
+// Scheduled function to send 24-hour reminder emails
+// Runs daily at 9:00 AM to check for sessions happening in 24 hours
+export const send24HourReminders = functions.pubsub.schedule('0 9 * * *')
+  .timeZone('America/Denver') // Adjust timezone as needed
+  .onRun(async (context) => {
+    console.log('🕘 Running 24-hour reminder check...');
+    
+    try {
+      // Calculate the target time range (24 hours from now, with some buffer)
+      const now = new Date();
+      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
+      const bufferStart = new Date(tomorrow.getTime() - 2 * 60 * 60 * 1000); // 22 hours from now
+      const bufferEnd = new Date(tomorrow.getTime() + 2 * 60 * 60 * 1000); // 26 hours from now
+      
+      console.log('🔍 Checking for sessions between:', bufferStart.toISOString(), 'and', bufferEnd.toISOString());
+      
+      // Query for confirmed sessions
+      const confirmedSessionsQuery = admin.firestore()
+        .collection('requests')
+        .where('status', '==', 'confirmed');
+      
+      const querySnapshot = await confirmedSessionsQuery.get();
+      console.log(`📋 Found ${querySnapshot.docs.length} confirmed sessions to check`);
+      
+      let remindersSent = 0;
+      
+      for (const doc of querySnapshot.docs) {
+        const sessionData = doc.data();
+        
+        // For now, we'll use the proposedTime field
+        // In a production system, you'd want a proper datetime field
+        const sessionTimeStr = sessionData.proposedTime;
+        
+        if (!sessionTimeStr) {
+          console.log(`⚠️ Session ${doc.id} has no proposed time, skipping`);
+          continue;
+        }
+        
+        // Simple check if the session mentions "tomorrow" or contains time indicators
+        // This is a basic implementation - in production you'd want proper datetime parsing
+        const shouldSendReminder = sessionTimeStr.toLowerCase().includes('tomorrow') || 
+                                 sessionTimeStr.toLowerCase().includes('24 hour') ||
+                                 sessionTimeStr.toLowerCase().includes('next day');
+        
+        if (shouldSendReminder) {
+          console.log(`📧 Sending 24-hour reminders for session ${doc.id}`);
+          
+          // Send reminder to apprentice
+          if (sessionData.apprenticeEmail) {
+            await sendApprenticeReminder(sessionData);
+          }
+          
+          // Send reminder to grandpa
+          if (sessionData.grandpaEmail) {
+            await sendGrandpaReminder(sessionData);
+          }
+          
+          remindersSent++;
+        }
+      }
+      
+      console.log(`✅ 24-hour reminder check complete. Sent ${remindersSent} reminder pairs.`);
+      
+    } catch (error) {
+      console.error('❌ Error in 24-hour reminder job:', error);
+    }
+  });
+
+// Helper function to send apprentice reminder
+const sendApprenticeReminder = async (sessionData: any) => {
+  const subject = "Reminder: You're gearing up tomorrow!";
+  
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+      <!-- Header with logo/banner space -->
+      <div style="background: #4a4037; padding: 20px; text-align: center;">
+        <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+        <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Your mentorship session with Grandpa ${sessionData.grandpaName.split(' ')[0]} is in 24 hours.</p>
+      </div>
+      
+      <div style="padding: 30px; background: white; margin: 0;">
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          Hi ${sessionData.apprenticeName.split(' ')[0]},
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          Just a quick heads-up that your session to tackle that <strong>${sessionData.skill || sessionData.subject}</strong> project is happening tomorrow.
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+          <strong>Are you ready to get your hands dirty?</strong>
+        </p>
+        
+        <!-- Session Details Card -->
+        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #9A3412;">
+          <h3 style="color: #4a4037; margin-top: 0; margin-bottom: 15px; font-size: 18px;">Session Details:</h3>
+          
+          <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
+            <strong>Mentor:</strong> Grandpa ${sessionData.grandpaName}
+          </p>
+          
+          <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
+            <strong>Time:</strong> Tomorrow at ${sessionData.proposedTime}
+          </p>
+        </div>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          <strong>A Quick Prep Checklist:</strong>
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+          Since you hold the tools, please make sure you have the necessary materials and workspace ready before your mentor arrives. They are bringing the wisdom, but you need to provide the hardware.
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          We can't wait to see what you build.
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 30px;">
+          Cheers,<br>
+          <strong>The Ask Grandpa Team</strong>
+        </p>
+      </div>
+      
+      <div style="background: #f0ede6; padding: 20px; text-align: center;">
+        <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+          Your mentorship session is tomorrow. Get ready to learn!
+        </p>
+      </div>
+    </div>
+  `;
+  
+  const textContent = `
+Hi ${sessionData.apprenticeName.split(' ')[0]},
+
+Just a quick heads-up that your session to tackle that ${sessionData.skill || sessionData.subject} project is happening tomorrow.
+
+Are you ready to get your hands dirty?
+
+SESSION DETAILS:
+Mentor: Grandpa ${sessionData.grandpaName}
+Time: Tomorrow at ${sessionData.proposedTime}
+
+A Quick Prep Checklist:
+Since you hold the tools, please make sure you have the necessary materials and workspace ready before your mentor arrives. They are bringing the wisdom, but you need to provide the hardware.
+
+We can't wait to see what you build.
+
+Cheers,
+The Ask Grandpa Team
+  `;
+  
+  const mailOptions = {
+    from: gmailEmail,
+    to: sessionData.apprenticeEmail,
+    subject: subject,
+    text: textContent,
+    html: htmlContent,
+  };
+  
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('✅ 24-hour reminder sent to apprentice successfully');
+  } catch (error) {
+    console.error('❌ Error sending 24-hour reminder to apprentice:', error);
+  }
+};
+
+// Helper function to send grandpa reminder
+const sendGrandpaReminder = async (sessionData: any) => {
+  const subject = "Reminder: Mentorship session tomorrow.";
+  
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+      <!-- Header with logo/banner space -->
+      <div style="background: #4a4037; padding: 20px; text-align: center;">
+        <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+        <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">You are scheduled to help ${sessionData.apprenticeName.split(' ')[0]} in 24 hours.</p>
+      </div>
+      
+      <div style="padding: 30px; background: white; margin: 0;">
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          Hello ${sessionData.grandpaName.split(' ')[0]},
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          This is a quick reminder that you are scheduled to lend a hand tomorrow.
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+          Thanks again for taking the time to pass on your skills. <strong>${sessionData.apprenticeName.split(' ')[0]} is looking forward to it.</strong>
+        </p>
+        
+        <!-- Session Details Card -->
+        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #9A3412;">
+          <h3 style="color: #4a4037; margin-top: 0; margin-bottom: 15px; font-size: 18px;">Session Details:</h3>
+          
+          <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
+            <strong>Apprentice:</strong> ${sessionData.apprenticeName}
+          </p>
+          
+          <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
+            <strong>Time:</strong> Tomorrow at ${sessionData.proposedTime}
+          </p>
+          
+          <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
+            <strong>Location:</strong> ${sessionData.apprenticeAddress || 'Address details provided separately'}
+          </p>
+        </div>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          Drive safe, and enjoy the session.
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 30px;">
+          With respect,<br>
+          <strong>The Ask Grandpa Team</strong>
+        </p>
+      </div>
+      
+      <div style="background: #f0ede6; padding: 20px; text-align: center;">
+        <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+          Your mentorship session is tomorrow. Safe travels!
+        </p>
+      </div>
+    </div>
+  `;
+  
+  const textContent = `
+Hello ${sessionData.grandpaName.split(' ')[0]},
+
+This is a quick reminder that you are scheduled to lend a hand tomorrow.
+
+Thanks again for taking the time to pass on your skills. ${sessionData.apprenticeName.split(' ')[0]} is looking forward to it.
+
+SESSION DETAILS:
+Apprentice: ${sessionData.apprenticeName}
+Time: Tomorrow at ${sessionData.proposedTime}
+Location: ${sessionData.apprenticeAddress || 'Address details provided separately'}
+
+Drive safe, and enjoy the session.
+
+With respect,
+The Ask Grandpa Team
+  `;
+  
+  const mailOptions = {
+    from: gmailEmail,
+    to: sessionData.grandpaEmail,
+    subject: subject,
+    text: textContent,
+    html: htmlContent,
+  };
+  
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('✅ 24-hour reminder sent to grandpa successfully');
+  } catch (error) {
+    console.error('❌ Error sending 24-hour reminder to grandpa:', error);
+  }
+};
