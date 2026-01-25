@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from '@/lib/auth';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Shield } from 'lucide-react';
+import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
+import Turnstile from '@/components/Turnstile';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -14,6 +16,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [rateLimitError, setRateLimitError] = useState<string>('');
   const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,6 +30,27 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setRateLimitError('');
+
+    // Client-side rate limiting check
+    const rateLimitCheck = rateLimiter.checkRateLimit(
+      'login', 
+      RATE_LIMITS.LOGIN.maxRequests, 
+      RATE_LIMITS.LOGIN.windowMs
+    );
+
+    if (!rateLimitCheck.allowed) {
+      setRateLimitError(`Too many login attempts. Please wait ${rateLimitCheck.remainingTime} seconds before trying again.`);
+      setIsLoading(false);
+      return;
+    }
+
+    // Turnstile validation
+    if (!turnstileToken) {
+      setError('Please complete the security verification');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       await signIn(formData.email, formData.password);
@@ -56,6 +81,12 @@ export default function LoginPage() {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
+            </div>
+          )}
+          
+          {rateLimitError && (
+            <div className="bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
+              {rateLimitError}
             </div>
           )}
 
@@ -113,6 +144,27 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Security Verification */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="w-5 h-5 text-vintage-accent" />
+              <label className="block text-sm font-bold text-vintage-dark">
+                Security Verification
+              </label>
+            </div>
+            <div className="bg-vintage-cream/50 p-4 rounded-lg border border-vintage-gold/20">
+              <Turnstile
+                siteKey="0x4AAAAAAAkqiE3QKmGNdGQy" // Replace with your actual Cloudflare Turnstile site key
+                onVerify={setTurnstileToken}
+                onError={() => setError('Security verification failed. Please try again.')}
+                onExpire={() => setTurnstileToken('')}
+                theme="light"
+                size="normal"
+                className="flex justify-center"
+              />
             </div>
           </div>
 

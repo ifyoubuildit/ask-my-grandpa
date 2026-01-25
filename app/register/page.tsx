@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Camera, X, Check, Eye, EyeOff } from 'lucide-react';
+import { Camera, X, Check, Eye, EyeOff, Shield } from 'lucide-react';
 import { 
   collection, 
   addDoc, 
@@ -16,6 +16,8 @@ import { db, storage } from '@/lib/firebase';
 import { signUp } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
+import Turnstile from '@/components/Turnstile';
 import Link from 'next/link';
 
 function RegisterForm() {
@@ -49,6 +51,8 @@ function RegisterForm() {
   const [error, setError] = useState('');
   const [existingGrandpaId, setExistingGrandpaId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [rateLimitError, setRateLimitError] = useState<string>('');
 
   // Load existing data if this is an update
   useEffect(() => {
@@ -152,6 +156,27 @@ function RegisterForm() {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+    setRateLimitError('');
+
+    // Client-side rate limiting check
+    const rateLimitCheck = rateLimiter.checkRateLimit(
+      'registration', 
+      RATE_LIMITS.REGISTRATION.maxRequests, 
+      RATE_LIMITS.REGISTRATION.windowMs
+    );
+
+    if (!rateLimitCheck.allowed) {
+      setRateLimitError(`Too many registration attempts. Please wait ${rateLimitCheck.remainingTime} seconds before trying again.`);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Turnstile validation for new registrations
+    if (!isUpdate && !turnstileToken) {
+      setError('Please complete the security verification');
+      setIsSubmitting(false);
+      return;
+    }
 
     // Basic validation
     if (!formData.fullname || !formData.email || !formData.address || !formData.city || !formData.province || !formData.postalCode || !formData.phone || !formData.skills || !formData.note) {
@@ -325,10 +350,16 @@ function RegisterForm() {
           
           <form onSubmit={handleSubmit}>
             
-            {/* Error Message */}
+            {/* Error Messages */}
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                 {error}
+              </div>
+            )}
+            
+            {rateLimitError && (
+              <div className="mb-6 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
+                {rateLimitError}
               </div>
             )}
             
@@ -625,6 +656,29 @@ function RegisterForm() {
                     </a>.
                   </span>
                 </label>
+              </div>
+            )}
+
+            {/* Security Verification - Only show for new registrations */}
+            {!isUpdate && (
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <Shield className="w-5 h-5 text-vintage-accent" />
+                  <label className="block text-vintage-dark font-heading font-bold text-lg">
+                    Security Verification
+                  </label>
+                </div>
+                <div className="bg-vintage-cream/50 p-4 rounded-lg border border-vintage-gold/20">
+                  <Turnstile
+                    siteKey="0x4AAAAAAAkqiE3QKmGNdGQy" // Replace with your actual Cloudflare Turnstile site key
+                    onVerify={setTurnstileToken}
+                    onError={() => setError('Security verification failed. Please try again.')}
+                    onExpire={() => setTurnstileToken('')}
+                    theme="light"
+                    size="normal"
+                    className="flex justify-center"
+                  />
+                </div>
               </div>
             )}
 

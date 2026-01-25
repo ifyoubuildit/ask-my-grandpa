@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Send, User } from 'lucide-react';
+import { Send, User, Shield } from 'lucide-react';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
+import Turnstile from '@/components/Turnstile';
 
 function RequestHelpForm() {
   const { user } = useAuth();
@@ -35,6 +37,8 @@ function RequestHelpForm() {
   const [error, setError] = useState('');
   const [grandpaData, setGrandpaData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [rateLimitError, setRateLimitError] = useState<string>('');
 
   // Load grandpa data
   useEffect(() => {
@@ -81,6 +85,27 @@ function RequestHelpForm() {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+    setRateLimitError('');
+
+    // Client-side rate limiting check
+    const rateLimitCheck = rateLimiter.checkRateLimit(
+      'request_help', 
+      RATE_LIMITS.REQUEST_HELP.maxRequests, 
+      RATE_LIMITS.REQUEST_HELP.windowMs
+    );
+
+    if (!rateLimitCheck.allowed) {
+      setRateLimitError(`Too many requests. Please wait ${rateLimitCheck.remainingTime} seconds before trying again.`);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Turnstile validation
+    if (!turnstileToken) {
+      setError('Please complete the security verification');
+      setIsSubmitting(false);
+      return;
+    }
 
     // Basic validation
     if (!formData.subject || !formData.availability || !formData.message) {
@@ -218,10 +243,16 @@ function RequestHelpForm() {
           
           <form onSubmit={handleSubmit}>
             
-            {/* Error Message */}
+            {/* Error Messages */}
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                 {error}
+              </div>
+            )}
+            
+            {rateLimitError && (
+              <div className="mb-6 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
+                {rateLimitError}
               </div>
             )}
             
@@ -271,6 +302,27 @@ function RequestHelpForm() {
                 placeholder={`Hi! My name is ${user?.displayName || 'Chris Wallace'} and I am looking for ${skill || 'help'} help. Specifically...`}
                 required 
               />
+            </div>
+
+            {/* Security Verification */}
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-5 h-5 text-vintage-accent" />
+                <label className="block text-vintage-dark font-heading font-bold text-lg">
+                  Security Verification
+                </label>
+              </div>
+              <div className="bg-vintage-cream/50 p-4 rounded-lg border border-vintage-gold/20">
+                <Turnstile
+                  siteKey="0x4AAAAAAAkqiE3QKmGNdGQy" // Replace with your actual Cloudflare Turnstile site key
+                  onVerify={setTurnstileToken}
+                  onError={() => setError('Security verification failed. Please try again.')}
+                  onExpire={() => setTurnstileToken('')}
+                  theme="light"
+                  size="normal"
+                  className="flex justify-center"
+                />
+              </div>
             </div>
 
             {/* Submit Button */}
