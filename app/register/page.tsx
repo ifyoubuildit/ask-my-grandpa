@@ -17,6 +17,7 @@ import { signUp } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
+import { getTurnstileSiteKey } from '@/lib/turnstile-config';
 import Turnstile from '@/components/Turnstile';
 import Link from 'next/link';
 
@@ -670,7 +671,7 @@ function RegisterForm() {
                 </div>
                 <div className="bg-vintage-cream/50 p-4 rounded-lg border border-vintage-gold/20">
                   <Turnstile
-                    siteKey="0x4AAAAAAAkqiE3QKmGNdGQy" // Replace with your actual Cloudflare Turnstile site key
+                    siteKey={getTurnstileSiteKey()}
                     onVerify={setTurnstileToken}
                     onError={() => setError('Security verification failed. Please try again.')}
                     onExpire={() => setTurnstileToken('')}

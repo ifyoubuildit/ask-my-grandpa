@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { signIn } from '@/lib/auth';
 import { Eye, EyeOff, Mail, Lock, Shield } from 'lucide-react';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
+import { getTurnstileSiteKey } from '@/lib/turnstile-config';
 import Turnstile from '@/components/Turnstile';
 
 export default function LoginPage() {
@@ -157,7 +158,7 @@ export default function LoginPage() {
             </div>
             <div className="bg-vintage-cream/50 p-4 rounded-lg border border-vintage-gold/20">
               <Turnstile
-                siteKey="0x4AAAAAAAkqiE3QKmGNdGQy" // Replace with your actual Cloudflare Turnstile site key
+                siteKey={getTurnstileSiteKey()}
                 onVerify={setTurnstileToken}
                 onError={() => setError('Security verification failed. Please try again.')}
                 onExpire={() => setTurnstileToken('')}

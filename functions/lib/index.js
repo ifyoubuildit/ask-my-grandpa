@@ -1,12 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.send24HourReminders = exports.onSessionConfirmed = exports.onRequestAccepted = exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
+exports.submitHelpRequest = exports.registerApprentice = exports.registerGrandpa = exports.send24HourReminders = exports.onSessionConfirmed = exports.onRequestAccepted = exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 // Initialize Firebase Admin
 admin.initializeApp();
+// Rate limiting store (in production, use Redis or Firestore)
+const rateLimitStore = new Map();
 // Email configuration using environment variables
 const gmailEmail = process.env.GMAIL_EMAIL;
 const gmailPassword = process.env.GMAIL_PASSWORD;
@@ -37,11 +39,43 @@ const sendNotificationEmail = async (subject, htmlContent, textContent) => {
         throw error;
     }
 };
-// Function to send custom email verification
-exports.sendCustomEmailVerification = functions.https.onCall(async (data, context) => {
+// Function to send custom email verification with rate limiting
+exports.sendCustomEmailVerification = functions
+    .runWith({ memory: '256MB', timeoutSeconds: 60 })
+    .https.onCall(async (data, context) => {
+    var _a;
+    // Rate limiting check
+    const clientIP = ((_a = context.rawRequest) === null || _a === void 0 ? void 0 : _a.ip) || 'unknown';
+    const rateLimitKey = `email_verification:${clientIP}`;
+    const now = Date.now();
+    const windowMs = 60000; // 1 minute
+    const maxRequests = 3; // 3 email verifications per minute per IP
+    if (rateLimitStore.has(rateLimitKey)) {
+        const entry = rateLimitStore.get(rateLimitKey);
+        if (now < entry.resetTime && entry.count >= maxRequests) {
+            const remainingTime = Math.ceil((entry.resetTime - now) / 1000);
+            throw new functions.https.HttpsError('resource-exhausted', `Rate limit exceeded. Please wait ${remainingTime} seconds before requesting another verification email.`);
+        }
+        if (now > entry.resetTime) {
+            rateLimitStore.delete(rateLimitKey);
+        }
+    }
+    // Update rate limit counter
+    const entry = rateLimitStore.get(rateLimitKey) || { count: 0, resetTime: now + windowMs };
+    entry.count++;
+    rateLimitStore.set(rateLimitKey, entry);
+    // Payload validation
+    if (!data || typeof data !== 'object') {
+        throw new functions.https.HttpsError('invalid-argument', 'Invalid request data');
+    }
     const { email, displayName, userId } = data;
     if (!email || !displayName || !userId) {
         throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
+    }
+    // Validate payload size (approximate)
+    const payloadSize = JSON.stringify(data).length;
+    if (payloadSize > 10240) { // 10KB limit
+        throw new functions.https.HttpsError('invalid-argument', 'Request payload too large');
     }
     try {
         // Generate verification token
@@ -1049,6 +1083,290 @@ exports.send24HourReminders = functions.pubsub.schedule('0 9 * * *')
     }
     catch (error) {
         console.error('❌ Error in 24-hour reminder job:', error);
+    }
+});
+// Function to validate Turnstile token server-side
+const validateTurnstileToken = async (token) => {
+    const secretKey = process.env.TURNSTILE_SECRET_KEY;
+    if (!secretKey) {
+        console.warn('TURNSTILE_SECRET_KEY not configured, skipping validation');
+        return true; // Allow in development if not configured
+    }
+    try {
+        const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                secret: secretKey,
+                response: token,
+            }),
+        });
+        const data = await response.json();
+        return data.success === true;
+    }
+    catch (error) {
+        console.error('Turnstile validation error:', error);
+        return false;
+    }
+};
+// HTTP endpoint for grandpa registration with rate limiting
+// HTTP endpoint for grandpa registration with rate limiting
+exports.registerGrandpa = functions
+    .runWith({ memory: '256MB', timeoutSeconds: 60 })
+    .https.onRequest(async (req, res) => {
+    // CORS headers
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+        res.status(200).send();
+        return;
+    }
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+    // Rate limiting check
+    const clientIP = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+    const now = Date.now();
+    const key = `grandpa_registration:${clientIP}`;
+    const windowMs = 300000; // 5 minutes
+    const maxRequests = 5;
+    // Clean up expired entries
+    if (rateLimitStore.has(key)) {
+        const entry = rateLimitStore.get(key);
+        if (now > entry.resetTime) {
+            rateLimitStore.delete(key);
+        }
+    }
+    // Check current rate limit
+    const entry = rateLimitStore.get(key) || { count: 0, resetTime: now + windowMs };
+    if (entry.count >= maxRequests && now < entry.resetTime) {
+        const remainingTime = Math.ceil((entry.resetTime - now) / 1000);
+        res.status(429).json({
+            error: 'Too Many Requests',
+            message: `Rate limit exceeded. Please wait ${remainingTime} seconds before trying again.`,
+            retryAfter: remainingTime
+        });
+        return;
+    }
+    // Update count
+    entry.count++;
+    rateLimitStore.set(key, entry);
+    // Payload size limit check
+    const bodySize = JSON.stringify(req.body).length;
+    if (bodySize > 10240) { // 10KB limit
+        res.status(413).json({
+            error: 'Payload Too Large',
+            message: `Request body too large. Maximum size is 10240 bytes. Received: ${bodySize} bytes.`,
+            maxSize: 10240,
+            receivedSize: bodySize
+        });
+        return;
+    }
+    try {
+        const grandpaData = req.body;
+        // Validate Turnstile token if provided
+        if (grandpaData.turnstileToken) {
+            const isValidToken = await validateTurnstileToken(grandpaData.turnstileToken);
+            if (!isValidToken) {
+                res.status(400).json({ error: 'Invalid security verification' });
+                return;
+            }
+        }
+        // Validate required fields
+        if (!grandpaData.name || !grandpaData.email || !grandpaData.address) {
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
+        }
+        // Add timestamp and source
+        grandpaData.timestamp = new Date().toISOString();
+        grandpaData.source = 'api';
+        // Save to Firestore
+        const docRef = await admin.firestore().collection('grandpas').add(grandpaData);
+        res.status(200).json({
+            success: true,
+            id: docRef.id,
+            message: 'Grandpa registered successfully'
+        });
+    }
+    catch (error) {
+        console.error('Error registering grandpa:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+// HTTP endpoint for apprentice registration with rate limiting
+// HTTP endpoint for apprentice registration with rate limiting
+exports.registerApprentice = functions
+    .runWith({ memory: '256MB', timeoutSeconds: 60 })
+    .https.onRequest(async (req, res) => {
+    // CORS headers
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+        res.status(200).send();
+        return;
+    }
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+    // Rate limiting check
+    const clientIP = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+    const now = Date.now();
+    const key = `apprentice_registration:${clientIP}`;
+    const windowMs = 300000; // 5 minutes
+    const maxRequests = 5;
+    // Clean up expired entries
+    if (rateLimitStore.has(key)) {
+        const entry = rateLimitStore.get(key);
+        if (now > entry.resetTime) {
+            rateLimitStore.delete(key);
+        }
+    }
+    // Check current rate limit
+    const entry = rateLimitStore.get(key) || { count: 0, resetTime: now + windowMs };
+    if (entry.count >= maxRequests && now < entry.resetTime) {
+        const remainingTime = Math.ceil((entry.resetTime - now) / 1000);
+        res.status(429).json({
+            error: 'Too Many Requests',
+            message: `Rate limit exceeded. Please wait ${remainingTime} seconds before trying again.`,
+            retryAfter: remainingTime
+        });
+        return;
+    }
+    // Update count
+    entry.count++;
+    rateLimitStore.set(key, entry);
+    // Payload size limit check
+    const bodySize = JSON.stringify(req.body).length;
+    if (bodySize > 10240) { // 10KB limit
+        res.status(413).json({
+            error: 'Payload Too Large',
+            message: `Request body too large. Maximum size is 10240 bytes. Received: ${bodySize} bytes.`,
+            maxSize: 10240,
+            receivedSize: bodySize
+        });
+        return;
+    }
+    try {
+        const apprenticeData = req.body;
+        // Validate Turnstile token if provided
+        if (apprenticeData.turnstileToken) {
+            const isValidToken = await validateTurnstileToken(apprenticeData.turnstileToken);
+            if (!isValidToken) {
+                res.status(400).json({ error: 'Invalid security verification' });
+                return;
+            }
+        }
+        // Validate required fields
+        if (!apprenticeData.name || !apprenticeData.email || !apprenticeData.address) {
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
+        }
+        // Add timestamp and source
+        apprenticeData.timestamp = new Date().toISOString();
+        apprenticeData.source = 'api';
+        // Save to Firestore
+        const docRef = await admin.firestore().collection('apprentices').add(apprenticeData);
+        res.status(200).json({
+            success: true,
+            id: docRef.id,
+            message: 'Apprentice registered successfully'
+        });
+    }
+    catch (error) {
+        console.error('Error registering apprentice:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+// HTTP endpoint for help requests with rate limiting
+// HTTP endpoint for help requests with rate limiting
+exports.submitHelpRequest = functions
+    .runWith({ memory: '256MB', timeoutSeconds: 60 })
+    .https.onRequest(async (req, res) => {
+    // CORS headers
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+        res.status(200).send();
+        return;
+    }
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+    // Rate limiting check (stricter for help requests)
+    const clientIP = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+    const now = Date.now();
+    const key = `help_request:${clientIP}`;
+    const windowMs = 60000; // 1 minute
+    const maxRequests = 5;
+    // Clean up expired entries
+    if (rateLimitStore.has(key)) {
+        const entry = rateLimitStore.get(key);
+        if (now > entry.resetTime) {
+            rateLimitStore.delete(key);
+        }
+    }
+    // Check current rate limit
+    const entry = rateLimitStore.get(key) || { count: 0, resetTime: now + windowMs };
+    if (entry.count >= maxRequests && now < entry.resetTime) {
+        const remainingTime = Math.ceil((entry.resetTime - now) / 1000);
+        res.status(429).json({
+            error: 'Too Many Requests',
+            message: `Rate limit exceeded. Please wait ${remainingTime} seconds before trying again.`,
+            retryAfter: remainingTime
+        });
+        return;
+    }
+    // Update count
+    entry.count++;
+    rateLimitStore.set(key, entry);
+    // Payload size limit check
+    const bodySize = JSON.stringify(req.body).length;
+    if (bodySize > 10240) { // 10KB limit
+        res.status(413).json({
+            error: 'Payload Too Large',
+            message: `Request body too large. Maximum size is 10240 bytes. Received: ${bodySize} bytes.`,
+            maxSize: 10240,
+            receivedSize: bodySize
+        });
+        return;
+    }
+    try {
+        const requestData = req.body;
+        // Validate Turnstile token if provided
+        if (requestData.turnstileToken) {
+            const isValidToken = await validateTurnstileToken(requestData.turnstileToken);
+            if (!isValidToken) {
+                res.status(400).json({ error: 'Invalid security verification' });
+                return;
+            }
+        }
+        // Validate required fields
+        if (!requestData.apprenticeId || !requestData.grandpaId || !requestData.subject || !requestData.message) {
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
+        }
+        // Add timestamp and status
+        requestData.timestamp = new Date().toISOString();
+        requestData.status = 'pending';
+        // Save to Firestore (without apprentice address for security)
+        const docRef = await admin.firestore().collection('requests').add(requestData);
+        res.status(200).json({
+            success: true,
+            id: docRef.id,
+            message: 'Help request submitted successfully'
+        });
+    }
+    catch (error) {
+        console.error('Error submitting help request:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 // Helper function to send apprentice reminder
