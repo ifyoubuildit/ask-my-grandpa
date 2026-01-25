@@ -106,11 +106,25 @@ function RequestHelpForm() {
     try {
       console.log('🚀 Starting request submission...');
       
+      // Fetch apprentice's address from their profile
+      let apprenticeAddress = '';
+      try {
+        const apprenticeQuery = query(collection(db, "apprentices"), where("userId", "==", user.uid));
+        const apprenticeSnapshot = await getDocs(apprenticeQuery);
+        if (!apprenticeSnapshot.empty) {
+          const apprenticeData = apprenticeSnapshot.docs[0].data();
+          apprenticeAddress = apprenticeData.address || '';
+        }
+      } catch (addressError) {
+        console.warn('Could not fetch apprentice address:', addressError);
+      }
+      
       // Save request to Firestore
       const requestData = {
         apprenticeId: user.uid,
         apprenticeName: user.displayName || user.email,
         apprenticeEmail: user.email,
+        apprenticeAddress: apprenticeAddress,
         grandpaId: grandpaData?.userId || grandpaId, // Use userId instead of document id
         grandpaName: grandpaName,
         grandpaEmail: grandpaData?.email || '',

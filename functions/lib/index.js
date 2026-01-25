@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onRequestAccepted = exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
+exports.onSessionConfirmed = exports.onRequestAccepted = exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
@@ -797,6 +797,182 @@ Proposed Time: ${requestData.proposedTime || 'Not specified'}
 Grandpa Response: ${requestData.grandpaResponse || 'Not specified'}
 
 Accepted Time: ${new Date().toLocaleString()}
+    `;
+    await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
+});
+// Function triggered when a request status changes to "confirmed"
+exports.onSessionConfirmed = functions.firestore
+    .document('requests/{requestId}')
+    .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+    // Only trigger if status changed from 'accepted' to 'confirmed'
+    if (beforeData.status !== 'accepted' || afterData.status !== 'confirmed') {
+        return;
+    }
+    console.log('📅 Session confirmed, sending notification to grandpa...');
+    const requestData = afterData;
+    // Send notification email to grandpa
+    if (requestData.grandpaEmail) {
+        const subject = 'Mentorship Session Confirmed.';
+        // Format the date and time (using the proposedTime field for now)
+        const sessionDateTime = requestData.proposedTime || 'Time to be determined';
+        const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+          <!-- Header with logo/banner space -->
+          <div style="background: #4a4037; padding: 20px; text-align: center;">
+            <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+            <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Here are the final details for your upcoming mentorship session.</p>
+          </div>
+          
+          <div style="padding: 30px; background: white; margin: 0;">
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Hello ${requestData.grandpaName.split(' ')[0]},
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              <strong>It's officially on the calendar.</strong>
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+              ${requestData.apprenticeName.split(' ')[0]} has confirmed the time and is looking forward to learning from you. Thank you again for making yourself available to pass on your knowledge.
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              <strong>Here are the final details for your session:</strong>
+            </p>
+            
+            <!-- Session Confirmation Card -->
+            <div style="background: #f0ede6; padding: 25px; border-radius: 8px; margin: 25px 0; border: 2px solid #4a4037;">
+              <h3 style="color: #4a4037; margin-top: 0; margin-bottom: 20px; font-size: 20px; text-align: center;">Session Confirmation Card</h3>
+              
+              <div style="margin-bottom: 15px;">
+                <p style="color: #4a4037; margin: 0; font-size: 16px;">
+                  <strong>The Project:</strong> ${requestData.skill || requestData.subject}
+                </p>
+              </div>
+              
+              <div style="margin-bottom: 15px;">
+                <p style="color: #4a4037; margin: 0; font-size: 16px;">
+                  <strong>When:</strong> ${sessionDateTime}
+                </p>
+              </div>
+              
+              <div style="margin-bottom: 0;">
+                <p style="color: #4a4037; margin: 0; font-size: 16px;">
+                  <strong>Where:</strong> The home of ${requestData.apprenticeName.split(' ')[0]}
+                </p>
+                <p style="color: #4a4037; margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">
+                  ${requestData.apprenticeAddress || 'Address details will be shared separately'}
+                </p>
+              </div>
+            </div>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              <strong>A final thought before you head out:</strong>
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Remember, your role is to be the calm voice of experience. Guide their hands, prioritize safety, and let them handle the tools. Mistakes might happen, and that's okay—that's usually where the real learning happens.
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+              Enjoy the session and perhaps a good cup of coffee afterward.
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 30px;">
+              With gratitude,<br>
+              <strong>The Ask Grandpa Team</strong>
+            </p>
+          </div>
+          
+          <div style="background: #f0ede6; padding: 20px; text-align: center;">
+            <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+              Your mentorship session with ${requestData.apprenticeName.split(' ')[0]} has been confirmed.
+            </p>
+          </div>
+        </div>
+      `;
+        const textContent = `
+Hello ${requestData.grandpaName.split(' ')[0]},
+
+It's officially on the calendar.
+
+${requestData.apprenticeName.split(' ')[0]} has confirmed the time and is looking forward to learning from you. Thank you again for making yourself available to pass on your knowledge.
+
+Here are the final details for your session:
+
+SESSION CONFIRMATION CARD
+The Project: ${requestData.skill || requestData.subject}
+When: ${sessionDateTime}
+Where: The home of ${requestData.apprenticeName.split(' ')[0]}
+${requestData.apprenticeAddress || 'Address details will be shared separately'}
+
+A final thought before you head out:
+
+Remember, your role is to be the calm voice of experience. Guide their hands, prioritize safety, and let them handle the tools. Mistakes might happen, and that's okay—that's usually where the real learning happens.
+
+Enjoy the session and perhaps a good cup of coffee afterward.
+
+With gratitude,
+The Ask Grandpa Team
+      `;
+        const mailOptions = {
+            from: gmailEmail,
+            to: requestData.grandpaEmail,
+            subject: subject,
+            text: textContent,
+            html: htmlContent,
+        };
+        try {
+            await transporter.sendMail(mailOptions);
+            console.log('✅ Session confirmed notification sent to grandpa successfully');
+        }
+        catch (error) {
+            console.error('❌ Error sending session confirmed notification to grandpa:', error);
+        }
+    }
+    // Also send admin notification
+    const adminSubject = '📅 Session Confirmed - Ask My Grandpa';
+    const adminHtmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #22c55e;">Session Confirmed!</h2>
+        
+        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Session Details:</h3>
+          <p><strong>Apprentice:</strong> ${requestData.apprenticeName} (${requestData.apprenticeEmail})</p>
+          <p><strong>Grandpa:</strong> ${requestData.grandpaName} (${requestData.grandpaEmail})</p>
+          <p><strong>Project:</strong> ${requestData.skill || requestData.subject}</p>
+          <p><strong>Scheduled Time:</strong> ${requestData.proposedTime || 'Not specified'}</p>
+          <p><strong>Apprentice Address:</strong> ${requestData.apprenticeAddress || 'Not provided'}</p>
+          <p><strong>Original Message:</strong> ${requestData.message}</p>
+          <p><strong>Grandpa Response:</strong> ${requestData.grandpaResponse || 'Not specified'}</p>
+          <p><strong>Apprentice Confirmation:</strong> ${requestData.apprenticeConfirmation || 'Not specified'}</p>
+        </div>
+        
+        <p style="color: #666;">
+          Confirmed Time: ${new Date().toLocaleString()}
+        </p>
+        
+        <hr style="border: 1px solid #ddd; margin: 20px 0;">
+        <p style="font-size: 12px; color: #999;">
+          This notification was sent automatically from Ask My Grandpa platform.
+        </p>
+      </div>
+    `;
+    const adminTextContent = `
+Session Confirmed!
+
+Apprentice: ${requestData.apprenticeName} (${requestData.apprenticeEmail})
+Grandpa: ${requestData.grandpaName} (${requestData.grandpaEmail})
+Project: ${requestData.skill || requestData.subject}
+Scheduled Time: ${requestData.proposedTime || 'Not specified'}
+Apprentice Address: ${requestData.apprenticeAddress || 'Not provided'}
+Original Message: ${requestData.message}
+Grandpa Response: ${requestData.grandpaResponse || 'Not specified'}
+Apprentice Confirmation: ${requestData.apprenticeConfirmation || 'Not specified'}
+
+Confirmed Time: ${new Date().toLocaleString()}
     `;
     await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
 });
