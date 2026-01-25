@@ -232,7 +232,15 @@ function RegisterForm() {
       }
 
       // Success! Firebase Functions will automatically send email notifications
-      setShowModal(true);
+      console.log('🎯 Registration successful, redirecting to dashboard...');
+      
+      // For updates, show modal and stay on page
+      if (isUpdate) {
+        setShowModal(true);
+      } else {
+        // For new registrations, redirect immediately to dashboard
+        window.location.href = '/dashboard';
+      }
       
       // Reset form for new registrations only
       if (!isUpdate) {
@@ -282,10 +290,9 @@ function RegisterForm() {
 
   const closeModal = () => {
     setShowModal(false);
-    // For updates, stay on the same page so they can make more changes
-    // For new registrations, go to dashboard
-    if (!isUpdate) {
-      router.push('/dashboard');
+    // Only for updates - new registrations already redirected
+    if (isUpdate) {
+      // Stay on the same page so they can make more changes
     }
   };
 
