@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
+exports.onRequestAccepted = exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
@@ -658,5 +658,146 @@ The Ask Grandpa Team
             console.error('Error sending email to grandpa:', error);
         }
     }
+});
+// Function triggered when a request status changes to "accepted"
+exports.onRequestAccepted = functions.firestore
+    .document('requests/{requestId}')
+    .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+    // Only trigger if status changed from 'pending' to 'accepted'
+    if (beforeData.status !== 'pending' || afterData.status !== 'accepted') {
+        return;
+    }
+    console.log('🎉 Request accepted, sending notification to apprentice...');
+    const requestData = afterData;
+    // Send notification email to apprentice
+    if (requestData.apprenticeEmail) {
+        const subject = 'Good news! Help is on the way for your project.';
+        const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+          <!-- Header with logo/banner space -->
+          <div style="background: #4a4037; padding: 20px; text-align: center;">
+            <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+            <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">A mentor has accepted your request. Time to connect.</p>
+          </div>
+          
+          <div style="padding: 30px; background: white; margin: 0;">
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Hi ${requestData.apprenticeName.split(' ')[0]},
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              <strong>We have great news. You've got a match.</strong>
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Grandpa <strong>${requestData.grandpaName}</strong> has seen your request for help with <strong>${requestData.skill || requestData.subject}</strong> and is ready to lend a hand.
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              <strong>Now it's time to make it official.</strong>
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+              Please log in to your dashboard to review the details, confirm a time that works for both of you, and accept the mentorship connect. Once you do, you'll be able to communicate directly to sort out the final details.
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://askmygrandpa.com/dashboard" 
+                 style="background: #9A3412; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+                Log In to Finalize Details
+              </a>
+            </div>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Get that coffee pot ready—it's almost time to get to work.
+            </p>
+            
+            <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 30px;">
+              Warmly,<br>
+              <strong>The Ask Grandpa Team</strong>
+            </p>
+          </div>
+          
+          <div style="background: #f0ede6; padding: 20px; text-align: center;">
+            <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+              A mentor has accepted your request for ${requestData.skill || requestData.subject} help.
+            </p>
+          </div>
+        </div>
+      `;
+        const textContent = `
+Hi ${requestData.apprenticeName.split(' ')[0]},
+
+We have great news. You've got a match.
+
+Grandpa ${requestData.grandpaName} has seen your request for help with ${requestData.skill || requestData.subject} and is ready to lend a hand.
+
+Now it's time to make it official.
+
+Please log in to your dashboard to review the details, confirm a time that works for both of you, and accept the mentorship connect. Once you do, you'll be able to communicate directly to sort out the final details.
+
+Log in to finalize details: https://askmygrandpa.com/dashboard
+
+Get that coffee pot ready—it's almost time to get to work.
+
+Warmly,
+The Ask Grandpa Team
+      `;
+        const mailOptions = {
+            from: gmailEmail,
+            to: requestData.apprenticeEmail,
+            subject: subject,
+            text: textContent,
+            html: htmlContent,
+        };
+        try {
+            await transporter.sendMail(mailOptions);
+            console.log('✅ Request accepted notification sent to apprentice successfully');
+        }
+        catch (error) {
+            console.error('❌ Error sending request accepted notification to apprentice:', error);
+        }
+    }
+    // Also send admin notification
+    const adminSubject = '🤝 Request Accepted - Ask My Grandpa';
+    const adminHtmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #22c55e;">Request Accepted!</h2>
+        
+        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Match Details:</h3>
+          <p><strong>Apprentice:</strong> ${requestData.apprenticeName} (${requestData.apprenticeEmail})</p>
+          <p><strong>Grandpa:</strong> ${requestData.grandpaName} (${requestData.grandpaEmail})</p>
+          <p><strong>Project:</strong> ${requestData.skill || requestData.subject}</p>
+          <p><strong>Message:</strong> ${requestData.message}</p>
+          <p><strong>Proposed Time:</strong> ${requestData.proposedTime || 'Not specified'}</p>
+          <p><strong>Grandpa Response:</strong> ${requestData.grandpaResponse || 'Not specified'}</p>
+        </div>
+        
+        <p style="color: #666;">
+          Accepted Time: ${new Date().toLocaleString()}
+        </p>
+        
+        <hr style="border: 1px solid #ddd; margin: 20px 0;">
+        <p style="font-size: 12px; color: #999;">
+          This notification was sent automatically from Ask My Grandpa platform.
+        </p>
+      </div>
+    `;
+    const adminTextContent = `
+Request Accepted!
+
+Apprentice: ${requestData.apprenticeName} (${requestData.apprenticeEmail})
+Grandpa: ${requestData.grandpaName} (${requestData.grandpaEmail})
+Project: ${requestData.skill || requestData.subject}
+Message: ${requestData.message}
+Proposed Time: ${requestData.proposedTime || 'Not specified'}
+Grandpa Response: ${requestData.grandpaResponse || 'Not specified'}
+
+Accepted Time: ${new Date().toLocaleString()}
+    `;
+    await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
 });
 //# sourceMappingURL=index.js.map
