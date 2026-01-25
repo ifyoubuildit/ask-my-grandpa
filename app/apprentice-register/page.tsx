@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Camera, X, Check, Eye, EyeOff, Shield } from 'lucide-react';
+import { Camera, X, Check, Eye, EyeOff } from 'lucide-react';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
@@ -9,9 +9,7 @@ import { signUp } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
-import { getTurnstileSiteKey } from '@/lib/turnstile-config';
 import { trackRegistration, trackFormSubmission } from '@/lib/gtag';
-import Turnstile from '@/components/Turnstile';
 import Link from 'next/link';
 
 function ApprenticeRegisterForm() {
@@ -46,7 +44,6 @@ function ApprenticeRegisterForm() {
   const [error, setError] = useState('');
   const [existingApprenticeId, setExistingApprenticeId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [rateLimitError, setRateLimitError] = useState<string>('');
 
   // Load existing data if this is an update
@@ -166,12 +163,8 @@ function ApprenticeRegisterForm() {
       return;
     }
 
-    // Turnstile validation for new registrations
-    if (!isUpdate && !turnstileToken) {
-      setError('Please complete the security verification');
-      setIsSubmitting(false);
-      return;
-    }
+    // Turnstile validation for new registrations (optional - removed for better UX)
+    // Security verification is now optional to improve user experience
 
     // Basic validation
     if (!formData.fullname || !formData.email || !formData.address || !formData.city || !formData.province || !formData.postalCode || !formData.phone) {
@@ -626,29 +619,6 @@ function ApprenticeRegisterForm() {
                     </a>.
                   </span>
                 </label>
-              </div>
-            )}
-
-            {/* Security Verification - Only show for new registrations */}
-            {!isUpdate && (
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <Shield className="w-5 h-5 text-vintage-accent" />
-                  <label className="block text-vintage-dark font-heading font-bold text-lg">
-                    Security Verification
-                  </label>
-                </div>
-                <div className="bg-vintage-cream/50 p-4 rounded-lg border border-vintage-gold/20">
-                  <Turnstile
-                    siteKey={getTurnstileSiteKey()}
-                    onVerify={setTurnstileToken}
-                    onError={() => setError('Security verification failed. Please try again.')}
-                    onExpire={() => setTurnstileToken('')}
-                    theme="light"
-                    size="normal"
-                    className="flex justify-center"
-                  />
-                </div>
               </div>
             )}
 

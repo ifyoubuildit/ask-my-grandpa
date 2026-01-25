@@ -4,10 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from '@/lib/auth';
-import { Eye, EyeOff, Mail, Lock, Shield } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
-import { getTurnstileSiteKey } from '@/lib/turnstile-config';
-import Turnstile from '@/components/Turnstile';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -17,7 +15,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [rateLimitError, setRateLimitError] = useState<string>('');
   const router = useRouter();
 
@@ -46,12 +43,8 @@ export default function LoginPage() {
       return;
     }
 
-    // Turnstile validation
-    if (!turnstileToken) {
-      setError('Please complete the security verification');
-      setIsLoading(false);
-      return;
-    }
+    // Turnstile validation (optional - removed for better UX)
+    // Security verification is now optional to improve user experience
 
     try {
       await signIn(formData.email, formData.password);
@@ -145,27 +138,6 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
-            </div>
-          </div>
-
-          {/* Security Verification */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="w-5 h-5 text-vintage-accent" />
-              <label className="block text-sm font-bold text-vintage-dark">
-                Security Verification
-              </label>
-            </div>
-            <div className="bg-vintage-cream/50 p-4 rounded-lg border border-vintage-gold/20">
-              <Turnstile
-                siteKey={getTurnstileSiteKey()}
-                onVerify={setTurnstileToken}
-                onError={() => setError('Security verification failed. Please try again.')}
-                onExpire={() => setTurnstileToken('')}
-                theme="light"
-                size="normal"
-                className="flex justify-center"
-              />
             </div>
           </div>
 
