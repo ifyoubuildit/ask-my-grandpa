@@ -34,6 +34,12 @@ export default function MessageDetailModal({
 
     setIsSubmitting(true);
     try {
+      console.log('🔄 Updating request:', {
+        requestId: request.id,
+        userRole,
+        status: userRole === 'grandpa' ? 'accepted' : 'confirmed'
+      });
+
       if (userRole === 'grandpa') {
         // Grandpa accepting the request
         await updateDoc(doc(db, "requests", request.id), {
@@ -42,20 +48,28 @@ export default function MessageDetailModal({
           proposedTime: proposedTime,
           respondedAt: new Date().toISOString()
         });
+        console.log('✅ Grandpa response saved successfully');
       } else {
         // Apprentice confirming the time
         await updateDoc(doc(db, "requests", request.id), {
           status: 'confirmed',
-          apprenticeConfirmation: replyMessage,
+          apprenticeConfirmation: replyMessage || 'Time confirmed',
           confirmedAt: new Date().toISOString()
         });
+        console.log('✅ Apprentice confirmation saved successfully');
       }
       
       onUpdate();
       onClose();
-    } catch (error) {
-      console.error('Error updating request:', error);
-      alert('Failed to update request. Please try again.');
+    } catch (error: any) {
+      console.error('❌ Error updating request:', error);
+      console.error('Error details:', {
+        code: error?.code,
+        message: error?.message,
+        requestId: request.id,
+        userRole
+      });
+      alert(`Failed to update request: ${error?.message || 'Unknown error'}. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }

@@ -454,7 +454,7 @@ function DashboardContent() {
                 >
                   <div className="flex items-center justify-center gap-2">
                     <MessageCircle className="w-5 h-5" />
-                    <span>Previous {profile?.role === 'grandpa' ? 'Apprentices' : 'Requests'}</span>
+                    <span>Previous {profile?.role === 'grandpa' ? 'Mentorship' : 'Apprentice'}</span>
                   </div>
                 </button>
                 
@@ -468,7 +468,7 @@ function DashboardContent() {
                 >
                   <div className="flex items-center justify-center gap-2">
                     <Calendar className="w-5 h-5" />
-                    <span>Upcoming {profile?.role === 'grandpa' ? 'Apprentices' : 'Meetings'}</span>
+                    <span>Upcoming {profile?.role === 'grandpa' ? 'Mentorship' : 'Apprentice'}</span>
                     {confirmedMeetings.length > 0 && (
                       <span className="bg-vintage-green text-white text-xs px-2 py-1 rounded-full">
                         {confirmedMeetings.length}
@@ -484,7 +484,7 @@ function DashboardContent() {
               {activeTab === 'messages' && (
                 <div>
                   <h3 className="text-xl font-heading font-bold text-vintage-dark mb-4">
-                    Previous {profile?.role === 'grandpa' ? 'Apprentices' : 'Requests'}
+                    Previous {profile?.role === 'grandpa' ? 'Mentorship' : 'Apprentice'}
                   </h3>
                   
                   {loadingData ? (
@@ -495,11 +495,11 @@ function DashboardContent() {
                   ) : requests.filter(r => r.status !== 'confirmed').length === 0 ? (
                     <div className="text-center py-12">
                       <MessageCircle className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
-                      <h4 className="text-xl font-bold text-vintage-dark mb-2">No previous {profile?.role === 'grandpa' ? 'apprentices' : 'requests'} yet</h4>
+                      <h4 className="text-xl font-bold text-vintage-dark mb-2">No previous {profile?.role === 'grandpa' ? 'mentorship' : 'apprentice'} yet</h4>
                       <p className="text-vintage-dark/60">
                         {profile?.role === 'grandpa' 
-                          ? 'Previous apprentice interactions will appear here.'
-                          : 'Your previous help requests will appear here.'
+                          ? 'Previous mentorship interactions will appear here.'
+                          : 'Your previous apprentice interactions will appear here.'
                         }
                       </p>
                     </div>
@@ -560,7 +560,7 @@ function DashboardContent() {
               {activeTab === 'upcoming' && (
                 <div>
                   <h3 className="text-xl font-heading font-bold text-vintage-dark mb-4">
-                    Upcoming {profile?.role === 'grandpa' ? 'Apprentices' : 'Meetings'}
+                    Upcoming {profile?.role === 'grandpa' ? 'Mentorship' : 'Apprentice'}
                   </h3>
                   
                   {loadingData ? (
@@ -638,7 +638,7 @@ function DashboardContent() {
                 {profile?.role === 'seeker' ? (
                   <>
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-vintage-accent text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                      <div className="w-20 h-20 bg-vintage-green text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                         1
                       </div>
                       <h4 className="font-heading font-bold text-vintage-dark mb-3 text-lg">Find a Grandpa</h4>
@@ -648,7 +648,7 @@ function DashboardContent() {
                     </div>
                     
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-vintage-accent text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                      <div className="w-20 h-20 bg-vintage-green text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                         2
                       </div>
                       <h4 className="font-heading font-bold text-vintage-dark mb-3 text-lg">Send a Request</h4>
@@ -658,7 +658,7 @@ function DashboardContent() {
                     </div>
                     
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-vintage-accent text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                      <div className="w-20 h-20 bg-vintage-green text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                         3
                       </div>
                       <h4 className="font-heading font-bold text-vintage-dark mb-3 text-lg">Learn & Build</h4>
@@ -670,7 +670,7 @@ function DashboardContent() {
                 ) : (
                   <>
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-vintage-accent text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                      <div className="w-20 h-20 bg-vintage-green text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                         1
                       </div>
                       <h4 className="font-heading font-bold text-vintage-dark mb-3 text-lg">Receive Requests</h4>
@@ -680,7 +680,7 @@ function DashboardContent() {
                     </div>
                     
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-vintage-accent text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                      <div className="w-20 h-20 bg-vintage-green text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                         2
                       </div>
                       <h4 className="font-heading font-bold text-vintage-dark mb-3 text-lg">Accept & Schedule</h4>
@@ -690,7 +690,7 @@ function DashboardContent() {
                     </div>
                     
                     <div className="text-center">
-                      <div className="w-20 h-20 bg-vintage-accent text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                      <div className="w-20 h-20 bg-vintage-green text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
                         3
                       </div>
                       <h4 className="font-heading font-bold text-vintage-dark mb-3 text-lg">Guide & Teach</h4>
