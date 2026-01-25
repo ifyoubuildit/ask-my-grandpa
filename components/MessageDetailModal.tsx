@@ -4,6 +4,12 @@ import { useState } from 'react';
 import { X, Check, Clock, User, Calendar, MessageCircle } from 'lucide-react';
 import { doc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import AvailabilityCalendar from './AvailabilityCalendar';
+
+interface AvailabilitySlot {
+  date: string;
+  timeSlots: number[];
+}
 
 interface MessageDetailModalProps {
   isOpen: boolean;
@@ -12,6 +18,45 @@ interface MessageDetailModalProps {
   userRole: 'grandpa' | 'seeker';
   onUpdate: () => void;
 }
+
+const TIME_SLOTS = [
+  { hour: 9, label: '9:00 AM' },
+  { hour: 10, label: '10:00 AM' },
+  { hour: 11, label: '11:00 AM' },
+  { hour: 12, label: '12:00 PM' },
+  { hour: 13, label: '1:00 PM' },
+  { hour: 14, label: '2:00 PM' },
+  { hour: 15, label: '3:00 PM' },
+  { hour: 16, label: '4:00 PM' },
+  { hour: 17, label: '5:00 PM' },
+  { hour: 18, label: '6:00 PM' },
+  { hour: 19, label: '7:00 PM' }
+];
+
+const formatAvailability = (availability: string | AvailabilitySlot[]) => {
+  // Handle legacy string format
+  if (typeof availability === 'string') {
+    return availability;
+  }
+  
+  // Handle new calendar format
+  if (Array.isArray(availability) && availability.length > 0) {
+    return availability.map((day: AvailabilitySlot) => {
+      const date = new Date(day.date).toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      const times = day.timeSlots
+        .map(hour => TIME_SLOTS.find(t => t.hour === hour)?.label)
+        .filter(Boolean)
+        .join(', ');
+      return `${date}: ${times}`;
+    }).join('\n');
+  }
+  
+  return 'No availability specified';
+};
 
 export default function MessageDetailModal({ 
   isOpen, 
@@ -23,11 +68,12 @@ export default function MessageDetailModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyMessage, setReplyMessage] = useState('');
   const [proposedTime, setProposedTime] = useState('');
+  const [grandpaAvailability, setGrandpaAvailability] = useState<AvailabilitySlot[]>([]);
 
   if (!isOpen || !request) return null;
 
   const handleAccept = async () => {
-    if (userRole === 'grandpa' && (!replyMessage.trim() || !proposedTime.trim())) {
+    if (userRole === 'grandpa' && (!replyMessage.trim() || (grandpaAvailability.length === 0 && !proposedTime.trim()))) {
       alert('Please provide your availability and a response message.');
       return;
     }
@@ -45,7 +91,8 @@ export default function MessageDetailModal({
         await updateDoc(doc(db, "requests", request.id), {
           status: 'accepted',
           grandpaResponse: replyMessage,
-          proposedTime: proposedTime,
+          proposedTime: proposedTime || formatAvailability(grandpaAvailability),
+          grandpaAvailability: grandpaAvailability.length > 0 ? grandpaAvailability : undefined,
           respondedAt: new Date().toISOString()
         });
         console.log('✅ Grandpa response saved successfully');
@@ -171,8 +218,11 @@ export default function MessageDetailModal({
                 <strong>Skill:</strong> {request.skill}
               </p>
               <p className="text-vintage-dark mb-2">
-                <strong>Availability:</strong> {request.availability}
+                <strong>Availability:</strong>
               </p>
+              <div className="text-vintage-dark mb-2 ml-4 whitespace-pre-line">
+                {formatAvailability(request.availability)}
+              </div>
               <p className="text-vintage-dark">
                 <strong>Message:</strong>
               </p>
@@ -186,8 +236,14 @@ export default function MessageDetailModal({
               <h3 className="font-bold text-vintage-dark mb-3">Grandpa's Response</h3>
               <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
                 <p className="text-vintage-dark mb-2">
-                  <strong>Proposed Time:</strong> {request.proposedTime}
+                  <strong>Available Times:</strong>
                 </p>
+                <div className="text-vintage-dark mb-2 ml-4 whitespace-pre-line">
+                  {request.grandpaAvailability 
+                    ? formatAvailability(request.grandpaAvailability)
+                    : request.proposedTime
+                  }
+                </div>
                 <p className="text-vintage-dark">
                   <strong>Message:</strong>
                 </p>
@@ -216,13 +272,28 @@ export default function MessageDetailModal({
               {userRole === 'grandpa' && (
                 <div className="mb-4">
                   <label className="block text-vintage-dark font-medium mb-2">
-                    Proposed Meeting Time
+                    Select Your Available Times
+                  </label>
+                  <p className="text-sm text-vintage-dark/70 mb-3">
+                    Choose from the apprentice's requested times when you're available to help.
+                  </p>
+                  <AvailabilityCalendar
+                    selectedAvailability={grandpaAvailability}
+                    onAvailabilityChange={setGrandpaAvailability}
+                    mode="respond"
+                    existingAvailability={Array.isArray(request.availability) ? request.availability : []}
+                    className="mb-4"
+                  />
+                  
+                  {/* Fallback text input for additional details */}
+                  <label className="block text-vintage-dark font-medium mb-2 mt-4">
+                    Additional Details (Optional)
                   </label>
                   <input
                     type="text"
                     value={proposedTime}
                     onChange={(e) => setProposedTime(e.target.value)}
-                    placeholder="e.g., Saturday 2pm at my workshop, or Sunday morning at your place"
+                    placeholder="e.g., Meet at my workshop, bring your tools, etc."
                     className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-3 text-vintage-dark focus:border-vintage-accent focus:outline-none"
                   />
                 </div>

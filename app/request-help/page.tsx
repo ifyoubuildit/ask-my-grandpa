@@ -326,7 +326,7 @@ function RequestHelpForm() {
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg w-full md:w-auto disabled:opacity-50 flex items-center justify-center gap-2"
+                className="bg-vintage-green text-white px-10 py-4 rounded-full font-bold text-xl hover:bg-vintage-dark transition-colors shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 mx-auto"
               >
                 {isSubmitting ? (
                   <>
