@@ -10,6 +10,7 @@ import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
 import { trackHelpRequest, trackFormSubmission } from '@/lib/gtag';
 import { useSmartSecurity } from '@/hooks/useSmartSecurity';
 import InvisibleTurnstile from '@/components/InvisibleTurnstile';
+import AvailabilityCalendar from '@/components/AvailabilityCalendar';
 
 function RequestHelpForm() {
   const { user } = useAuth();
@@ -21,9 +22,11 @@ function RequestHelpForm() {
   
   const [formData, setFormData] = useState({
     subject: '',
-    availability: '',
     message: ''
   });
+  
+  // Calendar availability state
+  const [availability, setAvailability] = useState<Array<{date: string, timeSlots: number[]}>>([]);
   
   // Initialize form data when skill is available
   useEffect(() => {
@@ -114,8 +117,14 @@ function RequestHelpForm() {
     }
 
     // Basic validation
-    if (!formData.subject || !formData.availability || !formData.message) {
+    if (!formData.subject || !formData.message) {
       setError('Please fill in all required fields');
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (availability.length === 0) {
+      setError('Please select your availability times');
       setIsSubmitting(false);
       return;
     }
@@ -160,7 +169,7 @@ function RequestHelpForm() {
         grandpaName: grandpaName,
         grandpaEmail: grandpaData?.email || '',
         subject: formData.subject,
-        availability: formData.availability,
+        availability: availability, // Calendar-based availability
         message: formData.message,
         status: 'pending',
         timestamp: new Date().toISOString(),
@@ -284,19 +293,15 @@ function RequestHelpForm() {
               />
             </div>
 
-            {/* Availability */}
+            {/* Availability Calendar */}
             <div className="mb-8">
               <label className="block text-vintage-dark font-heading font-bold text-xl mb-3">
-                Availability
+                When are you available?
               </label>
-              <input 
-                type="text" 
-                name="availability"
-                value={formData.availability}
-                onChange={handleInputChange}
-                className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-4 text-lg text-vintage-dark focus:border-vintage-accent focus:outline-none focus:ring-0" 
-                placeholder="e.g. Weekends, evenings after 6pm, flexible" 
-                required 
+              <AvailabilityCalendar
+                selectedAvailability={availability}
+                onAvailabilityChange={setAvailability}
+                mode="select"
               />
             </div>
 

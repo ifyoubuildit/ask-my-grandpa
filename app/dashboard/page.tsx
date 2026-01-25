@@ -10,13 +10,25 @@ import { User, Search, MessageCircle, Calendar, Clock, Check, X, Mail, MailOpen,
 import Link from 'next/link';
 import MessageDetailModal from '@/components/MessageDetailModal';
 
+interface RequestData {
+  id: string;
+  status: string;
+  subject: string;
+  apprenticeName: string;
+  grandpaName: string;
+  message: string;
+  timestamp: string;
+  [key: string]: any;
+}
+
 function DashboardContent() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<'messages' | 'upcoming'>('messages');
-  const [requests, setRequests] = useState<any[]>([]);
-  const [confirmedMeetings, setConfirmedMeetings] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'previous' | 'upcoming'>('previous');
+  const [requests, setRequests] = useState<RequestData[]>([]);
+  const [confirmedMeetings, setConfirmedMeetings] = useState<RequestData[]>([]);
+  const [completedMeetings, setCompletedMeetings] = useState<RequestData[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
@@ -37,30 +49,30 @@ function DashboardContent() {
       
       try {
         if (profile?.role === 'grandpa') {
-          // Load all requests sent to this grandpa
+          // Load all requests sent to this grandpa (for messages section only)
           const requestsQuery = query(
             collection(db, "requests"), 
             where("grandpaId", "==", user.uid)
           );
           const requestsSnapshot = await getDocs(requestsQuery);
-          const requestsData = requestsSnapshot.docs.map(doc => ({
+          const allRequestsData = requestsSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
-          })).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-          setRequests(requestsData);
+          })) as RequestData[];
           
-          // Load confirmed meetings
-          const confirmedQuery = query(
-            collection(db, "requests"), 
-            where("grandpaId", "==", user.uid),
-            where("status", "==", "confirmed")
-          );
-          const confirmedSnapshot = await getDocs(confirmedQuery);
-          const confirmedData = confirmedSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          setConfirmedMeetings(confirmedData);
+          allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          
+          // Filter for messages section (pending, accepted, declined - not confirmed)
+          const messagesData = allRequestsData.filter(r => r.status !== 'confirmed' && r.status !== 'completed');
+          setRequests(messagesData);
+          
+          // Load upcoming confirmed meetings
+          const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
+          setConfirmedMeetings(upcomingMeetings);
+          
+          // Load completed meetings (for Previous section)
+          const completedMeetings = allRequestsData.filter(r => r.status === 'completed');
+          setCompletedMeetings(completedMeetings);
         } else {
           // Load all requests sent by this apprentice
           const requestsQuery = query(
@@ -68,24 +80,24 @@ function DashboardContent() {
             where("apprenticeId", "==", user.uid)
           );
           const requestsSnapshot = await getDocs(requestsQuery);
-          const requestsData = requestsSnapshot.docs.map(doc => ({
+          const allRequestsData = requestsSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
-          })).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-          setRequests(requestsData);
+          })) as RequestData[];
           
-          // Load confirmed meetings
-          const confirmedQuery = query(
-            collection(db, "requests"), 
-            where("apprenticeId", "==", user.uid),
-            where("status", "==", "confirmed")
-          );
-          const confirmedSnapshot = await getDocs(confirmedQuery);
-          const confirmedData = confirmedSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          setConfirmedMeetings(confirmedData);
+          allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          
+          // Filter for messages section (pending, accepted, declined - not confirmed)
+          const messagesData = allRequestsData.filter(r => r.status !== 'confirmed' && r.status !== 'completed');
+          setRequests(messagesData);
+          
+          // Load upcoming confirmed meetings
+          const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
+          setConfirmedMeetings(upcomingMeetings);
+          
+          // Load completed meetings (for Previous section)
+          const completedMeetings = allRequestsData.filter(r => r.status === 'completed');
+          setCompletedMeetings(completedMeetings);
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -120,46 +132,42 @@ function DashboardContent() {
             where("grandpaId", "==", user.uid)
           );
           const requestsSnapshot = await getDocs(requestsQuery);
-          const requestsData = requestsSnapshot.docs.map(doc => ({
+          const allRequestsData = requestsSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
-          })).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-          setRequests(requestsData);
+          })) as RequestData[];
           
-          const confirmedQuery = query(
-            collection(db, "requests"), 
-            where("grandpaId", "==", user.uid),
-            where("status", "==", "confirmed")
-          );
-          const confirmedSnapshot = await getDocs(confirmedQuery);
-          const confirmedData = confirmedSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          setConfirmedMeetings(confirmedData);
+          allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          
+          const messagesData = allRequestsData.filter(r => r.status !== 'confirmed' && r.status !== 'completed');
+          setRequests(messagesData);
+          
+          const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
+          setConfirmedMeetings(upcomingMeetings);
+          
+          const completedMeetings = allRequestsData.filter(r => r.status === 'completed');
+          setCompletedMeetings(completedMeetings);
         } else {
           const requestsQuery = query(
             collection(db, "requests"), 
             where("apprenticeId", "==", user.uid)
           );
           const requestsSnapshot = await getDocs(requestsQuery);
-          const requestsData = requestsSnapshot.docs.map(doc => ({
+          const allRequestsData = requestsSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
-          })).sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-          setRequests(requestsData);
+          })) as RequestData[];
           
-          const confirmedQuery = query(
-            collection(db, "requests"), 
-            where("apprenticeId", "==", user.uid),
-            where("status", "==", "confirmed")
-          );
-          const confirmedSnapshot = await getDocs(confirmedQuery);
-          const confirmedData = confirmedSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          setConfirmedMeetings(confirmedData);
+          allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          
+          const messagesData = allRequestsData.filter(r => r.status !== 'confirmed' && r.status !== 'completed');
+          setRequests(messagesData);
+          
+          const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
+          setConfirmedMeetings(upcomingMeetings);
+          
+          const completedMeetings = allRequestsData.filter(r => r.status === 'completed');
+          setCompletedMeetings(completedMeetings);
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -445,16 +453,16 @@ function DashboardContent() {
             <div className="border-b border-vintage-gold/20">
               <div className="grid grid-cols-2">
                 <button
-                  onClick={() => setActiveTab('messages')}
+                  onClick={() => setActiveTab('previous')}
                   className={`px-6 py-4 font-heading font-bold text-lg transition-colors border-r border-vintage-gold/20 ${
-                    activeTab === 'messages' 
+                    activeTab === 'previous' 
                       ? 'bg-vintage-cream text-vintage-accent' 
                       : 'text-vintage-dark hover:bg-vintage-cream/50'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
                     <MessageCircle className="w-5 h-5" />
-                    <span>Previous {profile?.role === 'grandpa' ? 'Mentorship' : 'Apprentice'}</span>
+                    <span>Previous {profile?.role === 'grandpa' ? 'Mentorship' : 'Mentorship'}</span>
                   </div>
                 </button>
                 
@@ -468,7 +476,7 @@ function DashboardContent() {
                 >
                   <div className="flex items-center justify-center gap-2">
                     <Calendar className="w-5 h-5" />
-                    <span>Upcoming {profile?.role === 'grandpa' ? 'Mentorship' : 'Apprentice'}</span>
+                    <span>Upcoming {profile?.role === 'grandpa' ? 'Mentorship' : 'Mentorship'}</span>
                     {confirmedMeetings.length > 0 && (
                       <span className="bg-vintage-green text-white text-xs px-2 py-1 rounded-full">
                         {confirmedMeetings.length}
@@ -481,10 +489,10 @@ function DashboardContent() {
 
             {/* Tab Content */}
             <div className="p-6">
-              {activeTab === 'messages' && (
+              {activeTab === 'previous' && (
                 <div>
                   <h3 className="text-xl font-heading font-bold text-vintage-dark mb-4">
-                    Previous {profile?.role === 'grandpa' ? 'Mentorship' : 'Apprentice'}
+                    Previous Mentorship
                   </h3>
                   
                   {loadingData ? (
@@ -492,62 +500,46 @@ function DashboardContent() {
                       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vintage-accent mx-auto"></div>
                       <p className="text-vintage-dark/60 mt-4">Loading previous...</p>
                     </div>
-                  ) : requests.filter(r => r.status !== 'confirmed').length === 0 ? (
+                  ) : completedMeetings.length === 0 ? (
                     <div className="text-center py-12">
                       <MessageCircle className="w-16 h-16 text-vintage-dark/30 mx-auto mb-4" />
-                      <h4 className="text-xl font-bold text-vintage-dark mb-2">No previous {profile?.role === 'grandpa' ? 'mentorship' : 'apprentice'} yet</h4>
+                      <h4 className="text-xl font-bold text-vintage-dark mb-2">No previous mentorship yet</h4>
                       <p className="text-vintage-dark/60">
-                        {profile?.role === 'grandpa' 
-                          ? 'Previous mentorship interactions will appear here.'
-                          : 'Your previous apprentice interactions will appear here.'
-                        }
+                        Completed mentorship sessions will appear here.
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {requests.filter(r => r.status !== 'confirmed').map((request) => (
+                      {completedMeetings.map((meeting) => (
                         <div 
-                          key={request.id}
-                          onClick={() => handleMessageClick(request)}
-                          className="border border-vintage-gold/20 rounded-lg p-4 hover:bg-vintage-cream/30 cursor-pointer transition-colors group"
+                          key={meeting.id}
+                          className="border border-vintage-gold/20 rounded-lg p-4 bg-green-50/50"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-4 flex-1">
                               <div className="flex-shrink-0">
-                                <MessageCircle className="w-6 h-6 text-vintage-dark/40" />
+                                <Check className="w-6 h-6 text-green-600" />
                               </div>
                               
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-3 mb-1">
-                                  <h4 className="font-bold text-vintage-dark group-hover:text-vintage-accent transition-colors">
-                                    {request.subject}
+                                  <h4 className="font-bold text-vintage-dark">
+                                    {meeting.subject}
                                   </h4>
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)}`}>
-                                    <div className="flex items-center gap-1">
-                                      {getStatusIcon(request.status)}
-                                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                                    </div>
+                                  <span className="px-2 py-1 rounded-full text-xs font-medium border bg-green-50 text-green-600 border-green-200">
+                                    Completed
                                   </span>
                                 </div>
-                                
                                 <p className="text-sm text-vintage-dark/70 mb-2">
                                   {profile?.role === 'grandpa' 
-                                    ? `From: ${request.apprenticeName}` 
-                                    : `To: ${request.grandpaName}`
+                                    ? `With ${meeting.apprenticeName}`
+                                    : `With ${meeting.grandpaName}`
                                   }
                                 </p>
-                                
-                                <p className="text-sm text-vintage-dark/80 line-clamp-2">
-                                  {request.message}
+                                <p className="text-xs text-vintage-dark/60">
+                                  {new Date(meeting.timestamp).toLocaleDateString()}
                                 </p>
                               </div>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 ml-4">
-                              <span className="text-xs text-vintage-dark/60">
-                                {new Date(request.timestamp).toLocaleDateString()}
-                              </span>
-                              <ChevronRight className="w-4 h-4 text-vintage-dark/40 group-hover:text-vintage-accent transition-colors" />
                             </div>
                           </div>
                         </div>
@@ -560,7 +552,7 @@ function DashboardContent() {
               {activeTab === 'upcoming' && (
                 <div>
                   <h3 className="text-xl font-heading font-bold text-vintage-dark mb-4">
-                    Upcoming {profile?.role === 'grandpa' ? 'Mentorship' : 'Apprentice'}
+                    Upcoming Mentorship
                   </h3>
                   
                   {loadingData ? (

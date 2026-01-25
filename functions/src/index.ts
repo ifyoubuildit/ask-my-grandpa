@@ -615,7 +615,7 @@ Request Time: ${new Date().toLocaleString()}
     
     // Also send email to the grandpa
     if (requestData.grandpaEmail) {
-      const grandpaSubject = `A neighbor needs a hand: New ${requestData.skill || requestData.subject} Request`;
+      const grandpaSubject = `Ask My Grandpa - A Neighbour Needs a Hand`;
       
       const grandpaHtmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
@@ -626,6 +626,13 @@ Request Time: ${new Date().toLocaleString()}
           </div>
           
           <div style="padding: 30px; background: white; margin: 0;">
+            <!-- Request Type Header -->
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h2 style="color: #9A3412; font-size: 24px; font-weight: bold; margin: 0; padding: 15px; background: #f0ede6; border-radius: 8px; border: 2px solid #9A3412;">
+                ${requestData.subject}
+              </h2>
+            </div>
+            
             <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
               Hello ${requestData.grandpaName.split(' ')[0]},
             </p>
