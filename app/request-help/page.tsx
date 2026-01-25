@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
 import { getTurnstileSiteKey } from '@/lib/turnstile-config';
+import { trackHelpRequest, trackFormSubmission } from '@/lib/gtag';
 import Turnstile from '@/components/Turnstile';
 
 function RequestHelpForm() {
@@ -88,6 +89,9 @@ function RequestHelpForm() {
     setError('');
     setRateLimitError('');
 
+    // Track form submission attempt
+    trackFormSubmission('help_request');
+
     // Client-side rate limiting check
     const rateLimitCheck = rateLimiter.checkRateLimit(
       'request_help', 
@@ -165,6 +169,9 @@ function RequestHelpForm() {
       console.log('💾 Saving request to Firestore...', requestData);
       await addDoc(collection(db, "requests"), requestData);
       console.log('✅ Request saved to Firestore successfully');
+
+      // Track help request event
+      trackHelpRequest(skill || formData.subject);
 
       // Firebase Functions will automatically send email notifications
       console.log('📧 Firebase Functions will send email notifications automatically');

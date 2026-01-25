@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GA4 Test - Ask My Grandpa</title>
+    
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JTDCP0844B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-JTDCP0844B', {
+            page_title: 'GA4 Test Page',
+            page_location: window.location.href,
+        });
+        
+        // Test event
+        gtag('event', 'test_event', {
+            event_category: 'testing',
+            event_label: 'ga4_implementation',
+            value: 1
+        });
+        
+        console.log('🎯 GA4 Test Event Sent!');
+        console.log('📊 Measurement ID: G-JTDCP0844B');
+        console.log('🔍 Check Google Analytics Realtime dashboard');
+    </script>
+</head>
+<body>
+    <h1>🎯 Google Analytics 4 Test</h1>
+    <p><strong>Measurement ID:</strong> G-JTDCP0844B</p>
+    <p><strong>Status:</strong> ✅ GA4 tracking code loaded</p>
+    <p><strong>Test Event:</strong> ✅ Sent to GA4</p>
+    
+    <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>🔍 Verification Steps:</h3>
+        <ol>
+            <li>Open Google Analytics dashboard</li>
+            <li>Go to Realtime reports</li>
+            <li>You should see this page view</li>
+            <li>Check for "test_event" in events</li>
+        </ol>
+    </div>
+    
+    <button onclick="testEvent()" style="background: #9A3412; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+        Send Test Event
+    </button>
+    
+    <script>
+        function testEvent() {
+            gtag('event', 'button_click', {
+                event_category: 'engagement',
+                event_label: 'test_button',
+                value: 1
+            });
+            alert('✅ Test event sent to GA4!');
+        }
+    </script>
+</body>
+</html>

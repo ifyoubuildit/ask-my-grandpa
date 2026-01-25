@@ -4,6 +4,9 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
+import AnalyticsProvider from "@/components/AnalyticsProvider";
+import Script from 'next/script';
+import { GA_MEASUREMENT_ID } from '@/lib/gtag';
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
@@ -77,6 +80,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Google Analytics 4 */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}', {
+              page_title: document.title,
+              page_location: window.location.href,
+            });
+          `}
+        </Script>
+        
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -93,9 +113,11 @@ export default function RootLayout({
         }}
       >
         <AuthProvider>
-          <Navbar />
-          {children}
-          <Footer />
+          <AnalyticsProvider>
+            <Navbar />
+            {children}
+            <Footer />
+          </AnalyticsProvider>
         </AuthProvider>
       </body>
     </html>

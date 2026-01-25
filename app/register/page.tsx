@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
 import { getTurnstileSiteKey } from '@/lib/turnstile-config';
+import { trackRegistration, trackFormSubmission } from '@/lib/gtag';
 import Turnstile from '@/components/Turnstile';
 import Link from 'next/link';
 
@@ -159,6 +160,9 @@ function RegisterForm() {
     setError('');
     setRateLimitError('');
 
+    // Track form submission attempt
+    trackFormSubmission('grandpa_registration');
+
     // Client-side rate limiting check
     const rateLimitCheck = rateLimiter.checkRateLimit(
       'registration', 
@@ -255,6 +259,9 @@ function RegisterForm() {
       } else {
         await addDoc(collection(db, "grandpas"), grandpaData);
         console.log('✅ New grandpa registered successfully');
+        
+        // Track registration event
+        trackRegistration('grandpa');
       }
 
       // Success! Firebase Functions will automatically send email notifications
