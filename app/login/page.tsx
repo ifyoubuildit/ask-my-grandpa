@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signIn } from '@/lib/auth';
+import { signIn, resetPassword } from '@/lib/auth';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { rateLimiter, RATE_LIMITS } from '@/lib/rateLimiter';
 import { useSmartSecurity } from '@/hooks/useSmartSecurity';
@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [rateLimitError, setRateLimitError] = useState<string>('');
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   // Smart security hook - invisible protection that doesn't block users
   const { securityToken, canSubmit, getSecurityProps } = useSmartSecurity({
@@ -58,13 +59,57 @@ export default function LoginPage() {
     // Security verification is now optional to improve user experience
 
     try {
+      console.log('🔐 Attempting login with:', { email: formData.email, hasPassword: !!formData.password });
       await signIn(formData.email, formData.password);
+      console.log('✅ Login successful, redirecting to dashboard');
       router.push('/dashboard'); // Redirect to dashboard after login
     } catch (error: any) {
-      console.error('Login error:', error);
-      setError(error.message || 'Failed to sign in. Please try again.');
+      console.error('❌ Login error:', error);
+      console.error('Error details:', {
+        code: error?.code,
+        message: error?.message,
+        email: formData.email
+      });
+      
+      let errorMessage = 'Failed to sign in. Please try again.';
+      
+      if (error?.code === 'auth/invalid-credential') {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (error?.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email address. Please register first.';
+      } else if (error?.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password. Please try again.';
+      } else if (error?.code === 'auth/invalid-email') {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (error?.code === 'auth/user-disabled') {
+        errorMessage = 'This account has been disabled. Please contact support.';
+      } else if (error?.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed login attempts. Please try again later.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
+    try {
+      await resetPassword(formData.email);
+      setResetEmailSent(true);
+      setError('');
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      if (error?.code === 'auth/user-not-found') {
+        setError('No account found with this email address.');
+      } else {
+        setError('Failed to send password reset email. Please try again.');
+      }
     }
   };
 
@@ -170,6 +215,28 @@ export default function LoginPage() {
             🛡️ Protected by invisible security verification
           </p>
 
+          {/* Debug Information - Only show in development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600">
+              <p><strong>Debug Info:</strong></p>
+              <p>Email: {formData.email}</p>
+              <p>Password length: {formData.password.length}</p>
+              <p>If you're getting "invalid-credential" errors:</p>
+              <ul className="list-disc list-inside mt-1">
+                <li>Check if the account exists</li>
+                <li>Verify email/password are correct</li>
+                <li>Try password reset if needed</li>
+              </ul>
+            </div>
+          )}
+
+          {/* Success Message for Password Reset */}
+          {resetEmailSent && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+              Password reset email sent! Check your inbox and follow the instructions to reset your password.
+            </div>
+          )}
+
           {/* Links */}
           <div className="text-center space-y-2">
             <p className="text-sm text-vintage-dark/70">
@@ -178,9 +245,13 @@ export default function LoginPage() {
                 Sign up here
               </Link>
             </p>
-            <Link href="/forgot-password" className="text-sm text-vintage-accent hover:underline">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-sm text-vintage-accent hover:underline"
+            >
               Forgot your password?
-            </Link>
+            </button>
           </div>
         </form>
       </div>

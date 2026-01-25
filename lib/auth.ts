@@ -4,7 +4,8 @@ import {
   signOut, 
   onAuthStateChanged,
   User,
-  updateProfile
+  updateProfile,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -74,6 +75,15 @@ export const signIn = async (email: string, password: string) => {
 export const logOut = async () => {
   try {
     await signOut(auth);
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Reset password
+export const resetPassword = async (email: string) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
   } catch (error) {
     throw error;
   }
