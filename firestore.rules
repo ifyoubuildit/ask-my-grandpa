@@ -27,10 +27,12 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid;
     }
     
-    // Apprentices collection - public read, authenticated write with validation
+    // Apprentices collection - restricted read access, authenticated write with validation
     match /apprentices/{apprenticeId} {
-      // Anyone can read apprentice profiles (for matching)
-      allow read: if true;
+      // Only the owner and confirmed grandpas can read apprentice profiles
+      allow read: if request.auth != null 
+        && (request.auth.uid == resource.data.userId
+            || isConfirmedGrandpa(request.auth.uid, apprenticeId));
       
       // Only authenticated users can create apprentice profiles
       allow create: if request.auth != null 
@@ -59,10 +61,11 @@ service cloud.firestore {
         && isValidRequestData(request.resource.data)
         && request.resource.data.apprenticeId == request.auth.uid;
       
-      // Only the grandpa can update request status
+      // Both apprentice and grandpa can update requests (for status changes and confirmations)
       allow update: if request.auth != null 
-        && request.auth.uid == resource.data.grandpaId
-        && request.resource.data.keys().hasAny(['status', 'acceptedAt', 'declinedAt']);
+        && (request.auth.uid == resource.data.apprenticeId 
+            || request.auth.uid == resource.data.grandpaId)
+        && isValidRequestUpdate(request.resource.data, resource.data);
       
       // Only involved parties can delete requests
       allow delete: if request.auth != null 
@@ -124,8 +127,24 @@ service cloud.firestore {
       && data.grandpaId is string && data.grandpaId.size() > 0
       && data.subject is string && data.subject.size() > 0
       && data.message is string && data.message.size() > 0
-      && data.status is string && data.status in ['pending', 'accepted', 'declined']
+      && data.status is string && data.status in ['pending', 'accepted', 'declined', 'confirmed']
       && data.timestamp is string;
+  }
+  
+  function isValidRequestUpdate(newData, oldData) {
+    // Grandpa can update status, response, and proposed time
+    let grandpaCanUpdate = newData.keys().hasAny(['status', 'grandpaResponse', 'proposedTime', 'respondedAt', 'declinedAt']);
+    
+    // Apprentice can update confirmation fields
+    let apprenticeCanUpdate = newData.keys().hasAny(['status', 'apprenticeConfirmation', 'confirmedAt']);
+    
+    return grandpaCanUpdate || apprenticeCanUpdate;
+  }
+  
+  // Check if a grandpa has confirmed status with an apprentice
+  function isConfirmedGrandpa(grandpaId, apprenticeId) {
+    // For now, return false - this would need proper implementation with request lookup
+    return false;
   }
   
   function isValidMessageData(data) {

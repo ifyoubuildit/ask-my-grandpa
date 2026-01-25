@@ -723,9 +723,35 @@ export const onRequestAccepted = functions.firestore
       return;
     }
     
-    console.log('🎉 Request accepted, sending notification to apprentice...');
+    console.log('🎉 Request accepted, adding apprentice address and sending notification...');
     
     const requestData = afterData;
+    
+    // Fetch apprentice's address from their profile and add it to the request
+    try {
+      const apprenticeQuery = admin.firestore()
+        .collection('apprentices')
+        .where('userId', '==', requestData.apprenticeId);
+      
+      const apprenticeSnapshot = await apprenticeQuery.get();
+      
+      if (!apprenticeSnapshot.empty) {
+        const apprenticeData = apprenticeSnapshot.docs[0].data();
+        const apprenticeAddress = apprenticeData.address || '';
+        
+        // Update the request with the apprentice's address (now that it's accepted)
+        await admin.firestore()
+          .collection('requests')
+          .doc(context.params.requestId)
+          .update({
+            apprenticeAddress: apprenticeAddress
+          });
+        
+        console.log('✅ Apprentice address added to accepted request');
+      }
+    } catch (error) {
+      console.error('❌ Error adding apprentice address:', error);
+    }
     
     // Send notification email to apprentice
     if (requestData.apprenticeEmail) {

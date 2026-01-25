@@ -79,8 +79,15 @@ function SearchResults() {
   const highlightSkills = (skills: string, searchQuery: string) => {
     if (searchQuery === "All Grandpas") return skills;
     
-    const regex = new RegExp(`(${searchQuery})`, 'gi');
-    return skills.replace(regex, '<span class="font-extrabold text-vintage-accent bg-vintage-accent/10 px-0.5 rounded">$1</span>');
+    // Safe highlighting without HTML injection
+    const parts = skills.split(new RegExp(`(${searchQuery})`, 'gi'));
+    return parts.map((part, index) => 
+      part.toLowerCase() === searchQuery.toLowerCase() ? (
+        <span key={index} className="font-extrabold text-vintage-accent bg-vintage-accent/10 px-0.5 rounded">
+          {part}
+        </span>
+      ) : part
+    );
   };
 
   return (
@@ -159,12 +166,9 @@ function SearchResults() {
                         <h4 className="text-xs font-bold uppercase tracking-widest text-vintage-accent mb-2">
                           Skill Sets
                         </h4>
-                        <p 
-                          className="text-lg text-vintage-dark font-body skills-text"
-                          dangerouslySetInnerHTML={{ 
-                            __html: highlightSkills(grandpa.skills, query) 
-                          }}
-                        />
+                        <p className="text-lg text-vintage-dark font-body skills-text">
+                          {highlightSkills(grandpa.skills, query)}
+                        </p>
                       </div>
                       <div className="mt-auto border-t border-vintage-gold/20 pt-4">
                         <p className="text-sm text-vintage-dark/70 italic mb-4">

@@ -119,12 +119,12 @@ function RequestHelpForm() {
         console.warn('Could not fetch apprentice address:', addressError);
       }
       
-      // Save request to Firestore
+      // Save request to Firestore (without apprentice address for security)
       const requestData = {
         apprenticeId: user.uid,
         apprenticeName: user.displayName || user.email,
         apprenticeEmail: user.email,
-        apprenticeAddress: apprenticeAddress,
+        // apprenticeAddress: removed for security - only added server-side when confirmed
         grandpaId: grandpaData?.userId || grandpaId, // Use userId instead of document id
         grandpaName: grandpaName,
         grandpaEmail: grandpaData?.email || '',
