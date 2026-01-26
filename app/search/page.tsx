@@ -17,7 +17,7 @@ interface Grandpa {
 
 function SearchResults() {
   const searchParams = useSearchParams();
-  const query = searchParams.get('q') || "All Grandpas";
+  const query = searchParams.get('q') || searchParams.get('skill') || "All Grandpas";
   const [loading, setLoading] = useState(true);
   const [filteredGrandpas, setFilteredGrandpas] = useState<Grandpa[]>([]);
 

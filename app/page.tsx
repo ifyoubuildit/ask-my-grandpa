@@ -180,7 +180,7 @@ export default function Home() {
             {/* Category 1 */}
             <div 
               className="group cursor-pointer" 
-              onClick={() => router.push('/search?q=Fix%20my%20leaky%20sink')}
+              onClick={() => router.push('/search?skill=Plumbing')}
             >
               <div className="aspect-square bg-vintage-cream rounded-2xl flex flex-col items-center justify-center border-2 border-transparent group-hover:border-vintage-gold transition-colors duration-300 relative overflow-hidden">
                 <div className="bg-white p-4 rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -194,7 +194,7 @@ export default function Home() {
             {/* Category 2 */}
             <div 
               className="group cursor-pointer" 
-              onClick={() => router.push('/search?q=Fix%20My%20Garburator')}
+              onClick={() => router.push('/search?skill=Plumbing')}
             >
               <div className="aspect-square bg-vintage-cream rounded-2xl flex flex-col items-center justify-center border-2 border-transparent group-hover:border-vintage-gold transition-colors duration-300 relative overflow-hidden">
                 <div className="bg-white p-4 rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -208,7 +208,7 @@ export default function Home() {
             {/* Category 3 */}
             <div 
               className="group cursor-pointer" 
-              onClick={() => router.push('/search?q=Help%20me%20sharpen%20my%20knives')}
+              onClick={() => router.push('/search?skill=Kitchen%20Skills')}
             >
               <div className="aspect-square bg-vintage-cream rounded-2xl flex flex-col items-center justify-center border-2 border-transparent group-hover:border-vintage-gold transition-colors duration-300 relative overflow-hidden">
                 <div className="bg-white p-4 rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -222,7 +222,7 @@ export default function Home() {
             {/* Category 4 */}
             <div 
               className="group cursor-pointer" 
-              onClick={() => router.push('/search?q=Patch%20and%20paint%20my%20wall')}
+              onClick={() => router.push('/search?skill=Painting')}
             >
               <div className="aspect-square bg-vintage-cream rounded-2xl flex flex-col items-center justify-center border-2 border-transparent group-hover:border-vintage-gold transition-colors duration-300 relative overflow-hidden">
                 <div className="bg-white p-4 rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -261,7 +261,7 @@ export default function Home() {
                 <div className="w-10 h-10 bg-[#7c2d12] rounded-full flex items-center justify-center font-bold text-white shadow-sm">S</div>
                 <div>
                   <h4 className="font-bold text-vintage-dark text-sm">Sarah Jenkins</h4>
-                  <p className="text-xs text-vintage-dark/60">Portland, OR</p>
+                  <p className="text-xs text-vintage-dark/60">Calgary, AB</p>
                 </div>
               </div>
             </div>
@@ -276,7 +276,7 @@ export default function Home() {
                 <div className="w-10 h-10 bg-vintage-green rounded-full flex items-center justify-center font-bold text-white shadow-sm">M</div>
                 <div>
                   <h4 className="font-bold text-vintage-dark text-sm">Mike Ross</h4>
-                  <p className="text-xs text-vintage-dark/60">Austin, TX</p>
+                  <p className="text-xs text-vintage-dark/60">Seattle, WA</p>
                 </div>
               </div>
             </div>
@@ -291,7 +291,7 @@ export default function Home() {
                 <div className="w-10 h-10 bg-[#9A3412] rounded-full flex items-center justify-center font-bold text-white shadow-sm">J</div>
                 <div>
                   <h4 className="font-bold text-vintage-dark text-sm">Jessica Wu</h4>
-                  <p className="text-xs text-vintage-dark/60">Chicago, IL</p>
+                  <p className="text-xs text-vintage-dark/60">Vancouver, BC</p>
                 </div>
               </div>
             </div>

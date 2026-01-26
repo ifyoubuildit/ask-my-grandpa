@@ -270,7 +270,7 @@ export default function MessageDetailModal({
                 Apprentice
               </h3>
               <p className="text-vintage-dark">{request.apprenticeName}</p>
-              <p className="text-sm text-vintage-dark/60">{request.apprenticeEmail}</p>
+              <p className="text-sm text-vintage-dark/60">Contact via platform messaging</p>
             </div>
             
             <div className="bg-vintage-cream p-4 rounded-lg">

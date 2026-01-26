@@ -625,8 +625,17 @@ function DashboardContent() {
                             <div className="bg-green-50 border-b border-green-200 p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                                    <Calendar className="w-6 h-6 text-white" />
+                                  {/* Profile Picture */}
+                                  <div className="w-12 h-12 bg-vintage-accent rounded-full flex items-center justify-center overflow-hidden">
+                                    {(profile?.role === 'grandpa' ? meeting.apprenticePhotoURL : meeting.grandpaPhotoURL) ? (
+                                      <img 
+                                        src={profile?.role === 'grandpa' ? meeting.apprenticePhotoURL : meeting.grandpaPhotoURL} 
+                                        alt={profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <User className="w-6 h-6 text-white" />
+                                    )}
                                   </div>
                                   <div>
                                     <h4 className="text-lg font-heading font-bold text-vintage-dark">
@@ -669,7 +678,7 @@ function DashboardContent() {
                                     {profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName}
                                   </p>
                                   <p className="text-sm text-vintage-dark/70">
-                                    {profile?.role === 'grandpa' ? meeting.apprenticeEmail : 'Contact via platform messaging'}
+                                    Contact via platform messaging
                                   </p>
                                 </div>
                               </div>
