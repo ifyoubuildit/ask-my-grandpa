@@ -345,14 +345,26 @@ function RegisterForm() {
 
   return (
     <main className="flex-1">
-      {/* Header */}
-      <header className="pt-16 pb-12 bg-[#f0ede6] border-b border-vintage-gold/20">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark mb-6 leading-tight">
-            {isUpdate ? 'Update Profile' : 'Grandpa Registration'}
+      {/* Hero Section */}
+      <header 
+        className="relative py-24 bg-vintage-dark"
+        style={{
+          backgroundImage: `linear-gradient(rgba(74, 64, 54, 0.7), rgba(74, 64, 54, 0.7)), url('/assets/grandpa-registration-hero.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Hero Content */}
+        <div className="relative max-w-4xl mx-auto px-4 text-center text-vintage-cream">
+          <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4 text-white">
+            {isUpdate ? 'Update Your Profile' : 'Your Skills Are Needed.'}
           </h1>
-          <p className="text-xl text-vintage-dark/80 font-body max-w-2xl mx-auto">
-            {isUpdate ? 'Update your skills and information.' : 'Share your skills and connect with your community.'}
+          <p className="text-xl font-body max-w-2xl mx-auto text-white/90">
+            {isUpdate 
+              ? 'Update your skills and information to help more people in your community.'
+              : 'Pass down a lifetime of knowledge to a generation eager to learn. Join our community of mentors today.'
+            }
           </p>
         </div>
       </header>
