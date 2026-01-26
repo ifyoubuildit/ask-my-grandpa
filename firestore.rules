@@ -29,10 +29,11 @@ service cloud.firestore {
     
     // Apprentices collection - restricted read access, authenticated write with validation
     match /apprentices/{apprenticeId} {
-      // Only the owner and confirmed grandpas can read apprentice profiles
+      // Apprentice owners can always read their own profile
+      // Grandpas can read apprentice profiles (needed for dashboard and requests)
       allow read: if request.auth != null 
         && (request.auth.uid == resource.data.userId
-            || isConfirmedGrandpa(request.auth.uid, apprenticeId));
+            || isGrandpaUser(request.auth.uid));
       
       // Only authenticated users can create apprentice profiles
       allow create: if request.auth != null 
@@ -141,10 +142,9 @@ service cloud.firestore {
     return grandpaCanUpdate || apprenticeCanUpdate;
   }
   
-  // Check if a grandpa has confirmed status with an apprentice
-  function isConfirmedGrandpa(grandpaId, apprenticeId) {
-    // For now, return false - this would need proper implementation with request lookup
-    return false;
+  // Check if user is a grandpa (has role 'grandpa' in users collection)
+  function isGrandpaUser(userId) {
+    return get(/databases/$(database)/documents/users/$(userId)).data.role == 'grandpa';
   }
   
   function isValidMessageData(data) {
