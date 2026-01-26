@@ -5,12 +5,20 @@ export default function MissionPage() {
   return (
     <main className="flex-1">
       {/* Header Section */}
-      <header className="pt-16 pb-12 bg-[#f0ede6] border-b border-vintage-gold/20">
+      <header 
+        className="pt-16 pb-12 border-b border-vintage-gold/20 mission-hero"
+        style={{
+          backgroundImage: `linear-gradient(rgba(74, 64, 54, 0.75), rgba(74, 64, 54, 0.75)), url('/assets/mission-hero.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark mb-6 leading-tight">
-            Restoring the <span className="text-[#9A3412]">Village</span>
+          <h1 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6 leading-tight">
+            Restoring the <span className="text-vintage-accent">Village</span>
           </h1>
-          <p className="text-xl text-vintage-dark/80 font-body max-w-2xl mx-auto">
+          <p className="text-xl text-white/90 font-body max-w-2xl mx-auto">
             We are building a bridge between generations one project at a time.
           </p>
         </div>
