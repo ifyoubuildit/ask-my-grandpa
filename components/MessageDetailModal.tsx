@@ -69,12 +69,18 @@ export default function MessageDetailModal({
   const [replyMessage, setReplyMessage] = useState('');
   const [proposedTime, setProposedTime] = useState('');
   const [grandpaAvailability, setGrandpaAvailability] = useState<AvailabilitySlot[]>([]);
+  const [apprenticeSelectedTime, setApprenticeSelectedTime] = useState<AvailabilitySlot[]>([]);
 
   if (!isOpen || !request) return null;
 
   const handleAccept = async () => {
     if (userRole === 'grandpa' && (!replyMessage.trim() || (grandpaAvailability.length === 0 && !proposedTime.trim()))) {
       alert('Please provide your availability and a response message.');
+      return;
+    }
+
+    if (userRole === 'seeker' && request.status === 'accepted' && apprenticeSelectedTime.length === 0) {
+      alert('Please select a specific time from the available options.');
       return;
     }
 
@@ -97,15 +103,17 @@ export default function MessageDetailModal({
         });
         console.log('✅ Grandpa response saved successfully');
       } else {
-        // Apprentice confirming the time - save the specific confirmed date/time
-        const confirmedDateTime = new Date().toISOString(); // For now, use current time as placeholder
-        // In a full implementation, you'd let the apprentice pick a specific time from the grandpa's availability
+        // Apprentice confirming the specific time
+        const selectedSlot = apprenticeSelectedTime[0];
+        const confirmedDateTime = new Date(selectedSlot.date);
+        confirmedDateTime.setHours(selectedSlot.timeSlots[0], 0, 0, 0);
         
         await updateDoc(doc(db, "requests", request.id), {
           status: 'confirmed',
           apprenticeConfirmation: replyMessage || 'Time confirmed',
           confirmedAt: new Date().toISOString(),
-          confirmedDateTime: confirmedDateTime // This will be used for 24-hour reminders
+          confirmedDateTime: confirmedDateTime.toISOString(),
+          finalSelectedTime: apprenticeSelectedTime // Store the final selected time
         });
         console.log('✅ Apprentice confirmation saved successfully');
       }
@@ -299,6 +307,24 @@ export default function MessageDetailModal({
                     onChange={(e) => setProposedTime(e.target.value)}
                     placeholder="e.g., Meet at my workshop, bring your tools, etc."
                     className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-3 text-vintage-dark focus:border-vintage-accent focus:outline-none"
+                  />
+                </div>
+              )}
+              
+              {userRole === 'seeker' && request.status === 'accepted' && (
+                <div className="mb-4">
+                  <label className="block text-vintage-dark font-medium mb-2">
+                    Select Your Final Meeting Time
+                  </label>
+                  <p className="text-sm text-vintage-dark/70 mb-3">
+                    Choose the specific time that works best for you from Grandpa's available times.
+                  </p>
+                  <AvailabilityCalendar
+                    selectedAvailability={apprenticeSelectedTime}
+                    onAvailabilityChange={setApprenticeSelectedTime}
+                    mode="confirm"
+                    existingAvailability={request.grandpaAvailability || []}
+                    className="mb-4"
                   />
                 </div>
               )}

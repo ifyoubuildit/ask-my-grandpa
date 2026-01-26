@@ -1160,11 +1160,21 @@ export const send24HourReminders = functions.pubsub.schedule('0 9 * * *')
         // Check if session has calendar-based availability or confirmed time
         let sessionDateTime = null;
         
-        // Try to parse calendar-based confirmed time
+        // First priority: confirmedDateTime from calendar confirmation
         if (sessionData.confirmedDateTime) {
           sessionDateTime = new Date(sessionData.confirmedDateTime);
+          console.log(`📅 Found confirmedDateTime: ${sessionDateTime.toISOString()}`);
         } 
-        // Try to parse from grandpaAvailability (new calendar format)
+        // Second priority: finalSelectedTime from apprentice confirmation
+        else if (sessionData.finalSelectedTime && sessionData.finalSelectedTime.length > 0) {
+          const selectedSlot = sessionData.finalSelectedTime[0];
+          const date = new Date(selectedSlot.date);
+          const hour = selectedSlot.timeSlots[0];
+          date.setHours(hour, 0, 0, 0);
+          sessionDateTime = date;
+          console.log(`📅 Parsed finalSelectedTime: ${sessionDateTime.toISOString()}`);
+        }
+        // Third priority: grandpaAvailability (new calendar format)
         else if (sessionData.grandpaAvailability && Array.isArray(sessionData.grandpaAvailability)) {
           // Get the first available slot as the session time
           const firstSlot = sessionData.grandpaAvailability[0];
@@ -1173,6 +1183,7 @@ export const send24HourReminders = functions.pubsub.schedule('0 9 * * *')
             const sessionHour = firstSlot.timeSlots[0]; // Use first time slot
             sessionDate.setHours(sessionHour, 0, 0, 0);
             sessionDateTime = sessionDate;
+            console.log(`📅 Parsed grandpaAvailability: ${sessionDateTime.toISOString()}`);
           }
         }
         // Fallback to legacy text parsing
@@ -1185,6 +1196,7 @@ export const send24HourReminders = functions.pubsub.schedule('0 9 * * *')
           
           if (shouldSendReminder) {
             sessionDateTime = tomorrow; // Use tomorrow as approximate time
+            console.log(`📅 Using heuristic for "tomorrow" mention: ${sessionDateTime.toISOString()}`);
           }
         }
         
@@ -1197,13 +1209,15 @@ export const send24HourReminders = functions.pubsub.schedule('0 9 * * *')
             await sendApprenticeReminder({
               ...sessionData,
               sessionDateTime: sessionDateTime.toISOString(),
-              formattedDateTime: sessionDateTime.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit'
+              formattedDate: sessionDateTime.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              }),
+              formattedTime: sessionDateTime.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
               })
             });
           }
@@ -1213,18 +1227,24 @@ export const send24HourReminders = functions.pubsub.schedule('0 9 * * *')
             await sendGrandpaReminder({
               ...sessionData,
               sessionDateTime: sessionDateTime.toISOString(),
-              formattedDateTime: sessionDateTime.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit'
+              formattedDate: sessionDateTime.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              }),
+              formattedTime: sessionDateTime.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
               })
             });
           }
           
           remindersSent++;
+        } else if (sessionDateTime) {
+          console.log(`⏰ Session ${doc.id} at ${sessionDateTime.toISOString()} is outside 24-hour window`);
+        } else {
+          console.log(`❓ Could not determine session time for ${doc.id}, proposedTime: ${sessionData.proposedTime}`);
         }
       }
       
@@ -1600,7 +1620,7 @@ const sendApprenticeReminder = async (sessionData: any) => {
           </p>
           
           <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
-            <strong>Time:</strong> ${sessionData.formattedDateTime || sessionData.proposedTime || 'Time TBD'}
+            <strong>Time:</strong> ${sessionData.formattedDate ? `${sessionData.formattedDate} at ${sessionData.formattedTime}` : sessionData.proposedTime || 'Time TBD'}
           </p>
         </div>
         
@@ -1700,7 +1720,7 @@ const sendGrandpaReminder = async (sessionData: any) => {
           </p>
           
           <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
-            <strong>Time:</strong> ${sessionData.formattedDateTime || sessionData.proposedTime || 'Time TBD'}
+            <strong>Time:</strong> ${sessionData.formattedDate ? `${sessionData.formattedDate} at ${sessionData.formattedTime}` : sessionData.proposedTime || 'Time TBD'}
           </p>
           
           <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">

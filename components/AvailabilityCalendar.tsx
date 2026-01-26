@@ -77,12 +77,16 @@ export default function AvailabilityCalendar({
 
   const isTimeSlotAvailable = (date: string, hour: number) => {
     if (mode === 'select') return true;
-    const dayAvailability = existingAvailability.find(a => a.date === date);
-    return dayAvailability?.timeSlots.includes(hour) || false;
+    if (mode === 'respond' || mode === 'confirm') {
+      const dayAvailability = existingAvailability.find(a => a.date === date);
+      return dayAvailability?.timeSlots.includes(hour) || false;
+    }
+    return true;
   };
 
   const toggleTimeSlot = (date: string, hour: number) => {
     if (mode === 'respond' && !isTimeSlotAvailable(date, hour)) return;
+    if (mode === 'confirm' && !isTimeSlotAvailable(date, hour)) return;
     
     const newAvailability = [...selectedAvailability];
     const dayIndex = newAvailability.findIndex(a => a.date === date);
@@ -94,8 +98,15 @@ export default function AvailabilityCalendar({
       if (slotIndex >= 0) {
         timeSlots.splice(slotIndex, 1);
       } else {
-        timeSlots.push(hour);
-        timeSlots.sort();
+        // For confirm mode, only allow one selection
+        if (mode === 'confirm') {
+          // Clear all other selections and set this one
+          onAvailabilityChange([{ date, timeSlots: [hour] }]);
+          return;
+        } else {
+          timeSlots.push(hour);
+          timeSlots.sort();
+        }
       }
       
       if (timeSlots.length === 0) {
@@ -174,22 +185,21 @@ export default function AvailabilityCalendar({
               const isSelected = isTimeSlotSelected(dateStr, timeSlot.hour);
               const isAvailable = isTimeSlotAvailable(dateStr, timeSlot.hour);
               const isPast = day < new Date(new Date().setHours(0, 0, 0, 0));
+              const isDisabled = isPast || ((mode === 'respond' || mode === 'confirm') && !isAvailable);
               
               return (
                 <button
                   key={`${dayIndex}-${timeSlot.hour}`}
                   type="button"
-                  onClick={() => !isPast && toggleTimeSlot(dateStr, timeSlot.hour)}
-                  disabled={isPast || (mode === 'respond' && !isAvailable)}
+                  onClick={() => !isDisabled && toggleTimeSlot(dateStr, timeSlot.hour)}
+                  disabled={isDisabled}
                   className={`
                     h-8 text-xs rounded transition-all
-                    ${isPast 
+                    ${isDisabled
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                      : mode === 'respond' && !isAvailable
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : isSelected
-                          ? 'bg-vintage-green text-white hover:bg-vintage-dark'
-                          : 'bg-vintage-cream hover:bg-vintage-gold/30 text-vintage-dark'
+                      : isSelected
+                        ? 'bg-vintage-green text-white hover:bg-vintage-dark'
+                        : 'bg-vintage-cream hover:bg-vintage-gold/30 text-vintage-dark'
                     }
                   `}
                 >

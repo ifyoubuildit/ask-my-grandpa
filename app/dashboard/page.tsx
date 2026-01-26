@@ -62,11 +62,11 @@ function DashboardContent() {
           
           allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           
-          // Filter for messages section (pending, accepted, declined - not confirmed)
-          const messagesData = allRequestsData.filter(r => r.status !== 'confirmed' && r.status !== 'completed');
+          // Filter for messages section (all messages for ongoing communication)
+          const messagesData = allRequestsData;
           setRequests(messagesData);
           
-          // Load upcoming confirmed meetings
+          // Load upcoming confirmed meetings (only confirmed status)
           const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
           setConfirmedMeetings(upcomingMeetings);
           
@@ -87,11 +87,11 @@ function DashboardContent() {
           
           allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           
-          // Filter for messages section (pending, accepted, declined - not confirmed)
-          const messagesData = allRequestsData.filter(r => r.status !== 'confirmed' && r.status !== 'completed');
+          // Filter for messages section (all messages for ongoing communication)
+          const messagesData = allRequestsData;
           setRequests(messagesData);
           
-          // Load upcoming confirmed meetings
+          // Load upcoming confirmed meetings (only confirmed status)
           const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
           setConfirmedMeetings(upcomingMeetings);
           
@@ -139,7 +139,7 @@ function DashboardContent() {
           
           allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           
-          const messagesData = allRequestsData.filter(r => r.status !== 'confirmed' && r.status !== 'completed');
+          const messagesData = allRequestsData;
           setRequests(messagesData);
           
           const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
@@ -160,7 +160,7 @@ function DashboardContent() {
           
           allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           
-          const messagesData = allRequestsData.filter(r => r.status !== 'confirmed' && r.status !== 'completed');
+          const messagesData = allRequestsData;
           setRequests(messagesData);
           
           const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
@@ -570,44 +570,129 @@ function DashboardContent() {
                     </div>
                   ) : (
                     <div className="grid gap-4">
-                      {confirmedMeetings.map((meeting) => (
-                        <div key={meeting.id} className="bg-green-50 border border-green-200 rounded-lg p-6">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h4 className="text-xl font-bold text-vintage-dark mb-2">
-                                {meeting.subject}
-                              </h4>
-                              <div className="grid md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                  <p className="text-sm font-medium text-vintage-dark">
-                                    {profile?.role === 'grandpa' ? 'Apprentice' : 'Mentor'}:
-                                  </p>
-                                  <p className="text-vintage-dark">
+                      {confirmedMeetings.map((meeting) => {
+                        // Format the confirmed date/time
+                        const getFormattedDateTime = () => {
+                          if (meeting.confirmedDateTime) {
+                            const date = new Date(meeting.confirmedDateTime);
+                            return {
+                              date: date.toLocaleDateString('en-US', { 
+                                weekday: 'long', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              }),
+                              time: date.toLocaleTimeString('en-US', { 
+                                hour: 'numeric', 
+                                minute: '2-digit',
+                                hour12: true 
+                              })
+                            };
+                          }
+                          
+                          // Fallback to finalSelectedTime if available
+                          if (meeting.finalSelectedTime && meeting.finalSelectedTime.length > 0) {
+                            const selectedSlot = meeting.finalSelectedTime[0];
+                            const date = new Date(selectedSlot.date);
+                            const hour = selectedSlot.timeSlots[0];
+                            date.setHours(hour, 0, 0, 0);
+                            
+                            return {
+                              date: date.toLocaleDateString('en-US', { 
+                                weekday: 'long', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              }),
+                              time: date.toLocaleTimeString('en-US', { 
+                                hour: 'numeric', 
+                                minute: '2-digit',
+                                hour12: true 
+                              })
+                            };
+                          }
+                          
+                          // Fallback to proposedTime
+                          return {
+                            date: 'Date TBD',
+                            time: meeting.proposedTime || 'Time TBD'
+                          };
+                        };
+
+                        const dateTime = getFormattedDateTime();
+
+                        return (
+                          <div key={meeting.id} className="bg-white border border-vintage-gold/30 rounded-xl shadow-[4px_4px_0px_rgba(74,64,54,0.1)] overflow-hidden">
+                            {/* Thumbnail Header */}
+                            <div className="bg-green-50 border-b border-green-200 p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                                    <Calendar className="w-6 h-6 text-white" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-lg font-heading font-bold text-vintage-dark">
+                                      {meeting.subject}
+                                    </h4>
+                                    <p className="text-sm text-vintage-dark/70">
+                                      with {profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                    <Check className="w-4 h-4" />
+                                    Confirmed
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Meeting Details */}
+                            <div className="p-6">
+                              <div className="grid md:grid-cols-2 gap-6 mb-4">
+                                {/* Date & Time */}
+                                <div className="bg-vintage-cream p-4 rounded-lg">
+                                  <h5 className="font-bold text-vintage-dark mb-2 flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-vintage-accent" />
+                                    Scheduled Time
+                                  </h5>
+                                  <p className="text-vintage-dark font-medium">{dateTime.date}</p>
+                                  <p className="text-vintage-dark text-lg font-bold">{dateTime.time}</p>
+                                </div>
+
+                                {/* Contact Info */}
+                                <div className="bg-vintage-cream p-4 rounded-lg">
+                                  <h5 className="font-bold text-vintage-dark mb-2 flex items-center gap-2">
+                                    <User className="w-4 h-4 text-vintage-accent" />
+                                    {profile?.role === 'grandpa' ? 'Apprentice' : 'Mentor'} Contact
+                                  </h5>
+                                  <p className="text-vintage-dark font-medium">
                                     {profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName}
                                   </p>
-                                  <p className="text-sm text-vintage-dark/60">
+                                  <p className="text-sm text-vintage-dark/70">
                                     {profile?.role === 'grandpa' ? meeting.apprenticeEmail : meeting.grandpaEmail}
                                   </p>
                                 </div>
-                                <div>
-                                  <p className="text-sm font-medium text-vintage-dark">Scheduled Time:</p>
-                                  <p className="text-vintage-dark">{meeting.proposedTime}</p>
+                              </div>
+
+                              {/* Project Description */}
+                              <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-vintage-accent">
+                                <h5 className="font-bold text-vintage-dark mb-2">Project Details</h5>
+                                <p className="text-vintage-dark">{meeting.message}</p>
+                              </div>
+
+                              {/* Address (only shown after confirmation) */}
+                              {meeting.apprenticeAddress && (
+                                <div className="mt-4 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                                  <h5 className="font-bold text-vintage-dark mb-2 flex items-center gap-2">
+                                    📍 Meeting Location
+                                  </h5>
+                                  <p className="text-vintage-dark">{meeting.apprenticeAddress}</p>
                                 </div>
-                              </div>
-                              <div className="bg-white p-3 rounded border">
-                                <p className="text-sm text-vintage-dark">
-                                  <strong>Project:</strong> {meeting.message}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="ml-4">
-                              <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                                Confirmed
-                              </span>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>

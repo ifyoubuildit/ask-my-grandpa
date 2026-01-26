@@ -559,7 +559,7 @@ Request Time: ${new Date().toLocaleString()}
     await sendNotificationEmail(subject, htmlContent, textContent);
     // Also send email to the grandpa
     if (requestData.grandpaEmail) {
-        const grandpaSubject = `A neighbor needs a hand: New ${requestData.skill || requestData.subject} Request`;
+        const grandpaSubject = `Ask My Grandpa - A Neighbour Needs a Hand`;
         const grandpaHtmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
           <!-- Header with logo/banner space -->
@@ -569,6 +569,13 @@ Request Time: ${new Date().toLocaleString()}
           </div>
           
           <div style="padding: 30px; background: white; margin: 0;">
+            <!-- Request Type Header -->
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h2 style="color: #9A3412; font-size: 24px; font-weight: bold; margin: 0; padding: 15px; background: #f0ede6; border-radius: 8px; border: 2px solid #9A3412;">
+                ${requestData.subject}
+              </h2>
+            </div>
+            
             <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
               Hello ${requestData.grandpaName.split(' ')[0]},
             </p>
@@ -1054,29 +1061,81 @@ exports.send24HourReminders = functions.pubsub.schedule('0 9 * * *')
         let remindersSent = 0;
         for (const doc of querySnapshot.docs) {
             const sessionData = doc.data();
-            // For now, we'll use the proposedTime field
-            // In a production system, you'd want a proper datetime field
-            const sessionTimeStr = sessionData.proposedTime;
-            if (!sessionTimeStr) {
-                console.log(`⚠️ Session ${doc.id} has no proposed time, skipping`);
-                continue;
+            console.log(`🔍 Checking session ${doc.id} for ${sessionData.apprenticeName} with ${sessionData.grandpaName}`);
+            // Check if session has calendar-based availability or confirmed time
+            let sessionDateTime = null;
+            // First priority: confirmedDateTime from calendar confirmation
+            if (sessionData.confirmedDateTime) {
+                sessionDateTime = new Date(sessionData.confirmedDateTime);
+                console.log(`📅 Found confirmedDateTime: ${sessionDateTime.toISOString()}`);
             }
-            // Simple check if the session mentions "tomorrow" or contains time indicators
-            // This is a basic implementation - in production you'd want proper datetime parsing
-            const shouldSendReminder = sessionTimeStr.toLowerCase().includes('tomorrow') ||
-                sessionTimeStr.toLowerCase().includes('24 hour') ||
-                sessionTimeStr.toLowerCase().includes('next day');
-            if (shouldSendReminder) {
-                console.log(`📧 Sending 24-hour reminders for session ${doc.id}`);
+            // Second priority: finalSelectedTime from apprentice confirmation
+            else if (sessionData.finalSelectedTime && sessionData.finalSelectedTime.length > 0) {
+                const selectedSlot = sessionData.finalSelectedTime[0];
+                const date = new Date(selectedSlot.date);
+                const hour = selectedSlot.timeSlots[0];
+                date.setHours(hour, 0, 0, 0);
+                sessionDateTime = date;
+                console.log(`📅 Parsed finalSelectedTime: ${sessionDateTime.toISOString()}`);
+            }
+            // Third priority: grandpaAvailability (new calendar format)
+            else if (sessionData.grandpaAvailability && Array.isArray(sessionData.grandpaAvailability)) {
+                // Get the first available slot as the session time
+                const firstSlot = sessionData.grandpaAvailability[0];
+                if (firstSlot && firstSlot.date && firstSlot.timeSlots && firstSlot.timeSlots.length > 0) {
+                    const sessionDate = new Date(firstSlot.date);
+                    const sessionHour = firstSlot.timeSlots[0]; // Use first time slot
+                    sessionDate.setHours(sessionHour, 0, 0, 0);
+                    sessionDateTime = sessionDate;
+                    console.log(`📅 Parsed grandpaAvailability: ${sessionDateTime.toISOString()}`);
+                }
+            }
+            // Fallback to legacy text parsing
+            else if (sessionData.proposedTime) {
+                const sessionTimeStr = sessionData.proposedTime.toLowerCase();
+                // Simple check if the session mentions "tomorrow" or contains time indicators
+                const shouldSendReminder = sessionTimeStr.includes('tomorrow') ||
+                    sessionTimeStr.includes('24 hour') ||
+                    sessionTimeStr.includes('next day');
+                if (shouldSendReminder) {
+                    sessionDateTime = tomorrow; // Use tomorrow as approximate time
+                    console.log(`📅 Using heuristic for "tomorrow" mention: ${sessionDateTime.toISOString()}`);
+                }
+            }
+            // Check if session is within our 24-hour window
+            if (sessionDateTime && sessionDateTime >= bufferStart && sessionDateTime <= bufferEnd) {
+                console.log(`📧 Sending 24-hour reminders for session ${doc.id} scheduled for ${sessionDateTime.toISOString()}`);
                 // Send reminder to apprentice
                 if (sessionData.apprenticeEmail) {
-                    await sendApprenticeReminder(sessionData);
+                    await sendApprenticeReminder(Object.assign(Object.assign({}, sessionData), { sessionDateTime: sessionDateTime.toISOString(), formattedDate: sessionDateTime.toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric'
+                        }), formattedTime: sessionDateTime.toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                        }) }));
                 }
                 // Send reminder to grandpa
                 if (sessionData.grandpaEmail) {
-                    await sendGrandpaReminder(sessionData);
+                    await sendGrandpaReminder(Object.assign(Object.assign({}, sessionData), { sessionDateTime: sessionDateTime.toISOString(), formattedDate: sessionDateTime.toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric'
+                        }), formattedTime: sessionDateTime.toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                        }) }));
                 }
                 remindersSent++;
+            }
+            else if (sessionDateTime) {
+                console.log(`⏰ Session ${doc.id} at ${sessionDateTime.toISOString()} is outside 24-hour window`);
+            }
+            else {
+                console.log(`❓ Could not determine session time for ${doc.id}, proposedTime: ${sessionData.proposedTime}`);
             }
         }
         console.log(`✅ 24-hour reminder check complete. Sent ${remindersSent} reminder pairs.`);
@@ -1402,7 +1461,7 @@ const sendApprenticeReminder = async (sessionData) => {
           </p>
           
           <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
-            <strong>Time:</strong> Tomorrow at ${sessionData.proposedTime}
+            <strong>Time:</strong> ${sessionData.formattedDate ? `${sessionData.formattedDate} at ${sessionData.formattedTime}` : sessionData.proposedTime || 'Time TBD'}
           </p>
         </div>
         
@@ -1498,7 +1557,7 @@ const sendGrandpaReminder = async (sessionData) => {
           </p>
           
           <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
-            <strong>Time:</strong> Tomorrow at ${sessionData.proposedTime}
+            <strong>Time:</strong> ${sessionData.formattedDate ? `${sessionData.formattedDate} at ${sessionData.formattedTime}` : sessionData.proposedTime || 'Time TBD'}
           </p>
           
           <p style="color: #4a4037; margin: 8px 0; font-size: 16px;">
