@@ -381,7 +381,7 @@ function DashboardContent() {
       <div
         className="absolute inset-0 z-0 opacity-20 mix-blend-multiply pointer-events-none"
         style={{
-          backgroundImage: "url('/assets/grandpa-dashboard-hero.png')",
+          backgroundImage: "url('/assets/granpda-dashboard-hero.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
@@ -402,7 +402,7 @@ function DashboardContent() {
       <header 
         className="pt-16 pb-12 border-b border-vintage-gold/20"
         style={{
-          backgroundImage: `linear-gradient(rgba(74, 64, 54, 0.7), rgba(74, 64, 54, 0.7)), url('/assets/grandpa-dashboard-hero.png')`,
+          backgroundImage: `linear-gradient(rgba(74, 64, 54, 0.7), rgba(74, 64, 54, 0.7)), url('/assets/granpda-dashboard-hero.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
