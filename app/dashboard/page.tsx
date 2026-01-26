@@ -669,7 +669,7 @@ function DashboardContent() {
                                     {profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName}
                                   </p>
                                   <p className="text-sm text-vintage-dark/70">
-                                    {profile?.role === 'grandpa' ? meeting.apprenticeEmail : meeting.grandpaEmail}
+                                    {profile?.role === 'grandpa' ? meeting.apprenticeEmail : 'Contact via platform messaging'}
                                   </p>
                                 </div>
                               </div>

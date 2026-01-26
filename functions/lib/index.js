@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.submitHelpRequest = exports.registerApprentice = exports.registerGrandpa = exports.send24HourReminders = exports.onSessionConfirmed = exports.onRequestAccepted = exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
+exports.submitHelpRequest = exports.registerApprentice = exports.registerGrandpa = exports.sendAdditionalMessage = exports.send24HourReminders = exports.onSessionConfirmed = exports.onRequestAccepted = exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
@@ -13,6 +13,7 @@ const rateLimitStore = new Map();
 const gmailEmail = process.env.GMAIL_EMAIL;
 const gmailPassword = process.env.GMAIL_PASSWORD;
 const adminEmail = process.env.ADMIN_EMAIL || 'info@askmygrandpa.com'; // Your notification email
+const fromEmail = 'info@askmygrandpa.com'; // Professional sender address
 // Create transporter
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -24,7 +25,7 @@ const transporter = nodemailer.createTransport({
 // Function to send email notifications
 const sendNotificationEmail = async (subject, htmlContent, textContent) => {
     const mailOptions = {
-        from: gmailEmail,
+        from: fromEmail,
         to: adminEmail,
         subject: subject,
         text: textContent,
@@ -162,7 +163,7 @@ Best,
 The Ask Grandpa Team
     `;
         const mailOptions = {
-            from: gmailEmail,
+            from: fromEmail,
             to: email,
             subject: subject,
             text: textContent,
@@ -341,7 +342,7 @@ The Ask Grandpa Team
     `;
     // Send welcome email to grandpa
     const welcomeMailOptions = {
-        from: gmailEmail,
+        from: fromEmail,
         to: grandpaData.email,
         subject: welcomeSubject,
         text: welcomeTextContent,
@@ -479,7 +480,7 @@ The Ask Grandpa Team
     `;
     // Send welcome email to apprentice
     const welcomeMailOptions = {
-        from: gmailEmail,
+        from: fromEmail,
         to: apprenticeData.email,
         subject: welcomeSubject,
         text: welcomeTextContent,
@@ -685,7 +686,7 @@ With respect,
 The Ask Grandpa Team
       `;
         const grandpaMailOptions = {
-            from: gmailEmail,
+            from: fromEmail,
             to: requestData.grandpaEmail,
             subject: grandpaSubject,
             text: grandpaTextContent,
@@ -809,7 +810,7 @@ Warmly,
 The Ask Grandpa Team
       `;
         const mailOptions = {
-            from: gmailEmail,
+            from: fromEmail,
             to: requestData.apprenticeEmail,
             subject: subject,
             text: textContent,
@@ -981,7 +982,7 @@ With gratitude,
 The Ask Grandpa Team
       `;
         const mailOptions = {
-            from: gmailEmail,
+            from: fromEmail,
             to: requestData.grandpaEmail,
             subject: subject,
             text: textContent,
@@ -1142,6 +1143,106 @@ exports.send24HourReminders = functions.pubsub.schedule('0 9 * * *')
     }
     catch (error) {
         console.error('❌ Error in 24-hour reminder job:', error);
+    }
+});
+// Function to send additional messages between users
+exports.sendAdditionalMessage = functions.https.onRequest(async (req, res) => {
+    // Set CORS headers
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+        res.status(200).send('');
+        return;
+    }
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+    try {
+        const { recipientEmail, recipientName, senderName, message, subject, requestId } = req.body;
+        if (!recipientEmail || !recipientName || !senderName || !message) {
+            res.status(400).json({ error: 'Missing required fields' });
+            return;
+        }
+        const emailSubject = `New Message: ${subject}`;
+        const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+        <!-- Header -->
+        <div style="background: #4a4037; padding: 20px; text-align: center;">
+          <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+          <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">You have a new message</p>
+        </div>
+        
+        <div style="padding: 30px; background: white; margin: 0;">
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Hi ${recipientName.split(' ')[0]},
+          </p>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            <strong>${senderName}</strong> sent you a new message regarding: <strong>${subject}</strong>
+          </p>
+          
+          <!-- Message Content -->
+          <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #9A3412;">
+            <p style="color: #4a4037; margin: 0; font-size: 16px; line-height: 1.6; font-style: italic;">
+              "${message}"
+            </p>
+          </div>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+            To respond, please log in to your Ask My Grandpa dashboard and view your messages.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://askmygrandpa.com/dashboard" 
+               style="background: #9A3412; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+              View Messages
+            </a>
+          </div>
+          
+          <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 30px;">
+            Best regards,<br>
+            <strong>The Ask My Grandpa Team</strong>
+          </p>
+        </div>
+        
+        <div style="background: #f0ede6; padding: 20px; text-align: center;">
+          <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+            This message was sent through the Ask My Grandpa platform.
+          </p>
+        </div>
+      </div>
+    `;
+        const textContent = `
+Hi ${recipientName.split(' ')[0]},
+
+${senderName} sent you a new message regarding: ${subject}
+
+Message:
+"${message}"
+
+To respond, please log in to your Ask My Grandpa dashboard and view your messages.
+
+Visit: https://askmygrandpa.com/dashboard
+
+Best regards,
+The Ask My Grandpa Team
+    `;
+        const mailOptions = {
+            from: fromEmail,
+            to: recipientEmail,
+            subject: emailSubject,
+            text: textContent,
+            html: htmlContent,
+        };
+        await transporter.sendMail(mailOptions);
+        console.log('✅ Additional message notification sent successfully');
+        res.status(200).json({ success: true, message: 'Message notification sent successfully' });
+    }
+    catch (error) {
+        console.error('❌ Error sending additional message notification:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 // Function to validate Turnstile token server-side
@@ -1510,7 +1611,7 @@ Cheers,
 The Ask Grandpa Team
   `;
     const mailOptions = {
-        from: gmailEmail,
+        from: fromEmail,
         to: sessionData.apprenticeEmail,
         subject: subject,
         text: textContent,
@@ -1600,7 +1701,7 @@ With respect,
 The Ask Grandpa Team
   `;
     const mailOptions = {
-        from: gmailEmail,
+        from: fromEmail,
         to: sessionData.grandpaEmail,
         subject: subject,
         text: textContent,

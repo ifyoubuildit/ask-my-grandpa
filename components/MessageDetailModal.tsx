@@ -70,6 +70,8 @@ export default function MessageDetailModal({
   const [proposedTime, setProposedTime] = useState('');
   const [grandpaAvailability, setGrandpaAvailability] = useState<AvailabilitySlot[]>([]);
   const [apprenticeSelectedTime, setApprenticeSelectedTime] = useState<AvailabilitySlot[]>([]);
+  const [additionalMessage, setAdditionalMessage] = useState('');
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   if (!isOpen || !request) return null;
 
@@ -131,6 +133,65 @@ export default function MessageDetailModal({
       alert(`Failed to update request: ${error?.message || 'Unknown error'}. Please try again.`);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSendAdditionalMessage = async () => {
+    if (!additionalMessage.trim()) {
+      alert('Please enter a message.');
+      return;
+    }
+
+    setIsSendingMessage(true);
+    try {
+      // Add the message to the request's message history
+      const messageData = {
+        message: additionalMessage,
+        sender: userRole,
+        senderName: userRole === 'grandpa' ? request.grandpaName : request.apprenticeName,
+        timestamp: new Date().toISOString()
+      };
+
+      // Update the request with the new message
+      await updateDoc(doc(db, "requests", request.id), {
+        [`additionalMessages.${Date.now()}`]: messageData,
+        lastMessageAt: new Date().toISOString(),
+        lastMessageBy: userRole
+      });
+
+      // Send email notification to the other party
+      const recipientEmail = userRole === 'grandpa' ? request.apprenticeEmail : request.grandpaEmail;
+      const recipientName = userRole === 'grandpa' ? request.apprenticeName : request.grandpaName;
+      const senderName = userRole === 'grandpa' ? request.grandpaName : request.apprenticeName;
+
+      // Call Firebase function to send email notification
+      const response = await fetch('https://us-central1-ask-my-grandpa.cloudfunctions.net/sendAdditionalMessage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipientEmail,
+          recipientName,
+          senderName,
+          message: additionalMessage,
+          subject: request.subject,
+          requestId: request.id
+        }),
+      });
+
+      if (!response.ok) {
+        console.warn('Email notification failed, but message was saved');
+      }
+
+      setAdditionalMessage('');
+      onUpdate();
+      alert('Message sent successfully!');
+    } catch (error) {
+      console.error('Error sending additional message:', error);
+      alert('Failed to send message. Please try again.');
+    } finally {
+      setIsSendingMessage(false);
     }
   };
 
@@ -218,7 +279,7 @@ export default function MessageDetailModal({
                 Grandpa
               </h3>
               <p className="text-vintage-dark">{request.grandpaName}</p>
-              <p className="text-sm text-vintage-dark/60">{request.grandpaEmail}</p>
+              <p className="text-sm text-vintage-dark/60">Contact via platform messaging</p>
             </div>
           </div>
 
@@ -366,6 +427,36 @@ export default function MessageDetailModal({
               </div>
             </div>
           )}
+
+          {/* Ongoing Messaging Section - Always Available */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="font-bold text-vintage-dark mb-4 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-vintage-accent" />
+              Send Additional Message
+            </h3>
+            <p className="text-sm text-vintage-dark/70 mb-4">
+              Continue the conversation with {userRole === 'grandpa' ? request.apprenticeName : request.grandpaName}
+            </p>
+            
+            <div className="mb-4">
+              <textarea
+                value={additionalMessage}
+                onChange={(e) => setAdditionalMessage(e.target.value)}
+                rows={4}
+                placeholder="Type your message here..."
+                className="w-full bg-vintage-cream border-2 border-vintage-gold/30 rounded-lg p-3 text-vintage-dark focus:border-vintage-accent focus:outline-none"
+              />
+            </div>
+
+            <button
+              onClick={handleSendAdditionalMessage}
+              disabled={isSendingMessage || !additionalMessage.trim()}
+              className="bg-vintage-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-vintage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <MessageCircle className="w-5 h-5" />
+              {isSendingMessage ? 'Sending...' : 'Send Message'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
