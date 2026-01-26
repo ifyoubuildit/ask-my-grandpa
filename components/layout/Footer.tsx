@@ -34,7 +34,7 @@ export default function Footer() {
           <div>
             <h4 className="font-bold text-vintage-dark mb-4">Stay in touch</h4>
             <div className="flex gap-4">
-              <a href="#" className="bg-vintage-dark/5 p-2 rounded-full hover:bg-vintage-dark hover:text-white transition-colors">
+              <a href="https://www.instagram.com/askmygrandpa" target="_blank" rel="noopener noreferrer" className="bg-vintage-dark/5 p-2 rounded-full hover:bg-vintage-dark hover:text-white transition-colors">
                 <Instagram className="w-5 h-5" />
               </a>
               <a href="https://www.tiktok.com/@askmygrandpa" target="_blank" rel="noopener noreferrer" className="bg-vintage-dark/5 p-2 rounded-full hover:bg-vintage-dark hover:text-white transition-colors">
