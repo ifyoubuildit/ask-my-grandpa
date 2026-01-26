@@ -68,14 +68,26 @@ function DashboardContent() {
               // Get apprentice photo
               let apprenticePhotoURL = '';
               try {
+                console.log('🔍 Looking for apprentice photo:', { 
+                  requestId: request.id, 
+                  apprenticeId: request.apprenticeId 
+                });
                 const apprenticeQuery = query(
                   collection(db, "apprentices"), 
                   where("userId", "==", request.apprenticeId)
                 );
                 const apprenticeSnapshot = await getDocs(apprenticeQuery);
+                console.log('📸 Apprentice query result:', { 
+                  found: !apprenticeSnapshot.empty,
+                  apprenticeId: request.apprenticeId
+                });
                 if (!apprenticeSnapshot.empty) {
                   const apprenticeData = apprenticeSnapshot.docs[0].data();
                   apprenticePhotoURL = apprenticeData.photoURL || '';
+                  console.log('📸 Apprentice photo found:', { 
+                    hasPhoto: !!apprenticePhotoURL,
+                    photoURL: apprenticePhotoURL 
+                  });
                 }
               } catch (error) {
                 console.warn('Could not fetch apprentice photo:', error);
