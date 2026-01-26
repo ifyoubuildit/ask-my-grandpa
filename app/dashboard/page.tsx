@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { logOut } from '@/lib/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { User, Search, MessageCircle, Calendar, Clock, Check, X, Mail, MailOpen, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -307,6 +307,32 @@ function DashboardContent() {
     if (profile?.role === 'grandpa' && request.status === 'pending') return true;
     if (profile?.role === 'seeker' && request.status === 'accepted') return true;
     return false;
+  };
+
+  // Helper function to get meeting date/time
+  const getMeetingDateTime = (meeting: any): Date | null => {
+    if (meeting.confirmedDateTime) {
+      return new Date(meeting.confirmedDateTime);
+    }
+    
+    if (meeting.finalSelectedTime && meeting.finalSelectedTime.length > 0) {
+      const selectedSlot = meeting.finalSelectedTime[0];
+      const date = new Date(selectedSlot.date);
+      const hour = selectedSlot.timeSlots[0];
+      date.setHours(hour, 0, 0, 0);
+      return date;
+    }
+    
+    return null;
+  };
+
+  // Helper function to handle "Request Additional Mentorship"
+  const handleRequestAdditionalMentorship = (meeting: any) => {
+    const grandpaName = profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName;
+    const grandpaId = profile?.role === 'grandpa' ? meeting.apprenticeId : meeting.grandpaId;
+    const skill = meeting.skill || meeting.subject;
+    
+    router.push(`/request-help?grandpa=${encodeURIComponent(grandpaName)}&grandpaId=${grandpaId}&skill=${encodeURIComponent(skill)}`);
   };
 
   // Client-side only authentication checks
@@ -652,9 +678,20 @@ function DashboardContent() {
                                     : `With ${meeting.grandpaName}`
                                   }
                                 </p>
-                                <p className="text-xs text-vintage-dark/60">
+                                <p className="text-xs text-vintage-dark/60 mb-3">
                                   {new Date(meeting.timestamp).toLocaleDateString()}
                                 </p>
+                                
+                                {/* Request Additional Mentorship Button - Only show for apprentices */}
+                                {profile?.role === 'seeker' && (
+                                  <button
+                                    onClick={() => handleRequestAdditionalMentorship(meeting)}
+                                    className="bg-vintage-accent text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-vintage-dark transition-colors flex items-center gap-2"
+                                  >
+                                    <MessageCircle className="w-4 h-4" />
+                                    Request Additional Mentorship
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>

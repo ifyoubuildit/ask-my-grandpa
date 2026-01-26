@@ -448,14 +448,32 @@ export default function MessageDetailModal({
               />
             </div>
 
-            <button
-              onClick={handleSendAdditionalMessage}
-              disabled={isSendingMessage || !additionalMessage.trim()}
-              className="bg-vintage-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-vintage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              <MessageCircle className="w-5 h-5" />
-              {isSendingMessage ? 'Sending...' : 'Send Message'}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleSendAdditionalMessage}
+                disabled={isSendingMessage || !additionalMessage.trim()}
+                className="bg-vintage-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-vintage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-5 h-5" />
+                {isSendingMessage ? 'Sending...' : 'Send Message'}
+              </button>
+              
+              {/* Request Additional Mentorship Button - Only show for apprentices and completed/confirmed sessions */}
+              {userRole === 'seeker' && (request.status === 'completed' || request.status === 'confirmed') && (
+                <button
+                  onClick={() => {
+                    const grandpaName = request.grandpaName;
+                    const grandpaId = request.grandpaId;
+                    const skill = request.skill || request.subject;
+                    window.location.href = `/request-help?grandpa=${encodeURIComponent(grandpaName)}&grandpaId=${grandpaId}&skill=${encodeURIComponent(skill)}`;
+                  }}
+                  className="bg-vintage-green text-white px-6 py-3 rounded-lg font-bold hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Calendar className="w-5 h-5" />
+                  Request Additional Mentorship
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
