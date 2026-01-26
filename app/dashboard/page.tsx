@@ -376,7 +376,21 @@ function DashboardContent() {
   };
 
   return (
-    <main className="flex-1">
+    <div className="min-h-screen bg-vintage-cream relative">
+      {/* Background Image Layer */}
+      <div
+        className="absolute inset-0 z-0 opacity-20 mix-blend-multiply pointer-events-none"
+        style={{
+          backgroundImage: "url('/assets/grandpa-dashboard-hero.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      ></div>
+      
+      {/* Main Dashboard Content */}
+      <div className="relative z-10">
+        <main className="flex-1">
       {/* Success Message */}
       {showSuccessMessage && (
         <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
@@ -384,21 +398,29 @@ function DashboardContent() {
         </div>
       )}
 
-      {/* Header */}
-      <header className="pt-16 pb-12 bg-[#f0ede6] border-b border-vintage-gold/20">
+      {/* Hero Section */}
+      <header 
+        className="pt-16 pb-12 border-b border-vintage-gold/20"
+        style={{
+          backgroundImage: `linear-gradient(rgba(74, 64, 54, 0.7), rgba(74, 64, 54, 0.7)), url('/assets/grandpa-dashboard-hero.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl md:text-5xl font-heading font-bold text-vintage-dark">
+              <h1 className="text-4xl md:text-5xl font-heading font-bold text-white">
                 Welcome, {profile?.displayName || 'User'}!
               </h1>
-              <p className="text-vintage-dark/70 mt-2">
+              <p className="text-white/90 mt-2">
                 {profile?.role === 'grandpa' ? 'Help apprentices learn new skills' : 'Connect with experienced mentors'}
               </p>
             </div>
             <button
               onClick={handleLogout}
-              className="text-vintage-dark font-bold hover:text-vintage-accent transition-colors"
+              className="text-white font-bold hover:text-vintage-accent transition-colors"
             >
               Sign Out
             </button>
@@ -989,7 +1011,9 @@ function DashboardContent() {
         userRole={(profile?.role === 'grandpa' ? 'grandpa' : 'seeker') as 'grandpa' | 'seeker'}
         onUpdate={handleMessageUpdate}
       />
-    </main>
+        </main>
+      </div>
+    </div>
   );
 }
 
