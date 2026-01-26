@@ -10,10 +10,20 @@ admin.initializeApp();
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 // Email configuration using environment variables
-const gmailEmail = process.env.GMAIL_EMAIL;
-const gmailPassword = process.env.GMAIL_PASSWORD;
+const gmailEmail = process.env.GMAIL_EMAIL || 'cwallace7755@gmail.com';
+const gmailPassword = process.env.GMAIL_PASSWORD || 'ojkcgymndbpusyqi';
 const adminEmail = process.env.ADMIN_EMAIL || 'info@askmygrandpa.com'; // Your notification email
 const fromEmail = 'info@askmygrandpa.com'; // Professional sender address
+
+// Debug logging (remove in production)
+console.log('📧 Email config check:', { 
+  hasGmailEmail: !!gmailEmail,
+  gmailEmailLength: gmailEmail?.length || 0,
+  hasPassword: !!gmailPassword,
+  passwordLength: gmailPassword?.length || 0,
+  adminEmail,
+  fromEmail 
+});
 
 // Create transporter
 const transporter = nodemailer.createTransport({
