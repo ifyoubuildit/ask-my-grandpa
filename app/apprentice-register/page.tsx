@@ -210,8 +210,13 @@ function ApprenticeRegisterForm() {
 
       // Step 1: Create Firebase Auth account (only for new registrations)
       if (!isUpdate && !user) {
+        console.log('🔐 Creating new user account with role: seeker');
         const result = await signUp(formData.email, formData.password, formData.fullname, 'seeker');
         userId = result.user.uid;
+        console.log('✅ User account created successfully:', { uid: userId, role: 'seeker' });
+        
+        // Wait a moment for the auth state to update
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
       // Step 2: Upload photo if provided
@@ -259,9 +264,9 @@ function ApprenticeRegisterForm() {
       }
 
       // Success! Firebase Functions will automatically send email notifications
-      console.log('✅ Registration successful, redirecting to dashboard...');
+      console.log('✅ Registration successful, redirecting to request-help...');
       
-      // For new registrations, redirect immediately to dashboard
+      // For new registrations, redirect immediately to request help form
       if (!isUpdate) {
         // Reset form
         setFormData({
@@ -279,6 +284,12 @@ function ApprenticeRegisterForm() {
         });
         setPhoto(null);
         setPhotoPreview('');
+        
+        console.log('🎯 Redirecting to request-help with params:', {
+          grandpa: grandpaName,
+          grandpaId: grandpaId,
+          skill: skill
+        });
         
         // Redirect immediately to request help form with grandpa info
         router.push(`/request-help?grandpa=${encodeURIComponent(grandpaName)}&grandpaId=${grandpaId}&skill=${encodeURIComponent(skill)}`);

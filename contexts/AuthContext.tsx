@@ -31,11 +31,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange(async (user) => {
+      console.log('🔐 Auth state changed:', { user: !!user, uid: user?.uid, email: user?.email });
       setUser(user);
       
       if (user) {
         // Get user profile from Firestore
+        console.log('👤 Fetching user profile for:', user.uid);
         const userProfile = await getUserProfile(user.uid);
+        console.log('👤 User profile loaded:', { profile: !!userProfile, role: userProfile?.role });
         setProfile(userProfile);
       } else {
         setProfile(null);

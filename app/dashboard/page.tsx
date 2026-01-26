@@ -208,12 +208,24 @@ function DashboardContent() {
   // Client-side only authentication checks
   useEffect(() => {
     if (typeof window !== 'undefined' && !loading) {
+      console.log('🏠 Dashboard auth check:', { 
+        user: !!user, 
+        profile: !!profile, 
+        role: profile?.role,
+        loading 
+      });
+      
       if (!user) {
-        console.log('🔒 Dashboard auth check failed:', { user: !!user, profile: !!profile, loading });
+        console.log('🔒 Dashboard auth check failed: no user, redirecting to login');
         router.push('/login');
+      } else if (profile) {
+        console.log('✅ Dashboard loaded for user:', { 
+          role: profile.role, 
+          name: profile.displayName 
+        });
       }
     }
-  }, [user, loading, router]);
+  }, [user, profile, loading, router]);
 
   // Show loading state during authentication check
   if (loading || !user || !profile) {
