@@ -30,17 +30,25 @@ export default function Home() {
   return (
     <main className="flex-1">
       {/* Hero Section */}
-      <header className="relative pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden bg-[#f0ede6] border-b border-vintage-gold/20">
+      <header 
+        className="relative pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden border-b border-vintage-gold/20 hero-section"
+        style={{
+          backgroundImage: `linear-gradient(rgba(74, 64, 54, 0.7), rgba(74, 64, 54, 0.7)), url('/assets/hero-grandpa-teaching.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-extrabold text-vintage-dark tracking-tight mb-6">
-            Wisdom <span className="text-[#9A3412]">On Demand</span>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-extrabold text-white tracking-tight mb-6">
+            Wisdom <span className="text-vintage-accent">On Demand</span>
           </h1>
           
-          <p className="mt-4 max-w-2xl mx-auto text-xl text-vintage-dark/80 font-body">
+          <p className="mt-4 max-w-2xl mx-auto text-xl text-white/90 font-body">
             From fixing a leaky faucet to patching and painting that wall.
           </p>
           
-          <h2 className="text-2xl md:text-3xl font-heading font-bold text-vintage-dark mt-6 mb-8 leading-tight">
+          <h2 className="text-2xl md:text-3xl font-heading font-bold text-white mt-6 mb-8 leading-tight">
             Just Ask Grandpa.
           </h2>
 
@@ -69,10 +77,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        
-        {/* Background Elements */}
-        <div className="absolute top-0 left-0 -ml-24 mt-12 w-64 h-64 bg-vintage-gold/10 rounded-full blur-3xl mix-blend-multiply"></div>
-        <div className="absolute bottom-0 right-0 -mr-24 mb-12 w-80 h-80 bg-vintage-green/10 rounded-full blur-3xl mix-blend-multiply"></div>
       </header>
 
       {/* How it Works Section */}
