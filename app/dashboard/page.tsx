@@ -25,7 +25,7 @@ function DashboardContent() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<'previous' | 'upcoming'>('previous');
+  const [activeTab, setActiveTab] = useState<'previous' | 'upcoming'>('upcoming');
   const [requests, setRequests] = useState<RequestData[]>([]);
   const [confirmedMeetings, setConfirmedMeetings] = useState<RequestData[]>([]);
   const [completedMeetings, setCompletedMeetings] = useState<RequestData[]>([]);
@@ -62,16 +62,42 @@ function DashboardContent() {
           
           allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           
+          // Enrich requests with photo URLs
+          const enrichedRequests = await Promise.all(
+            allRequestsData.map(async (request) => {
+              // Get apprentice photo
+              let apprenticePhotoURL = '';
+              try {
+                const apprenticeQuery = query(
+                  collection(db, "apprentices"), 
+                  where("userId", "==", request.apprenticeId)
+                );
+                const apprenticeSnapshot = await getDocs(apprenticeQuery);
+                if (!apprenticeSnapshot.empty) {
+                  const apprenticeData = apprenticeSnapshot.docs[0].data();
+                  apprenticePhotoURL = apprenticeData.photoURL || '';
+                }
+              } catch (error) {
+                console.warn('Could not fetch apprentice photo:', error);
+              }
+              
+              return {
+                ...request,
+                apprenticePhotoURL
+              };
+            })
+          );
+          
           // Filter for messages section (all messages for ongoing communication)
-          const messagesData = allRequestsData;
+          const messagesData = enrichedRequests;
           setRequests(messagesData);
           
           // Load upcoming confirmed meetings (only confirmed status)
-          const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
+          const upcomingMeetings = enrichedRequests.filter(r => r.status === 'confirmed');
           setConfirmedMeetings(upcomingMeetings);
           
           // Load completed meetings (for Previous section)
-          const completedMeetings = allRequestsData.filter(r => r.status === 'completed');
+          const completedMeetings = enrichedRequests.filter(r => r.status === 'completed');
           setCompletedMeetings(completedMeetings);
         } else {
           // Load all requests sent by this apprentice
@@ -87,16 +113,42 @@ function DashboardContent() {
           
           allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           
+          // Enrich requests with photo URLs
+          const enrichedRequests = await Promise.all(
+            allRequestsData.map(async (request) => {
+              // Get grandpa photo
+              let grandpaPhotoURL = '';
+              try {
+                const grandpaQuery = query(
+                  collection(db, "grandpas"), 
+                  where("userId", "==", request.grandpaId)
+                );
+                const grandpaSnapshot = await getDocs(grandpaQuery);
+                if (!grandpaSnapshot.empty) {
+                  const grandpaData = grandpaSnapshot.docs[0].data();
+                  grandpaPhotoURL = grandpaData.photoURL || '';
+                }
+              } catch (error) {
+                console.warn('Could not fetch grandpa photo:', error);
+              }
+              
+              return {
+                ...request,
+                grandpaPhotoURL
+              };
+            })
+          );
+          
           // Filter for messages section (all messages for ongoing communication)
-          const messagesData = allRequestsData;
+          const messagesData = enrichedRequests;
           setRequests(messagesData);
           
           // Load upcoming confirmed meetings (only confirmed status)
-          const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
+          const upcomingMeetings = enrichedRequests.filter(r => r.status === 'confirmed');
           setConfirmedMeetings(upcomingMeetings);
           
           // Load completed meetings (for Previous section)
-          const completedMeetings = allRequestsData.filter(r => r.status === 'completed');
+          const completedMeetings = enrichedRequests.filter(r => r.status === 'completed');
           setCompletedMeetings(completedMeetings);
         }
       } catch (error) {
@@ -139,13 +191,39 @@ function DashboardContent() {
           
           allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           
-          const messagesData = allRequestsData;
+          // Enrich requests with photo URLs
+          const enrichedRequests = await Promise.all(
+            allRequestsData.map(async (request) => {
+              // Get apprentice photo
+              let apprenticePhotoURL = '';
+              try {
+                const apprenticeQuery = query(
+                  collection(db, "apprentices"), 
+                  where("userId", "==", request.apprenticeId)
+                );
+                const apprenticeSnapshot = await getDocs(apprenticeQuery);
+                if (!apprenticeSnapshot.empty) {
+                  const apprenticeData = apprenticeSnapshot.docs[0].data();
+                  apprenticePhotoURL = apprenticeData.photoURL || '';
+                }
+              } catch (error) {
+                console.warn('Could not fetch apprentice photo:', error);
+              }
+              
+              return {
+                ...request,
+                apprenticePhotoURL
+              };
+            })
+          );
+          
+          const messagesData = enrichedRequests;
           setRequests(messagesData);
           
-          const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
+          const upcomingMeetings = enrichedRequests.filter(r => r.status === 'confirmed');
           setConfirmedMeetings(upcomingMeetings);
           
-          const completedMeetings = allRequestsData.filter(r => r.status === 'completed');
+          const completedMeetings = enrichedRequests.filter(r => r.status === 'completed');
           setCompletedMeetings(completedMeetings);
         } else {
           const requestsQuery = query(
@@ -160,13 +238,39 @@ function DashboardContent() {
           
           allRequestsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
           
-          const messagesData = allRequestsData;
+          // Enrich requests with photo URLs
+          const enrichedRequests = await Promise.all(
+            allRequestsData.map(async (request) => {
+              // Get grandpa photo
+              let grandpaPhotoURL = '';
+              try {
+                const grandpaQuery = query(
+                  collection(db, "grandpas"), 
+                  where("userId", "==", request.grandpaId)
+                );
+                const grandpaSnapshot = await getDocs(grandpaQuery);
+                if (!grandpaSnapshot.empty) {
+                  const grandpaData = grandpaSnapshot.docs[0].data();
+                  grandpaPhotoURL = grandpaData.photoURL || '';
+                }
+              } catch (error) {
+                console.warn('Could not fetch grandpa photo:', error);
+              }
+              
+              return {
+                ...request,
+                grandpaPhotoURL
+              };
+            })
+          );
+          
+          const messagesData = enrichedRequests;
           setRequests(messagesData);
           
-          const upcomingMeetings = allRequestsData.filter(r => r.status === 'confirmed');
+          const upcomingMeetings = enrichedRequests.filter(r => r.status === 'confirmed');
           setConfirmedMeetings(upcomingMeetings);
           
-          const completedMeetings = allRequestsData.filter(r => r.status === 'completed');
+          const completedMeetings = enrichedRequests.filter(r => r.status === 'completed');
           setCompletedMeetings(completedMeetings);
         }
       } catch (error) {
@@ -684,13 +788,10 @@ function DashboardContent() {
                                 <div className="bg-vintage-cream p-4 rounded-lg">
                                   <h5 className="font-bold text-vintage-dark mb-2 flex items-center gap-2">
                                     <User className="w-4 h-4 text-vintage-accent" />
-                                    {profile?.role === 'grandpa' ? 'Apprentice' : 'Mentor'} Contact
+                                    {profile?.role === 'grandpa' ? 'Apprentice' : 'Mentor'}
                                   </h5>
                                   <p className="text-vintage-dark font-medium">
                                     {profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName}
-                                  </p>
-                                  <p className="text-sm text-vintage-dark/70">
-                                    Contact via platform messaging
                                   </p>
                                 </div>
                               </div>
