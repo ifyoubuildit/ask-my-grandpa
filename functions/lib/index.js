@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onVerificationRequest = exports.submitHelpRequest = exports.registerApprentice = exports.registerGrandpa = exports.sendAdditionalMessage = exports.send24HourReminders = exports.onSessionConfirmed = exports.onRequestAccepted = exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
+exports.sendVerificationSuccessEmail = exports.onVerificationRequest = exports.submitHelpRequest = exports.registerApprentice = exports.registerGrandpa = exports.sendAdditionalMessage = exports.send24HourReminders = exports.onSessionConfirmed = exports.onRequestAccepted = exports.onHelpRequest = exports.onApprenticeRegistration = exports.onGrandpaRegistration = exports.verifyEmailToken = exports.sendCustomEmailVerification = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
@@ -1784,5 +1784,111 @@ Request Time: ${new Date().toLocaleString()}
     `;
     await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
     console.log('Verification request notification sent to admin');
+});
+// Function to send verification success email
+exports.sendVerificationSuccessEmail = functions.https.onCall(async (data, context) => {
+    const { grandpaEmail, grandpaName } = data;
+    if (!grandpaEmail || !grandpaName) {
+        throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
+    }
+    const firstName = grandpaName.split(' ')[0];
+    const subject = 'Ask My Grandpa Account Now Verified 🛠️';
+    const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
+      <!-- Header with logo/banner space -->
+      <div style="background: #4a4037; padding: 20px; text-align: center;">
+        <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
+        <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">You are now visible to Apprentices in the community.</p>
+      </div>
+      
+      <div style="padding: 30px; background: white; margin: 0;">
+        <h2 style="color: #9A3412; font-size: 24px; font-weight: bold; margin: 0 0 20px 0; text-align: center;">
+          You're officially part of the village.
+        </h2>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          Hi ${firstName},
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          <strong>Great news! Following our chat, your account has been Verified.</strong>
+        </p>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+          You have been accepted into the Ask My Grandpa community. Your profile is now live and will appear in search results for eligible Apprentices looking for your specific skills.
+        </p>
+        
+        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 25px 0;">
+          <h3 style="color: #4a4037; margin-top: 0; margin-bottom: 15px; font-size: 18px;">What happens next?</h3>
+          
+          <p style="color: #4a4037; margin: 12px 0; font-size: 16px;">
+            <strong>Stand By:</strong> You don't need to do anything right now. When an Apprentice requests a mentor with your skills, you will receive an email notification.
+          </p>
+          
+          <p style="color: #4a4037; margin: 12px 0; font-size: 16px;">
+            <strong>Check Your Profile:</strong> Take a moment to ensure your "Skills" and "Bio" are exactly how you want them to appear to neighbors.
+          </p>
+        </div>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+          Thank you for stepping up to share your knowledge. The village is better with you in it.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="https://askmygrandpa.com/dashboard" 
+             style="background: #9A3412; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+            Go to My Dashboard
+          </a>
+        </div>
+        
+        <p style="color: #4a4037; font-size: 16px; line-height: 1.6; margin-top: 30px;">
+          With respect,<br>
+          <strong>The Ask Grandpa Team</strong>
+        </p>
+      </div>
+      
+      <div style="background: #f0ede6; padding: 20px; text-align: center;">
+        <p style="font-size: 12px; color: #4a4037; opacity: 0.7; margin: 0;">
+          Your account is now verified and visible to apprentices in the community.
+        </p>
+      </div>
+    </div>
+  `;
+    const textContent = `
+Hi ${firstName},
+
+Great news! Following our chat, your account has been Verified.
+
+You have been accepted into the Ask My Grandpa community. Your profile is now live and will appear in search results for eligible Apprentices looking for your specific skills.
+
+What happens next?
+
+Stand By: You don't need to do anything right now. When an Apprentice requests a mentor with your skills, you will receive an email notification.
+
+Check Your Profile: Take a moment to ensure your "Skills" and "Bio" are exactly how you want them to appear to neighbors.
+
+Thank you for stepping up to share your knowledge. The village is better with you in it.
+
+Go to your dashboard: https://askmygrandpa.com/dashboard
+
+With respect,
+The Ask Grandpa Team
+  `;
+    const mailOptions = {
+        from: fromEmail,
+        to: grandpaEmail,
+        subject: subject,
+        text: textContent,
+        html: htmlContent,
+    };
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Verification success email sent successfully');
+        return { success: true };
+    }
+    catch (error) {
+        console.error('Error sending verification success email:', error);
+        throw new functions.https.HttpsError('internal', 'Failed to send verification success email');
+    }
 });
 //# sourceMappingURL=index.js.map

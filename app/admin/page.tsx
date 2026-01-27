@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, updateDoc, doc, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '@/lib/firebase';
 import { Shield, ShieldCheck, Clock, Phone, Mail, User, Calendar } from 'lucide-react';
 
 interface VerificationRequest {
@@ -69,6 +70,8 @@ export default function AdminPage() {
 
   const handleVerifyGrandpa = async (request: VerificationRequest) => {
     try {
+      console.log('🔄 Starting verification process for:', request.grandpaName);
+      
       // Update the grandpa record to verified
       await updateDoc(doc(db, "grandpas", request.grandpaId), {
         isVerified: true,
@@ -76,6 +79,7 @@ export default function AdminPage() {
         verifiedAt: new Date().toISOString(),
         verifiedBy: user?.email
       });
+      console.log('✅ Grandpa record updated to verified');
 
       // Update the verification request status
       await updateDoc(doc(db, "verificationRequests", request.id), {
@@ -83,13 +87,23 @@ export default function AdminPage() {
         completedAt: new Date().toISOString(),
         completedBy: user?.email
       });
+      console.log('✅ Verification request marked as completed');
+
+      // Send verification success email
+      console.log('📧 Sending verification success email...');
+      const sendVerificationSuccessEmail = httpsCallable(functions, 'sendVerificationSuccessEmail');
+      await sendVerificationSuccessEmail({
+        grandpaEmail: request.grandpaEmail,
+        grandpaName: request.grandpaName
+      });
+      console.log('✅ Verification success email sent');
 
       // Reload the requests
       loadVerificationRequests();
       
-      alert(`${request.grandpaName} has been verified successfully!`);
+      alert(`${request.grandpaName} has been verified successfully! They will receive a confirmation email.`);
     } catch (error) {
-      console.error('Error verifying grandpa:', error);
+      console.error('❌ Error verifying grandpa:', error);
       alert('Error verifying grandpa. Please try again.');
     }
   };
