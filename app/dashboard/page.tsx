@@ -171,7 +171,7 @@ function VerificationBanner() {
               {!showVerificationForm ? (
                 <button
                   onClick={() => setShowVerificationForm(true)}
-                  className="bg-vintage-accent text-white px-6 py-3 rounded-lg font-heading font-bold hover:bg-vintage-dark transition-colors flex items-center gap-2"
+                  className="bg-vintage-accent text-orange-800 px-6 py-3 rounded-lg font-heading font-bold hover:bg-vintage-dark hover:text-white transition-colors flex items-center gap-2"
                 >
                   <Video className="w-5 h-5" />
                   Schedule My Verification Call
