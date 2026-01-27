@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { User, MapPin, SearchX } from 'lucide-react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface Grandpa {
@@ -26,8 +26,9 @@ function SearchResults() {
       let fetchedGrandpas: Grandpa[] = [];
       
       try {
-        console.log('Fetching grandpas from Firebase...');
-        const querySnapshot = await getDocs(collection(db, "grandpas"));
+        console.log('Fetching verified grandpas from Firebase...');
+        const q = query(collection(db, "grandpas"), where("isVerified", "==", true));
+        const querySnapshot = await getDocs(q);
         
         querySnapshot.forEach((doc) => {
           const data = doc.data();
