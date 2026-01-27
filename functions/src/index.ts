@@ -1901,3 +1901,69 @@ The Ask Grandpa Team
     console.error('❌ Error sending 24-hour reminder to grandpa:', error);
   }
 };
+
+// Function to handle verification requests
+export const onVerificationRequest = functions.firestore
+  .document('verificationRequests/{requestId}')
+  .onCreate(async (snap, context) => {
+    const requestData = snap.data();
+    
+    // Send admin notification
+    const adminSubject = '🔍 New Verification Request - Ask My Grandpa';
+    
+    const adminHtmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #9A3412;">New Verification Request!</h2>
+        
+        <div style="background: #f0ede6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Grandpa Details:</h3>
+          <p><strong>Name:</strong> ${requestData.grandpaName}</p>
+          <p><strong>Email:</strong> ${requestData.grandpaEmail}</p>
+          <p><strong>Phone:</strong> ${requestData.grandpaPhone}</p>
+          
+          <h4 style="margin-top: 20px;">Availability for Verification Call:</h4>
+          <div style="background: white; padding: 15px; border-radius: 4px; border-left: 4px solid #9A3412;">
+            <p style="margin: 0; white-space: pre-line;">${requestData.availability}</p>
+          </div>
+          
+          <p style="margin-top: 15px;"><strong>Status:</strong> ${requestData.status}</p>
+        </div>
+        
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0; color: #856404;">
+            <strong>Action Required:</strong> Please schedule a 10-minute verification call with this grandpa and update their status in the admin panel.
+          </p>
+        </div>
+        
+        <p style="color: #666;">
+          Request Time: ${new Date().toLocaleString()}
+        </p>
+        
+        <hr style="border: 1px solid #ddd; margin: 20px 0;">
+        <p style="font-size: 12px; color: #999;">
+          This notification was sent automatically from Ask My Grandpa platform.
+        </p>
+      </div>
+    `;
+    
+    const adminTextContent = `
+New Verification Request!
+
+Grandpa Details:
+Name: ${requestData.grandpaName}
+Email: ${requestData.grandpaEmail}
+Phone: ${requestData.grandpaPhone}
+
+Availability for Verification Call:
+${requestData.availability}
+
+Status: ${requestData.status}
+
+Action Required: Please schedule a 10-minute verification call with this grandpa and update their status in the admin panel.
+
+Request Time: ${new Date().toLocaleString()}
+    `;
+    
+    await sendNotificationEmail(adminSubject, adminHtmlContent, adminTextContent);
+    console.log('Verification request notification sent to admin');
+  });

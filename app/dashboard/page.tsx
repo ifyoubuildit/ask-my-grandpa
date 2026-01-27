@@ -59,7 +59,7 @@ function VerificationBanner() {
     try {
       // Update grandpa record with verification request
       await updateDoc(doc(db, "grandpas", grandpaData.id), {
-        verificationStatus: 'scheduled',
+        verificationStatus: 'requested',
         verificationRequestedAt: new Date().toISOString(),
         verificationAvailability: availability
       });
@@ -79,7 +79,7 @@ function VerificationBanner() {
       // Update local state
       setGrandpaData((prev: any) => ({
         ...prev,
-        verificationStatus: 'scheduled',
+        verificationStatus: 'requested',
         verificationRequestedAt: new Date().toISOString()
       }));
       
@@ -118,10 +118,16 @@ function VerificationBanner() {
   // Show different messages based on verification status
   const getStatusMessage = (): { title: string; message: string; color: 'orange' | 'blue' | 'yellow' } => {
     switch (grandpaData?.verificationStatus) {
-      case 'scheduled':
+      case 'requested':
         return {
           title: "Verification Call Requested",
           message: "Thanks for submitting your availability! We'll contact you soon to schedule your 10-minute verification call.",
+          color: "blue"
+        };
+      case 'scheduled':
+        return {
+          title: "Verification Call Scheduled",
+          message: "Your verification call has been scheduled. We'll send you the details soon!",
           color: "blue"
         };
       case 'completed':
@@ -165,7 +171,7 @@ function VerificationBanner() {
               {!showVerificationForm ? (
                 <button
                   onClick={() => setShowVerificationForm(true)}
-                  className="bg-vintage-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-vintage-dark transition-colors flex items-center gap-2"
+                  className="bg-vintage-accent text-white px-6 py-3 rounded-lg font-heading font-bold hover:bg-vintage-dark transition-colors flex items-center gap-2"
                 >
                   <Video className="w-5 h-5" />
                   Schedule My Verification Call
