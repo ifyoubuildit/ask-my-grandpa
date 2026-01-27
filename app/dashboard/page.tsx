@@ -77,7 +77,7 @@ function VerificationBanner() {
       });
 
       // Update local state
-      setGrandpaData(prev => ({
+      setGrandpaData((prev: any) => ({
         ...prev,
         verificationStatus: 'scheduled',
         verificationRequestedAt: new Date().toISOString()
