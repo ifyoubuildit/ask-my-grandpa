@@ -17,10 +17,12 @@ service cloud.firestore {
         && isValidGrandpaData(request.resource.data)
         && request.resource.data.userId == request.auth.uid;
       
-      // Only the owner can update their profile
+      // Only the owner can update their profile, OR admins can update verification status
       allow update: if request.auth != null 
-        && resource.data.userId == request.auth.uid
-        && isValidGrandpaData(request.resource.data);
+        && (
+          (resource.data.userId == request.auth.uid && isValidGrandpaData(request.resource.data))
+          || (isAdminUser(request.auth.uid) && isValidAdminGrandpaUpdate(request.resource.data, resource.data))
+        );
       
       // Only the owner can delete their profile
       allow delete: if request.auth != null 
@@ -160,9 +162,14 @@ service cloud.firestore {
   
   // Check if user is an admin (has specific admin email addresses)
   function isAdminUser(userId) {
-    let userDoc = get(/databases/$(database)/documents/users/$(userId));
-    return userDoc.data.email == 'cwallace7755@gmail.com' 
-        || userDoc.data.email == 'info@askmygrandpa.com';
+    return userId == '5sMMS8zBAVhAeqSi7UciTwqEe6L2'; // Your admin user ID
+  }
+  
+  function isValidAdminGrandpaUpdate(newData, oldData) {
+    // Admins can only update verification-related fields
+    let allowedFields = ['isVerified', 'verificationStatus', 'verifiedAt', 'verifiedBy'];
+    let changedFields = newData.diff(oldData).changedKeys();
+    return changedFields.hasOnly(allowedFields);
   }
   
   function isValidMessageData(data) {
