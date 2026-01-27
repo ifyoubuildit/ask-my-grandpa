@@ -17,7 +17,7 @@ interface Grandpa {
 
 function SearchResults() {
   const searchParams = useSearchParams();
-  const query = searchParams.get('q') || searchParams.get('skill') || "All Grandpas";
+  const searchQuery = searchParams.get('q') || searchParams.get('skill') || "All Grandpas";
   const [loading, setLoading] = useState(true);
   const [filteredGrandpas, setFilteredGrandpas] = useState<Grandpa[]>([]);
 
@@ -58,10 +58,10 @@ function SearchResults() {
       
       // Filter logic
       let filtered = [];
-      if (query === "All Grandpas") {
+      if (searchQuery === "All Grandpas") {
         filtered = fetchedGrandpas;
       } else {
-        const lowerQuery = query.toLowerCase();
+        const lowerQuery = searchQuery.toLowerCase();
         filtered = fetchedGrandpas.filter(g => 
           (g.skills && g.skills.toLowerCase().includes(lowerQuery)) || 
           (g.name && g.name.toLowerCase().includes(lowerQuery)) ||
@@ -69,13 +69,13 @@ function SearchResults() {
         );
       }
       
-      console.log(`Filtered to ${filtered.length} grandpas for query: "${query}"`);
+      console.log(`Filtered to ${filtered.length} grandpas for query: "${searchQuery}"`);
       setFilteredGrandpas(filtered);
       setLoading(false);
     };
 
     fetchGrandpas();
-  }, [query]);
+  }, [searchQuery]);
 
   const highlightSkills = (skills: string, searchQuery: string) => {
     if (searchQuery === "All Grandpas") return skills;
@@ -100,7 +100,7 @@ function SearchResults() {
             Grandpas found for:
           </p>
           <h1 className="text-3xl md:text-4xl font-heading font-bold text-vintage-dark">
-            "{query}"
+            "{searchQuery}"
           </h1>
         </div>
       </header>
@@ -168,7 +168,7 @@ function SearchResults() {
                           Skill Sets
                         </h4>
                         <p className="text-lg text-vintage-dark font-body skills-text">
-                          {highlightSkills(grandpa.skills, query)}
+                          {highlightSkills(grandpa.skills, searchQuery)}
                         </p>
                       </div>
                       <div className="mt-auto border-t border-vintage-gold/20 pt-4">
@@ -178,7 +178,7 @@ function SearchResults() {
                         <button 
                           onClick={() => {
                             console.log('🔗 Connect button clicked for:', grandpa.name);
-                            window.location.href = `/apprentice-register?grandpa=${encodeURIComponent(grandpa.name)}&grandpaId=${index}&skill=${encodeURIComponent(query)}`;
+                            window.location.href = `/apprentice-register?grandpa=${encodeURIComponent(grandpa.name)}&grandpaId=${index}&skill=${encodeURIComponent(searchQuery)}`;
                           }}
                           className="w-full bg-vintage-green text-white px-6 py-3 rounded-full font-bold hover:bg-vintage-dark transition-colors shadow-lg"
                         >
