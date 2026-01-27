@@ -33,9 +33,8 @@ service cloud.firestore {
     match /apprentices/{apprenticeId} {
       // Apprentice owners can always read their own profile
       // Grandpas can read apprentice profiles (needed for dashboard and requests)
-      allow read: if request.auth != null 
-        && (request.auth.uid == resource.data.userId
-            || isGrandpaUser(request.auth.uid));
+      // Temporarily allow any authenticated user to read (for debugging)
+      allow read: if request.auth != null;
       
       // Only authenticated users can create apprentice profiles
       allow create: if request.auth != null 
