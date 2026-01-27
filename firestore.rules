@@ -96,8 +96,7 @@ service cloud.firestore {
       
       // Only admins can read and update verification requests
       allow read, update: if request.auth != null 
-        && (request.auth.email == 'cwallace7755@gmail.com' 
-            || request.auth.email == 'info@askmygrandpa.com');
+        && isAdminUser(request.auth.uid);
     }
     
     // Admin-only collections
@@ -158,6 +157,13 @@ service cloud.firestore {
   // Check if user is a grandpa (has role 'grandpa' in users collection)
   function isGrandpaUser(userId) {
     return get(/databases/$(database)/documents/users/$(userId)).data.role == 'grandpa';
+  }
+  
+  // Check if user is an admin (has specific admin email addresses)
+  function isAdminUser(userId) {
+    let userDoc = get(/databases/$(database)/documents/users/$(userId));
+    return userDoc.data.email == 'cwallace7755@gmail.com' 
+        || userDoc.data.email == 'info@askmygrandpa.com';
   }
   
   function isValidMessageData(data) {
