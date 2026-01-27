@@ -1024,15 +1024,28 @@ function DashboardContent() {
                                 <div className="flex items-center gap-3">
                                   {/* Profile Picture */}
                                   <div className="w-12 h-12 bg-vintage-accent rounded-full flex items-center justify-center overflow-hidden">
-                                    {(profile?.role === 'grandpa' ? meeting.apprenticePhotoURL : meeting.grandpaPhotoURL) ? (
-                                      <img 
-                                        src={profile?.role === 'grandpa' ? meeting.apprenticePhotoURL : meeting.grandpaPhotoURL} 
-                                        alt={profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <User className="w-6 h-6 text-white" />
-                                    )}
+                                    {(() => {
+                                      const photoURL = profile?.role === 'grandpa' ? meeting.apprenticePhotoURL : meeting.grandpaPhotoURL;
+                                      const name = profile?.role === 'grandpa' ? meeting.apprenticeName : meeting.grandpaName;
+                                      console.log('🖼️ Photo debug:', { 
+                                        role: profile?.role, 
+                                        photoURL, 
+                                        name,
+                                        meeting: meeting 
+                                      });
+                                      
+                                      return photoURL ? (
+                                        <img 
+                                          src={photoURL} 
+                                          alt={name}
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => console.log('❌ Image failed to load:', photoURL)}
+                                          onLoad={() => console.log('✅ Image loaded successfully:', photoURL)}
+                                        />
+                                      ) : (
+                                        <User className="w-6 h-6 text-white" />
+                                      );
+                                    })()}
                                   </div>
                                   <div>
                                     <h4 className="text-lg font-heading font-bold text-vintage-dark">
