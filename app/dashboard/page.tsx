@@ -4,9 +4,9 @@ import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { logOut } from '@/lib/auth';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { User, Search, MessageCircle, Calendar, Clock, Check, X, Mail, MailOpen, ChevronRight } from 'lucide-react';
+import { User, Search, MessageCircle, Calendar, Clock, Check, X, Mail, MailOpen, ChevronRight, Shield, ShieldCheck, Video } from 'lucide-react';
 import Link from 'next/link';
 import MessageDetailModal from '@/components/MessageDetailModal';
 
@@ -19,6 +19,191 @@ interface RequestData {
   message: string;
   timestamp: string;
   [key: string]: any;
+}
+
+// Verification Banner Component
+function VerificationBanner() {
+  const { user } = useAuth();
+  const [grandpaData, setGrandpaData] = useState<any>(null);
+  const [showVerificationForm, setShowVerificationForm] = useState(false);
+  const [availability, setAvailability] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadGrandpaData = async () => {
+      if (!user) return;
+      
+      try {
+        const q = query(collection(db, "grandpas"), where("userId", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const grandpaDoc = querySnapshot.docs[0];
+          setGrandpaData({ id: grandpaDoc.id, ...grandpaDoc.data() });
+        }
+      } catch (error) {
+        console.error('Error loading grandpa data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGrandpaData();
+  }, [user]);
+
+  const handleRequestVerification = async () => {
+    if (!availability.trim() || !grandpaData) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Update grandpa record with verification request
+      await updateDoc(doc(db, "grandpas", grandpaData.id), {
+        verificationStatus: 'scheduled',
+        verificationRequestedAt: new Date().toISOString(),
+        verificationAvailability: availability
+      });
+
+      // Create verification request for admin
+      await addDoc(collection(db, "verificationRequests"), {
+        grandpaId: grandpaData.id,
+        grandpaName: grandpaData.name,
+        grandpaEmail: grandpaData.email,
+        grandpaPhone: grandpaData.phone,
+        availability: availability,
+        status: 'pending',
+        requestedAt: new Date().toISOString(),
+        userId: user?.uid
+      });
+
+      // Update local state
+      setGrandpaData(prev => ({
+        ...prev,
+        verificationStatus: 'scheduled',
+        verificationRequestedAt: new Date().toISOString()
+      }));
+      
+      setShowVerificationForm(false);
+      setAvailability('');
+    } catch (error) {
+      console.error('Error requesting verification:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) return null;
+  
+  // Don't show banner if already verified
+  if (grandpaData?.isVerified) {
+    return (
+      <div className="mb-8 bg-green-50 border border-green-200 rounded-xl p-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+            <ShieldCheck className="w-6 h-6 text-green-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-heading font-bold text-green-800">
+              ✅ Verified Grandpa
+            </h3>
+            <p className="text-green-700">
+              Your account is verified and active. You'll now appear in apprentice searches!
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show different messages based on verification status
+  const getStatusMessage = () => {
+    switch (grandpaData?.verificationStatus) {
+      case 'scheduled':
+        return {
+          title: "Verification Call Requested",
+          message: "Thanks for submitting your availability! We'll contact you soon to schedule your 10-minute verification call.",
+          color: "blue"
+        };
+      case 'completed':
+        return {
+          title: "Verification Call Complete",
+          message: "Your verification call is complete. We're reviewing your application and will notify you soon!",
+          color: "yellow"
+        };
+      default:
+        return {
+          title: "Complete Your Verification",
+          message: "To start helping apprentices, we need a quick 10-minute chat to verify your account and ensure everyone's safety.",
+          color: "orange"
+        };
+    }
+  };
+
+  const statusInfo = getStatusMessage();
+  const colorClasses = {
+    orange: "bg-orange-50 border-orange-200 text-orange-800",
+    blue: "bg-blue-50 border-blue-200 text-blue-800", 
+    yellow: "bg-yellow-50 border-yellow-200 text-yellow-800"
+  };
+
+  return (
+    <div className={`mb-8 border rounded-xl p-6 ${colorClasses[statusInfo.color]}`}>
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center flex-shrink-0">
+          <Shield className="w-6 h-6" />
+        </div>
+        <div className="flex-1">
+          <h3 className="text-lg font-heading font-bold mb-2">
+            {statusInfo.title}
+          </h3>
+          <p className="mb-4">
+            {statusInfo.message}
+          </p>
+          
+          {grandpaData?.verificationStatus === 'pending' && (
+            <>
+              {!showVerificationForm ? (
+                <button
+                  onClick={() => setShowVerificationForm(true)}
+                  className="bg-vintage-accent text-white px-6 py-3 rounded-lg font-bold hover:bg-vintage-dark transition-colors flex items-center gap-2"
+                >
+                  <Video className="w-5 h-5" />
+                  Schedule My Verification Call
+                </button>
+              ) : (
+                <div className="bg-white/50 p-4 rounded-lg">
+                  <h4 className="font-bold mb-3">When are you available for a 10-minute call?</h4>
+                  <textarea
+                    value={availability}
+                    onChange={(e) => setAvailability(e.target.value)}
+                    placeholder="Please share your availability (days/times that work best for you)&#10;&#10;Example:&#10;- Weekdays after 2 PM&#10;- Saturday mornings&#10;- Tuesday/Thursday evenings"
+                    className="w-full p-3 border border-vintage-gold/30 rounded-lg resize-none h-32 text-vintage-dark"
+                    disabled={isSubmitting}
+                  />
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={handleRequestVerification}
+                      disabled={!availability.trim() || isSubmitting}
+                      className="bg-vintage-green text-white px-6 py-2 rounded-lg font-bold hover:bg-vintage-dark transition-colors disabled:opacity-50"
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Submit Availability'}
+                    </button>
+                    <button
+                      onClick={() => setShowVerificationForm(false)}
+                      className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-bold hover:bg-gray-400 transition-colors"
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function DashboardContent() {
@@ -443,6 +628,11 @@ function DashboardContent() {
       {/* Dashboard Content */}
       <section className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
+          
+          {/* Verification Banner - Only show for unverified grandpas */}
+          {profile?.role === 'grandpa' && (
+            <VerificationBanner />
+          )}
           
           {/* Quick Actions */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">

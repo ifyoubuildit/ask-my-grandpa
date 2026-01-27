@@ -251,7 +251,13 @@ function RegisterForm() {
         note: formData.note,
         timestamp: new Date().toISOString(),
         userId: userId,
-        source: 'website'
+        source: 'website',
+        // Verification fields
+        isVerified: false,
+        verificationStatus: 'pending', // pending, scheduled, completed, verified
+        verificationRequestedAt: null,
+        verifiedAt: null,
+        verifiedBy: null
       };
 
       if (photoURL) {
