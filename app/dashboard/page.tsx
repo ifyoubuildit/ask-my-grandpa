@@ -53,17 +53,27 @@ function VerificationBanner() {
   }, [user]);
 
   const handleRequestVerification = async () => {
-    if (!availability.trim() || !grandpaData) return;
+    console.log('🔍 Starting verification request...');
+    console.log('📝 Availability text:', availability);
+    console.log('👤 Grandpa data:', grandpaData);
+    
+    if (!availability.trim() || !grandpaData) {
+      console.log('❌ Missing availability or grandpa data');
+      return;
+    }
     
     setIsSubmitting(true);
     try {
+      console.log('📤 Updating grandpa record...');
       // Update grandpa record with verification request
       await updateDoc(doc(db, "grandpas", grandpaData.id), {
         verificationStatus: 'requested',
         verificationRequestedAt: new Date().toISOString(),
         verificationAvailability: availability
       });
+      console.log('✅ Grandpa record updated');
 
+      console.log('📤 Creating verification request...');
       // Create verification request for admin
       await addDoc(collection(db, "verificationRequests"), {
         grandpaId: grandpaData.id,
@@ -75,7 +85,9 @@ function VerificationBanner() {
         requestedAt: new Date().toISOString(),
         userId: user?.uid
       });
+      console.log('✅ Verification request created');
 
+      console.log('🔄 Updating local state...');
       // Update local state
       setGrandpaData((prev: any) => ({
         ...prev,
@@ -85,8 +97,10 @@ function VerificationBanner() {
       
       setShowVerificationForm(false);
       setAvailability('');
+      console.log('✅ Verification request completed successfully!');
     } catch (error) {
-      console.error('Error requesting verification:', error);
+      console.error('❌ Error requesting verification:', error);
+      alert('Error submitting verification request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

@@ -87,6 +87,19 @@ service cloud.firestore {
         && isValidMessageData(request.resource.data);
     }
     
+    // Verification requests collection - for grandpa verification process
+    match /verificationRequests/{requestId} {
+      // Only authenticated grandpas can create verification requests
+      allow create: if request.auth != null 
+        && isValidVerificationRequestData(request.resource.data)
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Only admins can read and update verification requests
+      allow read, update: if request.auth != null 
+        && (request.auth.email == 'cwallace7755@gmail.com' 
+            || request.auth.email == 'info@askmygrandpa.com');
+    }
+    
     // Admin-only collections
     match /admin/{document=**} {
       allow read, write: if request.auth != null 
@@ -153,5 +166,17 @@ service cloud.firestore {
       && data.receiverId is string
       && data.message is string && data.message.size() > 0
       && data.timestamp is string;
+  }
+  
+  function isValidVerificationRequestData(data) {
+    return data.keys().hasAll(['grandpaId', 'grandpaName', 'grandpaEmail', 'grandpaPhone', 'availability', 'status', 'requestedAt', 'userId'])
+      && data.grandpaId is string && data.grandpaId.size() > 0
+      && data.grandpaName is string && data.grandpaName.size() > 0
+      && data.grandpaEmail is string && data.grandpaEmail.matches('.*@.*')
+      && data.grandpaPhone is string && data.grandpaPhone.size() > 0
+      && data.availability is string && data.availability.size() > 0
+      && data.status is string && data.status in ['pending', 'completed']
+      && data.requestedAt is string
+      && data.userId is string;
   }
 }
