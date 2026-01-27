@@ -73,6 +73,14 @@ export default function TermsPage() {
               <strong>No Professional Advice or Certification:</strong> The guidance provided by "Grandpas" is for educational and mentorship purposes only. It is not professional advice, and it does not replace the need for licensed professionals (e.g., electricians, plumbers, gas fitters, structural engineers) where required by law. Users are responsible for ensuring all work complies with local building codes and bylaws. AskMyGrandpa makes no representations regarding the licensure, certification, or insurance of any Grandpa.
             </p>
 
+            <h2 className="font-heading font-bold text-vintage-dark">Screening and Vetting</h2>
+            <p>
+              AskMyGrandpa conducts video interviews with mentors ("Grandpas") to assess their skills and demeanor. However, unless explicitly stated otherwise on a user's profile, we do not conduct formal criminal background checks or vulnerable sector checks.
+            </p>
+            <p>
+              You acknowledge that our screening process is limited to these video interviews. It is not a guarantee of safety or character. You are solely responsible for your own safety and judgment when inviting a mentor into your home. We strongly recommend you exercise the same caution you would with any other visitor or service provider.
+            </p>
+
             <h2 className="font-heading font-bold text-vintage-dark">Limitation of Liability</h2>
             <p>
               To the fullest extent permitted by law, AskMyGrandpa and its officers, directors, and agents shall not be liable for any direct, indirect, incidental, special, consequential, or exemplary damages, including but not limited to:
@@ -87,11 +95,6 @@ export default function TermsPage() {
             <h2 className="font-heading font-bold text-vintage-dark">Indemnification</h2>
             <p>
               You agree to indemnify, defend, and hold harmless AskMyGrandpa, its officers, directors, and agents from any claims, liabilities, damages, losses, and expenses (including legal fees) arising out of or in any way connected with: (a) your access to or use of the platform; (b) your violation of these Terms; (c) your interaction with any other user; or (d) any injury or damage you cause to a third party or their property.
-            </p>
-
-            <h2 className="font-heading font-bold text-vintage-dark">Background Checks</h2>
-            <p>
-              While AskMyGrandpa may conduct limited screenings or background checks on "Grandpas" (such as Vulnerable Sector Checks), we cannot guarantee the accuracy of these checks or that a user's background will remain clean or suitable. These checks are not a substitute for your own judgment and caution. You are solely responsible for your safety when inviting someone into your home or entering another's home.
             </p>
 
             <h2 className="font-heading font-bold text-vintage-dark">Nature of Relationship</h2>
