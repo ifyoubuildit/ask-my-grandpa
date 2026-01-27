@@ -116,7 +116,7 @@ function VerificationBanner() {
   }
 
   // Show different messages based on verification status
-  const getStatusMessage = () => {
+  const getStatusMessage = (): { title: string; message: string; color: 'orange' | 'blue' | 'yellow' } => {
     switch (grandpaData?.verificationStatus) {
       case 'scheduled':
         return {
@@ -140,7 +140,7 @@ function VerificationBanner() {
   };
 
   const statusInfo = getStatusMessage();
-  const colorClasses = {
+  const colorClasses: Record<'orange' | 'blue' | 'yellow', string> = {
     orange: "bg-orange-50 border-orange-200 text-orange-800",
     blue: "bg-blue-50 border-blue-200 text-blue-800", 
     yellow: "bg-yellow-50 border-yellow-200 text-yellow-800"
