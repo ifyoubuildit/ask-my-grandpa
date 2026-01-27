@@ -28,6 +28,9 @@ export default function AdminPage() {
   // Simple admin check - you can make this more sophisticated
   const isAdmin = user?.email === 'cwallace7755@gmail.com' || user?.email === 'info@askmygrandpa.com';
 
+  console.log('👤 Current user email:', user?.email);
+  console.log('🔐 Is admin:', isAdmin);
+
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
       router.push('/');
@@ -41,17 +44,24 @@ export default function AdminPage() {
 
   const loadVerificationRequests = async () => {
     try {
+      console.log('🔍 Loading verification requests...');
       const q = query(collection(db, "verificationRequests"), orderBy("requestedAt", "desc"));
       const querySnapshot = await getDocs(q);
       
-      const requests = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as VerificationRequest[];
+      console.log('📊 Query snapshot size:', querySnapshot.size);
       
+      const requests = querySnapshot.docs.map(doc => {
+        console.log('📄 Document data:', doc.id, doc.data());
+        return {
+          id: doc.id,
+          ...doc.data()
+        };
+      }) as VerificationRequest[];
+      
+      console.log('✅ Loaded verification requests:', requests);
       setVerificationRequests(requests);
     } catch (error) {
-      console.error('Error loading verification requests:', error);
+      console.error('❌ Error loading verification requests:', error);
     } finally {
       setLoadingData(false);
     }
