@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center gap-3 mb-4">
               <img 
-                src="/logo.png" 
+                src="/assets/logo.png" 
                 alt="Ask My Grandpa Logo" 
                 className="w-12 h-12"
               />

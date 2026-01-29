@@ -629,7 +629,7 @@ function DashboardContent() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <img 
-                src="/logo.png" 
+                src="/assets/logo.png" 
                 alt="Ask My Grandpa Logo" 
                 className="w-16 h-16"
               />

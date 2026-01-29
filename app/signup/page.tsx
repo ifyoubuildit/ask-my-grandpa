@@ -67,7 +67,7 @@ export default function SignUpPage() {
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <img 
-              src="/logo.png" 
+              src="/assets/logo.png" 
               alt="Ask My Grandpa Logo" 
               className="w-20 h-20"
             />
