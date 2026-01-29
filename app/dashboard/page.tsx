@@ -627,13 +627,20 @@ function DashboardContent() {
       >
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-heading font-bold text-white">
-                Welcome, {profile?.displayName || 'User'}!
-              </h1>
-              <p className="text-white/90 mt-2">
-                {profile?.role === 'grandpa' ? 'Help apprentices learn new skills' : 'Connect with experienced mentors'}
-              </p>
+            <div className="flex items-center gap-4">
+              <img 
+                src="/logo.png" 
+                alt="Ask My Grandpa Logo" 
+                className="w-16 h-16"
+              />
+              <div>
+                <h1 className="text-4xl md:text-5xl font-heading font-bold text-white">
+                  Welcome, {profile?.displayName || 'User'}!
+                </h1>
+                <p className="text-white/90 mt-2">
+                  {profile?.role === 'grandpa' ? 'Help apprentices learn new skills' : 'Connect with experienced mentors'}
+                </p>
+              </div>
             </div>
             <button
               onClick={handleLogout}

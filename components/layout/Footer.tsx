@@ -7,8 +7,12 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <Glasses className="w-6 h-6 text-vintage-dark" />
+            <div className="flex items-center gap-3 mb-4">
+              <img 
+                src="/logo.png" 
+                alt="Ask My Grandpa Logo" 
+                className="w-12 h-12"
+              />
               <span className="font-heading font-bold text-xl text-vintage-dark">AskMyGrandpa</span>
             </div>
             <p className="text-sm text-vintage-dark/60">

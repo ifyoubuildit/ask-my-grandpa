@@ -126,6 +126,7 @@ export const sendCustomEmailVerification = functions
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
         <!-- Header with logo/banner space -->
         <div style="background: #4a4037; padding: 20px; text-align: center;">
+          <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
           <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
           <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Please confirm your address to finish joining Ask Grandpa.</p>
         </div>
@@ -314,6 +315,7 @@ Registration Time: ${new Date().toLocaleString()}
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
         <!-- Header with logo/banner space -->
         <div style="background: #4a4037; padding: 20px; text-align: center;">
+          <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
           <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
           <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Welcome to the mentor community.</p>
         </div>
@@ -464,6 +466,7 @@ Registration Time: ${new Date().toLocaleString()}
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
         <!-- Header with logo/banner space -->
         <div style="background: #4a4037; padding: 20px; text-align: center;">
+          <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
           <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
           <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Help is on the way.</p>
         </div>
@@ -632,6 +635,7 @@ Request Time: ${new Date().toLocaleString()}
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
           <!-- Header with logo/banner space -->
           <div style="background: #4a4037; padding: 20px; text-align: center;">
+            <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
             <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
             <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">${requestData.apprenticeName} is looking for some guidance. Can you help?</p>
           </div>
@@ -821,6 +825,7 @@ export const onRequestAccepted = functions.firestore
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
           <!-- Header with logo/banner space -->
           <div style="background: #4a4037; padding: 20px; text-align: center;">
+            <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
             <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
             <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">A mentor has accepted your request. Time to connect.</p>
           </div>
@@ -977,6 +982,7 @@ export const onSessionConfirmed = functions.firestore
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
           <!-- Header with logo/banner space -->
           <div style="background: #4a4037; padding: 20px; text-align: center;">
+            <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
             <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
             <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Here are the final details for your upcoming mentorship session.</p>
           </div>
@@ -1297,6 +1303,7 @@ export const sendAdditionalMessage = functions.https.onRequest(async (req, res) 
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
         <!-- Header -->
         <div style="background: #4a4037; padding: 20px; text-align: center;">
+          <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
           <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
           <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">You have a new message</p>
         </div>
@@ -1716,6 +1723,7 @@ const sendApprenticeReminder = async (sessionData: any) => {
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
       <!-- Header with logo/banner space -->
       <div style="background: #4a4037; padding: 20px; text-align: center;">
+        <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
         <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
         <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">Your mentorship session with Grandpa ${sessionData.grandpaName.split(' ')[0]} is in 24 hours.</p>
       </div>
@@ -1816,6 +1824,7 @@ const sendGrandpaReminder = async (sessionData: any) => {
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
       <!-- Header with logo/banner space -->
       <div style="background: #4a4037; padding: 20px; text-align: center;">
+        <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
         <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
         <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">You are scheduled to help ${sessionData.apprenticeName.split(' ')[0]} in 24 hours.</p>
       </div>
@@ -1983,6 +1992,7 @@ export const sendVerificationSuccessEmail = functions.https.onCall(async (data, 
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f0ede6;">
       <!-- Header with logo/banner space -->
       <div style="background: #4a4037; padding: 20px; text-align: center;">
+        <img src="https://askmygrandpa.com/logo.png" alt="Ask My Grandpa Logo" style="width: 60px; height: 60px; margin: 0 auto 10px auto; display: block;" />
         <h1 style="color: #f0ede6; margin: 0; font-size: 28px;">Ask My Grandpa</h1>
         <p style="color: #f0ede6; margin: 5px 0 0 0; opacity: 0.8;">You are now visible to Apprentices in the community.</p>
       </div>

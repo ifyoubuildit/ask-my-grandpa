@@ -65,6 +65,13 @@ export default function SignUpPage() {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/logo.png" 
+              alt="Ask My Grandpa Logo" 
+              className="w-20 h-20"
+            />
+          </div>
           <h2 className="text-3xl font-heading font-bold text-vintage-dark">
             Join AskMyGrandpa
           </h2>
