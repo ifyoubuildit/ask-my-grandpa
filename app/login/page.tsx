@@ -122,7 +122,7 @@ export default function LoginPage() {
             <img 
               src="/assets/logo.png" 
               alt="Ask My Grandpa Logo" 
-              className="w-20 h-20"
+              className="w-28 h-20"
             />
           </div>
           <h2 className="text-3xl font-heading font-bold text-vintage-dark">

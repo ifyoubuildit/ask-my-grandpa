@@ -631,7 +631,7 @@ function DashboardContent() {
               <img 
                 src="/assets/logo.png" 
                 alt="Ask My Grandpa Logo" 
-                className="w-16 h-16"
+                className="w-20 h-16"
               />
               <div>
                 <h1 className="text-4xl md:text-5xl font-heading font-bold text-white">

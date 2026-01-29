@@ -11,7 +11,7 @@ export default function Footer() {
               <img 
                 src="/assets/logo.png" 
                 alt="Ask My Grandpa Logo" 
-                className="w-12 h-12"
+                className="w-16 h-12"
               />
               <span className="font-heading font-bold text-xl text-vintage-dark">AskMyGrandpa</span>
             </div>
